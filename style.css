@@ -1,0 +1,64 @@
+.bar rect {
+  fill: steelblue;
+}
+
+.bar:hover {
+  fill: brown;
+}
+
+.axis--x path {
+  display: none;
+}
+
+.node {
+    cursor: pointer;
+}
+
+.node path {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 3px;
+}
+
+.node text {
+  font: 12px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+}
+
+.button_box button {
+  left: 50px;
+  position: relative;
+  display: block;
+
+}
+
+div {
+  border: 1px solid black;
+}
+
+.button {
+  position: relative;
+  top: 20px;
+  display: block;
+  text-align:center;
+}
+
+.graph {
+  left: 0px;
+  position: static;
+  display: inline-block;
+  top: 20px;
+
+}
+
+.wrapper {
+  display: inline-flex;
+  position: absolute;
+  right: 10px;
+  left: 10px;
+}

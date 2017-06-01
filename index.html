@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Tree Example</title>
+    <link rel="stylesheet" href="style.css" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF8"> 
+
+    <style>
+
+    
+    @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700);
+
+    body {
+      font-family: "Helvetica Neue";
+      margin: 40px auto;
+      width: 960px;
+      min-height: 2000px;
+    }
+
+    #body {
+      position: relative;
+    }
+
+    footer {
+      padding: 2em 0 1em 0;
+      font-size: 12px;
+    }
+
+    h1 {
+      font-size: 96px;
+      margin-top: .3em;
+      margin-bottom: 0;
+    }
+
+    h1 + h2 {
+      margin-top: 0;
+    }
+
+    h2 {
+      font-weight: 400;
+      font-size: 28px;
+    }
+
+    h1, h2 {
+      font-family: "Yanone Kaffeesatz";
+      text-rendering: optimizeLegibility;
+    }
+
+    #body > p {
+      line-height: 1.5em;
+      width: 640px;
+      text-rendering: optimizeLegibility;
+    }
+
+    #charts {
+      padding: 10px 0;
+    }
+
+    .chart {
+      display: inline-block;
+      height: 151px;
+      margin-bottom: 20px;
+    }
+
+    .reset {
+      padding-left: 1em;
+      font-size: smaller;
+      color: #ccc;
+    }
+
+    .background.bar {
+      fill: #ccc;
+    }
+
+    .foreground.bar {
+      fill: steelblue;
+    }
+
+    .axis path, .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+
+    .axis text {
+      font: 10px sans-serif;
+    }
+
+    .noAxis path, .noAxis line {
+      fill: none;
+      stroke:none;
+      shape-rendering: crispEdges;
+    }
+
+    .brush rect.extent {
+      fill: steelblue;
+      fill-opacity: .125;
+    }
+
+    .brush .resize path {
+      fill: #eee;
+      stroke: #666;
+    }
+
+    #hour-chart {
+      width: 260px;
+    }
+
+    #delay-chart {
+      width: 230px;
+    }
+
+    #distance-chart {
+      width: 420px;
+    }
+
+    #date-chart {
+      width: 920px;
+    }
+
+    #flight-list {
+      min-height: 1024px;
+    }
+
+    #flight-list .date,
+    #flight-list .day {
+      margin-bottom: .4em;
+    }
+
+    #flight-list .flight {
+      line-height: 1.5em;
+      background: #eee;
+      width: 640px;
+      margin-bottom: 1px;
+    }
+
+    #flight-list .time {
+      color: #999;
+    }
+
+    #flight-list .flight div {
+      display: inline-block;
+      width: 100px;
+    }
+
+    #flight-list div.distance,
+    #flight-list div.delay {
+      width: 160px;
+      padding-right: 10px;
+      text-align: right;
+    }
+
+    #flight-list .early {
+      color: green;
+    }
+
+    aside {
+      position: absolute;
+      left: 740px;
+      font-size: smaller;
+      width: 220px;
+    }
+
+
+
+    </style>
+
+  </head>
+
+  <body>
+
+
+<div class= "wrapper" id="wrapper">
+  <div class= "graph" id= "tree"></div>
+  <div class= "button_box" id="buttons">
+      <div class= "button" id="filter_button">
+        <input name="filterButton" 
+                     type="button" 
+                    value="Add Filter" 
+                     />
+      </div>
+      <div class= "button" id="remove_button">
+        <input name="removeButton" 
+                     type="button" 
+                    value="Remove Filter!" />
+      </div>
+      <div class= "button" id="segment_button">
+        <input name="segmentButton" 
+                     type="button" 
+                    value="Toggle segments!" />
+      </div>
+      <div class= "button" id="path_button">
+        <input name="pathButton" 
+                     type="button" 
+                    value="Show only path" />
+      </div>
+      <div class= "button" id="group_button">
+        <input name="groupButton" 
+                     type="button" 
+                    value="Add Partition" />
+      </div>
+      <div class= "button" id="action_button">
+        <input name="actionButton" 
+                     type="button" 
+                    value="Contains actions" />
+      </div>
+  </div>
+  <div class="charts" style="display:none;" id="attributes">
+
+    
+
+    <div class="charts" id="chart_box">
+      <div class="chart" id="len_chart"> 
+        <div class="title"> Length chart </div>
+      </div>
+      <div class="chart" id="duration_chart"> 
+        <div class="title"> Duration chart </div>
+      </div>
+      <div class="chart" id="hour_chart"> 
+          <div class="title"> Start hour chart </div>
+      </div>
+      <div class="chart" id="date_chart"> 
+          <div class="title"> Start Date </div>
+      </div>
+    </div>
+
+    <div class= "charts" id= "list_box">
+      <div class= "chart" id="contains_action">
+      </div>
+    </div>
+
+
+  </div>
+</div>
+
+
+
+<!-- load the d3.js library --> 
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+
+<script src="js/crossfilter.js"></script>
+
+    
+<script>
+
+var node_types = {},
+    filter = {},
+    filter_p = {},
+    segment = {},
+    partition = {},
+    top_level = {};
+
+partition.value = 2;
+partition.shape = "diamond";
+partition.fill = "lightgreen";
+partition.stroke = "lightgreen";
+partition.stroke_width = "1px";
+partition.size = 300;
+
+node_types[partition.value] = partition;
+
+filter.value = 0;
+filter.shape = "triangle-down";
+filter.fill = "lightblue";
+filter.stroke = "lightblue";
+filter.stroke_width = "1px";
+filter.size = 300;
+
+node_types[filter.value] = filter;
+
+filter_p.value = 3;
+filter_p.shape = "triangle-down";
+filter_p.fill = "lightgreen";
+filter_p.stroke = "lightgreen";
+filter_p.stroke_width = "1px";
+filter_p.size = 300;
+
+node_types[filter_p.value] = filter_p;
+
+segment.value = 1;
+segment.shape = "square";
+segment.fill = "lightgray",
+segment.stroke = "lightgray",
+segment.stroke_width = "3px";
+segment.size = 1000;
+
+node_types[segment.value] = segment;
+
+top_level.value = -1;
+top_level.shape = "circle",
+top_level.fill = "black",
+top_level.stroke = "black",
+top_level.stroke_width = "1px";
+top_level.size = 20;
+
+node_types[top_level.value] = top_level;
+
+chart_data = {},
+hour_chart ={},
+start_chart = {},
+duration_chart = {},
+len_chart = {};
+
+chart_data['hour_chart'] = hour_chart;
+chart_data['date_chart'] = start_chart;
+chart_data['duration_chart'] = duration_chart;
+chart_data['len_chart'] = len_chart;
+
+
+
+var margin = {top: 20, right:20, bottom: 20, left: 20},
+    width = 300 - margin.right - margin.left,
+    height = 600 - margin.top - margin.bottom;
+
+var selectedFilter ={},
+    selectedDiv,
+    selectedChar,
+    selectedExtents,
+    new_selection = false;
+
+var dataset = []
+var parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S.%L")
+//var parseTimeDelta = d3.timeParse("%d %H:%M:%S.%L")
+
+var csv_file = "sample_table.csv"; //100K
+//var csv_file = "sample_table1.6M.csv";
+var seq_data;
+d3.csv(csv_file, function(error, data) {
+  if (error) throw error;
+  seq_data = data;
+
+  d3.csv('alphabet1.csv', function(error1, alpha_data) {
+      if (error1) throw error1;
+      data= seq_data;
+
+      data.forEach(function(d){
+
+        d.len = +d.len;
+        d.index = +d.index;
+        d.start_index = +d.start_index;
+        d.end_index = +d.end_index;
+        d.start = parseDate(d.start);
+        d.end = parseDate(d.end);
+        d.dur = d.end -d.start
+
+        //d.duration = parseTimeDelta(d.duration);
+
+
+      });
+
+
+      alphabet = {},
+      alphabet_rev = {};
+      alpha_data.forEach(function(d){
+
+        alphabet[d.Action] = d.Character;
+        alphabet_rev[d.Character] = d.Action
+      })
+
+      console.log('Alphabet: ', alphabet);
+
+
+      var seqs = crossfilter(data),
+          all = seqs.groupAll(),
+          len = seqs.dimension(function(d) {return d.len;}),
+          l = seqs.dimension(function(d) {return d.len;}),
+          //lens = len.group(Math.floor),
+          lens = len.group(function(d) {
+            //return group_count(d);
+            return d;
+          }),
+
+          
+          hour = seqs.dimension(function(d) {return d.start.getHours() + d.start.getMinutes()/60;}),
+          h = seqs.dimension(function(d) {return d.start.getHours() + d.start.getMinutes()/60;}),
+          hours = hour.group(Math.floor),
+          
+
+          start = seqs.dimension(function(d) {return d.start}),
+          start_filter = seqs.dimension(function(d) {return d.start}),
+          starts = start.group(d3.timeDay);
+          
+
+          duration = seqs.dimension(function(d) {return (d.end - d.start)/(1000*60*60)});
+          dur_filter = seqs.dimension(function(d) {return (d.end - d.start)/(1000*60*60)});
+          //durations = duration.group(function(d) {return Math.floor(d/(1000*60*60*24))});
+          durations = duration.group(Math.floor);
+
+          action_strings = seqs.dimension(function(d) {return d.general_actions});
+
+
+          // last = durations.all()[durations.all().length-1].key;
+          // console.log(last);
+
+
+    //console.log(lens.top(Number.POSITIVE_INFINITY).length);
+
+
+    len_chart.dim = l;
+
+    hour_chart.dim = h;
+    start_chart.dim = start_filter;
+    duration_chart.dim = dur_filter;
+
+    len_chart.dims = lens.all();
+    
+    hour_chart.dims = hours.all();
+    start_chart.dims = starts.all();
+    duration_chart.dims = durations.all();
+    
+    d3.select("#filter_button")
+      .on("click", create_filter);
+    d3.select("#group_button")
+      .on("click", create_partition);
+    d3.select("#remove_button")
+      .on("click", remove_filter);
+    d3.select("#segment_button")
+      .on("click", toggle_segments);
+    d3.select("#path_button")
+      .on("click", show_path_only);
+    d3.select("#action_button")
+      .on("click", contains_action);
+
+    var charts = [
+
+          barChart()
+          .dimension(len)
+          .group(lens)
+          .x(d3.scaleLinear()
+          .domain([0, 30])
+          .rangeRound([0, 300])),
+
+          barChart()
+          .dimension(duration)
+          .group(durations)
+          .x(d3.scaleLinear()
+          .domain([0, 30 ])
+          .range([0, 300])),
+
+          barChart()
+          .dimension(hour)
+          .group(hours)
+        .x(d3.scaleLinear()
+          .domain([0, 24])
+          .rangeRound([0, 240])),
+          //.filter([2,10])
+
+        barChart()
+          .dimension(start)
+          .group(starts)
+          .round(d3.timeDay.round)
+        .x(d3.scaleTime()
+          .domain([new Date(2017, 0, 24), new Date(2017, 3, 1)])
+          .rangeRound([0, 300]))
+          //.filter([new Date(2001, 1, 1), new Date(2001, 2, 1)]),
+
+
+    ]
+
+
+    var chart = d3.selectAll(".chart")
+                  .data(charts)
+                  
+
+    renderAll();
+
+
+    var all_charts = d3.selectAll(".chart")
+                  .on('click', function(d) {
+                    update_selected_chart(d3.select(this));
+                    
+                  });
+
+    function update_selected_chart(div) {
+      if (selected_chart)
+        selected_chart.style("background-color", "white" );
+      selected_chart = div;
+      selected_chart.style("background-color", "lightyellow" );
+
+    }
+
+    function render(method) {
+      d3.select(this).call(method);
+    }
+
+    function renderAll() {
+      chart.each(render);
+      
+    }
+
+
+    window.filter = filters => {
+      filters.forEach((d, i) => { charts[i].filter(d); });
+      renderAll();
+    };
+
+    window.reset = function(i) {
+      charts[i].filter(null);
+      renderAll();
+    };
+
+
+    
+
+    function barChart() {
+      if (!barChart.id) barChart.id = 0;
+
+      var margin = {top: 10, right: 10, bottom: 20, left: 50},
+          x,
+          y = d3.scaleLinear().range([100, 0]),
+          id = barChart.id++,
+          axis = d3.axisBottom(),
+          axisY = d3.axisLeft(),
+          brush = d3.brushX(),
+          brushDirty,
+          dimension,
+          group,
+          round;
+
+      
+
+      function chart(div) {
+        var width = x.range()[1],
+           height = y.range()[0];
+
+        brush.extent([[0,0], [width, height]]);
+        
+
+        div.each(function() {
+          var div = d3.select(this),
+              g = div.select("g");
+
+
+
+          // Create the skeletal chart.
+          if (g.empty()) {
+
+
+
+            chart_data[div.attr('id')].id = id;
+            y.domain([0, group.top(1)[0].value]);
+
+            div.select(".title").append("a")
+                .attr("href", "javascript:reset(" + id + ")")
+                .attr("class", "reset")
+                .text("reset")
+                .style("display", "none");
+
+
+            g = div.append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+              .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            g.append("clipPath")
+                .attr("id", "clip-" + id)
+              .append("rect")
+                .attr("width", width)
+                .attr("height", height);
+
+            g.selectAll(".bar")
+                .data(["background", "foreground"])
+              .enter().append("path")
+                .attr("class", function(d) {return d + " bar"; })
+                .datum(group.all());
+
+            g.selectAll(".foreground.bar")
+                .attr("clip-path", "url(#clip-" + id + ")");
+
+            g.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(axis);
+
+
+            g.append("g")
+                .attr("class", "axisY")
+                .call(axisY);
+
+
+            //Initialize the brush component with pretty resize handles.
+            var gBrush = g.append("g").attr("class", "brush").call(brush);
+
+            gBrush.selectAll('.handle--custom')
+              .data([{ type: 'w' }, { type: 'e' }])
+              .enter().append('path')
+                .attr('class', 'brush-handle')
+                .attr('cursor', 'ew-resize')
+                .attr('d', resizePath)
+                .style('display', 'none');
+          }
+
+          if (brushDirty !== false) {
+            const filterVal = brushDirty;
+            brushDirty = false;
+
+            div.select('.title a').style('display', d3.brushSelection(div) ? null : 'none');
+
+            if (!filterVal) {
+              g.call(brush);
+
+              g.selectAll(`#clip-${id} rect`)
+                .attr('x', 0)
+                .attr('width', width);
+
+              g.selectAll('.brush-handle').style('display', 'none');
+              renderAll();
+            } else {
+              const range = filterVal.map(x);
+              brush.move(gBrush, range);
+            }
+          }
+
+          if (new_selection){
+
+              y.domain([0, group.top(1)[0].value]);
+              t1 = g.transition().duration(1500);
+              
+              t1.selectAll(".bar").attr("d", barPath);
+              t1.selectAll(".axisY").call(axisY);
+              
+
+            } else {
+
+              g.selectAll(".bar").attr("d", barPath);
+            }
+          
+
+          
+        });
+
+        function barPath(groups) {
+          var path = [],
+              i = -1,
+              n = groups.length,
+              d;
+
+          // if (typeof x.domain()[1] == "number"){
+          //   n_groups = x.domain()[1];
+          //   bar_width = Math.floor(x.range()[1]/n_groups) -0.05 
+          // }
+          // else
+          //   bar_width = 8;
+          //   //n_groups = n;
+          // ;
+          bar_width = 9;
+          while (++i < n) {
+            d = groups[i];
+            //path.push("M", x(d.key), ",", height, "V", y(d.value), "h9V", height);
+            path.push("M", x(d.key), ",", height, "V", y(d.value), "h" + bar_width + "V", height);
+
+          }
+
+          return path.join("");
+        }
+
+        function resizePath(d) {
+          var e = +(d == "e"),
+              x = e ? 1 : -1,
+              y = height / 3;
+          return "M" + (.5 * x) + "," + y
+              + "A6,6 0 0 " + e + " " + (6.5 * x) + "," + (y + 6)
+              + "V" + (2 * y - 6)
+              + "A6,6 0 0 " + e + " " + (.5 * x) + "," + (2 * y)
+              + "Z"
+              + "M" + (2.5 * x) + "," + (y + 8)
+              + "V" + (2 * y - 8)
+              + "M" + (4.5 * x) + "," + (y + 8)
+              + "V" + (2 * y - 8);
+        }
+      }
+
+      brush.on("start.chart", function() {
+        var div = d3.select(this.parentNode.parentNode.parentNode);
+        update_selected_chart(div);
+        div.select(".title a").style("display", null);
+        selectedDiv = div.attr('id');
+      });
+
+      brush.on('brush.chart', function () {
+        const g = d3.select(this.parentNode);
+        const brushRange = d3.event.selection || d3.brushSelection(this); // attempt to read brush range
+        const xRange = x && x.range(); // attempt to read range from x scale
+        let activeRange = brushRange || xRange; // default to x range if no brush range available
+
+        const hasRange = activeRange &&
+          activeRange.length === 2 &&
+          !isNaN(activeRange[0]) &&
+          !isNaN(activeRange[1]);
+
+        if (!hasRange) return; // quit early if we don't have a valid range
+
+        // calculate current brush extents using x scale
+        let extents = activeRange.map(x.invert);
+
+
+        // if rounding fn supplied, then snap to rounded extents
+        // and move brush rect to reflect rounded range bounds if it was set by user interaction
+        if (round) {
+          extents = extents.map(round);
+          activeRange = extents.map(x);
+
+          if (
+            d3.event.sourceEvent &&
+            d3.event.sourceEvent.type === 'mousemove'
+          ) {
+            d3.select(this).call(brush.move, activeRange);
+          }
+        }
+
+        // move brush handles to start and end of range
+        g.selectAll('.brush-handle')
+          .style('display', null)
+          .attr('transform', (d, i) => `translate(${activeRange[i]}, 0)`);
+
+        // resize sliding window to reflect updated range
+        c = g.select(`#clip-${id} rect`)
+          .attr('x', activeRange[0])
+          .attr('width', activeRange[1] - activeRange[0]);
+
+
+
+        // filter the active dimension to the range extents
+
+    
+        dimension.filterRange(extents);
+        //selectedExtents = extents;
+
+        selectedFilter.div = selectedDiv;
+        selectedFilter.extents = extents;
+        selectedFilter.type = 'range';
+        selectedFilter.size = all.reduceCount().value();
+
+
+
+
+        // re-render the other charts accordingly
+        renderAll();
+      });
+
+
+       brush.on('end.chart', function () {
+        // reset corresponding filter if the brush selection was cleared
+        // (e.g. user "clicked off" the active range)
+        if (!d3.brushSelection(this)) {
+          reset(id);
+        }
+      });
+
+      chart.margin = function(_) {
+        if (!arguments.length) return margin;
+        margin = _;
+        return chart;
+      };
+
+      chart.x = function(_) {
+        if (!arguments.length) return x;
+        x = _;
+        axis.scale(x);
+        axisY.scale(y).ticks(6);
+        return chart;
+      };
+
+      chart.y = function(_) {
+        if (!arguments.length) return y;
+        y = _;
+        return chart;
+      };
+
+      chart.dimension = function(_) {
+        if (!arguments.length) return dimension;
+        dimension = _;
+        return chart;
+      };
+
+      chart.filter = _ => {
+        if (!_) dimension.filterAll();
+        brushDirty = _;
+        return chart;
+      };
+
+      chart.group = function(_) {
+        if (!arguments.length) return group;
+        group = _;
+        return chart;
+      };
+
+      chart.round = function(_) {
+        if (!arguments.length) return round;
+        round = _;
+        return chart;
+      };
+
+      chart.gBrush = () => gBrush;
+
+      return chart;
+    }
+     
+
+    //});
+
+
+
+
+
+
+  var data = [];                        //Initialize empty array
+  for (var i = 0; i < 1000; i++) {           //Loop 25 times
+      //var newNumber = Math.random() * 30;
+      var newNumber = Math.round(Math.random() * 100);  //New random number (0-30)
+      data.push(newNumber);             //Add new number to array
+  }
+
+  //var data = d3.range(1000).map(d3.randomBates(10));
+  //make_histogram(data);
+
+  function group_count(d) {
+    thresholds = [20, 10, 5, 2, 1, 0];
+    //thresholds = [10, 5, 2, 1];
+
+    var index = 0;
+    t = thresholds[index];
+    while (d < t){
+      index = index + 1;
+      t = thresholds[index];
+    }
+    
+    return thresholds[index];
+  }
+
+
+  
+
+  var RECT_W_max = 100,
+      RECT_W_min = 1,
+      RECT_H = 20,
+      DEPTH = 35;
+
+
+  var data0 = [
+      { "name": "Root", "parent": "null", "visible":1, "value":-1},
+      { "name" : "Segment A", "parent":"Root", "value":1, "visible":1 }
+      ];
+
+  total_size = all.reduceCount().value();
+  data0[1].size = total_size;
+
+  wScale = d3.scaleLinear().domain([0,total_size]).range([RECT_W_min, RECT_W_max]);
+
+  //var data = JSON.parse(JSON.stringify(original_data));
+  original_data = JSON.stringify(data0)
+  data = JSON.parse(original_data)
+
+  var treeData = [];
+
+  unflatten(treeData, data);
+
+
+  // ************** Generate the tree diagram  *****************
+  var buttons = d3.select("#buttons")
+
+
+
+
+      
+  var i = 0,
+      duration = 750,
+      root;
+
+  var tree = d3.tree()
+        .size([width, height]);
+
+
+  var svg = d3.select("#tree").append("svg")
+      .attr("width", width + margin.right + margin.left)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+
+
+
+  var selected,
+      selected_chart;
+
+
+
+  size = 1000;
+  root = d3.hierarchy(treeData[0], function(d) { return d.children; })
+  root.x0 = height / 2;
+  root.y0 = 0;
+
+
+  update(root);
+
+
+
+  // setTimeout(function(){
+  //     //toggle_segments(root);
+
+
+  // }, 2000);
+
+
+  d3.select(self.frameElement).style("height", "500px");
+
+
+  //-------------------- FUNCTIONS ---------------------
+
+    function unflatten(treeData, data) {
+        
+        var dataMap = data.reduce(function(map, node) {
+            map[node.name] = node;
+            return map;
+        }, {});
+
+        data.forEach(function(node) {
+         // add to parent
+         var parent = dataMap[node.parent];
+         if (parent) {
+          // create child array if it doesn't exist
+          (parent.children || (parent.children = []))
+           // add node to child array
+           .push(node);
+         } else {
+          // parent is null or missing
+          treeData.push(node);
+         }
+        });
+    }
+
+
+
+    function update(source) {
+
+      //console.log('UPDATING');
+      // Compute the new tree layout.
+      var treeData = tree(root);
+      var nodes = treeData.descendants(),
+          links = treeData.descendants().slice(1);
+
+
+      // Normalize for fixed-depth. Each layer is same distant apart
+      nodes.forEach(function(d) { d.y = d.depth * DEPTH; });
+
+      // Update the nodes…
+      var node = svg.selectAll("g.node")
+          .data(nodes, function(d) {return d.id || (d.id = ++i); });
+
+      // Enter any new nodes at the parent's previous position.
+      var nodeEnter = node.enter().append("g")
+          .attr("class", "node")
+          .attr("transform", function(d) { return "translate(" + source.x0 + "," + source.y0 + ")"; })
+          //.on("dblclick", hide_children)
+          .on("dblclick", filter_partition);
+
+      
+
+      nodeEnter.append("path")
+            .attr('class', 'node')
+            .each( format_nodes)
+            .on("click", select_node);
+
+      nodeEnter.append("text")
+        .attr("dy", ".15em")
+        .attr("y", function(d) { return d.children ? -0 : 0; })
+        .style("font-size", "10px")
+        .style("text-anchor", "middle")
+        .text(function(d) { 
+          if (d.data.value == 1)
+            return d.data.size;
+          else if (d.data.value == 0){
+
+            return d.data.filter_type.type;
+          }
+          // else if (d.data.value == 0){
+               
+          //     f = d.data.filter_type;
+          //     div = f.div;
+          //     type = div.slice(0, div.indexOf('_'));
+          //     ext = f.extents;
+          //     e1 = ext[0];
+          //     e2 = ext[1];
+          //     if ((typeof e1)=="number") {
+          //       e1 = Math.round(e1);
+          //       e2 = Math.round(e2);
+          //     } else {
+          //       console.log(e1);
+          //       e1 = e1.getDate() + '/' + (e1.getMonth()+1) + '/' + e1.getFullYear();
+          //       e2 = e2.getDate() + '/' + (e2.getMonth()+1 )+ '/' + e2.getFullYear();
+          //     }
+          //     return type + ' [' + e1 + ',' + e2 +']';
+          //   }
+          else
+            return ''; });
+      
+
+      // Transition nodes to their new position.
+      var nodeUpdate = nodeEnter.merge(node);
+
+
+      nodeUpdate.transition()
+          .duration(duration)
+          .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+
+
+      nodeUpdate.select("path").each(format_nodes)
+
+
+      // Transition exiting nodes to the parent's new position.
+      var nodeExit = node.exit().transition()
+          .duration(duration)
+          .attr("transform", function(d) { return "translate(" + source.x + "," + source.y + ")"; })
+          .remove();
+
+
+      // Update the links…
+      var link = svg.selectAll("path.link")
+          .data(links, function(d) { return d.id; });
+
+      link.style("opacity", function(d){
+                if(!d.data.visible && !d.children)
+                    return 0;
+                else
+                    return 1;
+                });
+
+      // Enter any new links at the parent's previous position.
+      var linkEnter = link.enter().insert("path", "g")
+          .attr("class", "link")
+          .attr("d", function(d) {
+            var o = {x: source.x0, y: source.y0};
+            return diagonal(o,o);
+          })
+
+      var linkUpdate = linkEnter.merge(link);
+      // Transition links to their new position.
+
+
+
+      linkUpdate.transition()
+          .duration(function(d) {
+                          return duration;
+                    })
+          .attr("d", function(d){return diagonal(d, d.parent)})
+
+      // Transition exiting nodes to the parent's new position.
+      var linkExit = link.exit().transition()
+          .duration(duration)
+          .attr("d", function(d) {
+            var o = {x: source.x, y: source.y};
+             // if(!d.target.visible && !d.target.children)
+             //            return "M0,0";
+             //        else
+                        return diagonal(o,o);
+                    
+            
+          })
+          .remove();
+
+      // Stash the old positions for transition.
+      nodes.forEach(function(d) {
+        d.x0 = d.x;
+        d.y0 = d.y;
+      });
+    }
+
+
+    function diagonal(s, d) {
+
+
+        return "M" + s.x + "," + s.y
+             + "C" + s.x + "," + (s.y + d.y) / 2
+             + " " + d.x + "," +  (s.y + d.y) / 2
+             + " " + d.x + "," + d.y;
+      }
+
+
+
+    // Toggle children on click.
+    function hide_children(d) {
+      if (d.children) {
+        d._children = d.children;
+        d.children = null;
+      } else {
+        d.children = d._children;
+        d._children = null;
+      }
+      update(d);
+    }
+
+    function format_nodes(d, i) {
+
+        d = d.data
+        n = node_types[d.value];
+
+        if (d.visible) 
+          size = n.size;
+        else
+          size = 0;
+
+        shape = n.shape;
+
+        d3.select(this)
+            .attr("d", function(d) {
+                        if (d.value == 1)
+                          return create_rect_path(d);
+                        else
+                          return d3.symbol().size(size).type(function(d) {
+
+                            if (n.shape == "diamond")
+                              return d3.symbolDiamond;
+                            else if (n.shape == "triangle-down")
+                              return d3.symbolTriangle;
+                            else 
+                              return d3.symbolCircle;
+
+                          })
+
+                        ();
+                      })
+            .style("stroke", function(d) { return d.selected ? "black" : n.stroke;})
+            .style("fill", n.fill)
+            .style("stroke-width", n.stroke_width);
+
+
+    }
+
+    function reset_filters() {
+
+      l.filterAll();
+      h.filterAll();
+      hour.filterAll();
+      len.filterAll();
+      action_strings.filterAll();
+      reset(0);
+      reset(1);
+      reset(2);
+
+    }
+    var dim;
+    function select_node(d){
+       if(!selected){
+           selected = d;
+           d.selected = true;
+        } 
+        else {
+           selected.selected = false;
+           update(selected);
+           selected = d;
+           d.selected = true;
+           
+        }
+        console.log("Selected node: ", selected);
+
+        if (selected.data.value == 1) {
+          new_selection = true;
+        
+
+          selected_filters = selected.data.filters;
+          if (dim) {
+              dim.filterAll();
+              reset_filters();
+
+            }
+          if(selected_filters) {
+
+          selected_filters.forEach(function(f){
+              type = f.type;
+
+              if (type == 'range') {
+              
+                var div = f.div;
+                var extents = f.extents;
+
+                current_chart = chart_data[div];
+                dim = current_chart.dim;
+                reset(current_chart.id);
+
+                if (extents)
+                  dim.filter(extents);
+                else
+                  dim.filterExact(null);
+
+              } else if (type == 'contains'){
+
+                dim = action_strings;
+                
+                //char = f.char;
+                char_regex = create_action_regex(f.chars);
+                console.log('CHAR REGEX', char_regex)
+                dim.filterFunction(function(d){
+
+                    //return d.includes(char);
+                    return d.match(char_regex);
+
+                });
+                
+              }
+
+
+              renderAll();
+
+            })
+            
+          }
+          new_selection = false;
+          console.log('The current selection has ' + selected.data.size + ' sequences!' );
+          contains_action();
+
+        }
+
+        update(selected);
+        showDiv();
+
+
+    }
+
+
+
+
+    function showDiv() {
+      d3.select("#attributes").style("display", "block");
+    }
+
+    function add_child_node(d, node_obj) {
+      if (d.children == null) {
+          d.children = [];
+        }
+
+      node_obj.visible = 1;
+
+      id = ++i;
+      new_node = d3.hierarchy(node_obj);
+      new_node.depth = d.depth + 1;
+      new_node.height = d.height;
+      new_node.parent = d;
+      new_node.id = id;
+
+
+      d.children.push(new_node);
+
+      return new_node;
+
+    }
+    var char;
+
+
+    function reduceInitial() {
+      return {
+          count: 0
+      };
+    }
+
+    function reduceAdd(p, v) {
+      if (v.general_actions.includes(char))
+        p.count = p.count + 1;
+      
+      return p;
+
+    }
+
+    function reduceRemove(p, v) {
+      if (v.general_actions.includes(char))
+        p.count = p.count - 1;
+      
+      return p;
+
+    }
+
+    var action_hierarchy = {},
+    current_level;
+
+    action_hierarchy.general_actions = ['addToCart', 'removeFromCart', 'purchase', 'search', 'pageview']
+    current_level = action_hierarchy.general_actions;
+
+
+    function contains_action() {
+      total_size = all.reduceCount().value();  
+      all_matches = [];
+      for(var char_key in alphabet_rev){
+        char = char_key;
+        matches = all.reduce(reduceAdd, reduceRemove, reduceInitial).value(); 
+        
+        if (matches){
+          action = alphabet_rev[char_key];
+          
+          abs_matches = matches.count;
+          //if char_key in current level of hierarchy!
+          
+          if (current_level.includes(action)) {
+          //if (abs_matches > 0){
+            percent_matches = abs_matches*100/total_size;
+            
+            m = { 'action': action, 'char': char_key, 'abs': abs_matches, 'percent': percent_matches, 'not_percent': 100-percent_matches}
+            all_matches.push(m);
+           }
+
+        }
+        
+      }
+
+      
+      all_matches.sort(function(a,b) {return b.abs - a.abs;});
+      
+      update_horizontal_chart(all_matches);
+    }
+   
+      var margin_hc = {top: 20, right: 20, bottom: 30, left: 100},
+      width_hc = 300 - margin_hc.left - margin_hc.right,
+      height_hc = 150 - margin_hc.top - margin_hc.bottom,
+      horizontal_chart = d3.select("#contains_action").append('svg').append("g").attr("transform", "translate(" + margin_hc.left + "," + margin_hc.top + ")");
+
+      
+      console.log('svg width', width_hc);
+      console.log('svg height', height_hc);
+
+      var x_hc = d3.scaleLinear()
+              .rangeRound([0, width_hc]);
+
+      var y_hc = d3.scaleBand()
+              .rangeRound([0, height_hc])
+              .paddingInner(0.1);
+
+      var z_hc = d3.scaleOrdinal()
+          .range(['steelblue', '#dee2e8'])
+
+      var yAxis_hc = d3.axisLeft(y_hc);
+
+    var selected_bar;
+
+    function update_selected_bar(rect){
+      box = d3.select(rect).select(".outer_box")
+                            
+      if (selected_bar)
+        selected_bar.style('stroke', "none");
+
+      selected_bar = box;
+      selected_bar.style("stroke", "black");
+
+
+    }
+
+    function update_horizontal_chart(data){
+
+            //data = all_matches;
+            //var keys = d3.keys(data[0]).filter(function(key) {return key !== "action" && key !== "abs";})
+            var keys = ["percent", "not_percent"];
+
+            z_hc.domain(keys);
+
+            data.forEach(function (d) {
+                var x0 = 0;
+                d.percents = z_hc.domain().map(function (name) { return { name: name, value: d.abs, x0: x0, x1: x0 += +d[name] }; });
+                d.total = d.percents[d.percents.length - 1].x1;
+
+            });
+
+            data.sort(function (a, b) { return b.total - a.total; });
+
+            x_hc.domain([0,100]);
+            y_hc.domain(data.map(function(d){return d.action;
+                })
+            );
+           
+               //drawing chart
+            var bar = horizontal_chart
+                .selectAll("g")
+                    .remove()
+                    .exit()
+                    //.data(d3.stack().keys(keys)(data))
+                    .data(data)
+                    .enter().append("g")
+                    .attr("transform", function (d) { return "translate(0," + y_hc(d.action) + ")"; })
+
+
+                    
+               var bar_enter = bar.selectAll("rect")
+                    .remove()
+                    .exit()
+                    .data(d => d.percents)
+                    .enter();
+
+                  bar_enter.append("rect")
+                        .attr("x", function(d){
+                            return x_hc(d.x0);
+                        })
+                        .attr("height", function(d){
+                            return y_hc.bandwidth();
+                        })
+                        .attr("width", function(d){
+                            return x_hc(d.x1) - x_hc(d.x0);
+                        })
+                        .attr("fill", function(d) {return z_hc(d.name);});
+
+                bar_enter.append("text")
+                    .text(function(d) {
+                          abs = d.value;
+                         value = d.x1 - d.x0;
+                         eligible = (d.name == "percent") && (value >= 0);
+                         return  eligible ? d3.format(".1s")(abs) + ', ' + d3.format(",.0%")(value/100) : ""; 
+                       })
+                    .attr("x", function(d) {
+                      if ((d.x1-d.x0) > 20)
+                        return x_hc(d.x0)+(x_hc(d.x1) - x_hc(d.x0))/2 - 10;
+                      else
+                        return x_hc(d.x1 + 1);
+                    })
+                    .attr("y", y_hc.bandwidth()*3/4)
+                    .style("fill", 'black');
+
+                bar
+                  .on("click", function(d) {
+
+                    selectedFilter.div = 'action_strings';
+                    selectedFilter.char = d.char;
+                    selectedFilter.size = d.abs;
+                    selectedFilter.type = 'contains';
+
+                    selectedChar = d.char;
+                    selectedDiv = 'action_strings';
+                    update_selected_bar(this);
+                    
+
+
+                  })
+
+                bar.append("rect")
+                    .attr("class", "outer_box")
+                    .attr("x", x_hc(0))
+                    .attr("height", function(d){
+                            return y_hc.bandwidth()
+                        })
+                    .attr("width", x_hc(100))
+                    .attr("fill", "none");
+
+
+              horizontal_chart.append('g').attr("class", "noAxis")
+                          .call(yAxis_hc)
+
+            
+
+
+    }
+
+    function create_partition() {
+      if (selected && selected_chart) {
+
+
+        var d = selected,
+            dim,
+            dims;
+
+        name = 'NEW Partition!';
+        partition_data = { 'name': name,
+                     'value': 2,
+                    // 'partition_type': partition
+
+                   };
+        partition_node = add_child_node(d, partition_data);
+
+        chart_id = selected_chart.attr('id');
+
+
+        chart_div = chart_data[chart_id];
+        dim = chart_div.dim;
+        dims = chart_div.dims;
+
+        groups = dim.group(function(d) {
+            return group_count(d);
+          }).all()
+
+        partition = {};
+        partition.div = chart_id;
+        //partition.groups = groups;
+
+        max_key = dims[dims.length-1].key;
+
+        d_filters = d.data.filters;
+
+
+        console.log('GROUPS', groups);
+
+        low_bound = 0;
+
+        
+        for (var i = 0; i < groups.length; i++) {
+          g = groups[i];
+          low_bound = g.key;
+          next = groups[i+1];
+          if (next)
+            high_bound = next.key;
+          else
+            high_bound = max_key;
+          extents = [low_bound, high_bound];
+          size = g.value;
+          
+          if (d_filters)
+            filters = d_filters.slice();
+          else
+            filters = [];
+
+          var filter = {};
+          filter.div = chart_id;
+          filter.extents = extents;
+          filter.type = 'range';
+          filters.push(filter);
+
+          name = 'NEW SEGMENT!'
+          segment_data = { 'name': name,
+                     'value': 1,
+                     'filters': filters,
+                     'size': size
+                   };
+
+          segment_node = add_child_node(partition_node, segment_data);
+
+        }
+
+   
+        update(d);
+        
+      } else {
+        if (!selected)
+          alert('Segment was not selected!');
+        else
+          alert('Please choose range to filter!');
+      } 
+
+
+
+    }
+
+    function update_extents(old_extents, new_extents){
+
+      min = old_extents[0] < new_extents[0] ? old_extents : new_extents;
+      max = min == old_extents ? new_extents : old_extents;
+
+      if (min[1] < max[0])
+        return null
+
+      updated_extents = [max[0], (min[1]< max[1]? min[1]: max[1])];
+
+      return updated_extents
+
+    }
+
+    function create_action_regex(chars){
+      s = '^'
+
+      chars.forEach( function(c){
+        s = s + '(?=.*' + c + ')';
+      })
+
+      s = s + '.*$';
+
+      return s;
+
+
+      //^(?=.*B)(?=.*T).*$
+    }
+    function create_filter() {
+
+      if (selected && selectedDiv) {
+
+        d = selected;
+
+        d_filters = d.data.filters;
+
+        if (d_filters)
+          filters = d_filters.slice();
+        else
+          filters = [];
+
+
+        var filter,
+            foundFilter=false;
+
+        chart_div = selectedFilter.div;
+        
+
+        for( var f = 0; f < filters.length; f++){
+          fil = filters[f];
+          if (fil.div == chart_div){
+            old_filter = fil;
+            foundFilter = true;
+            break;
+          }
+        }
+
+        if (foundFilter){
+          filters.splice(f, 1);
+        }
+
+        //if (!foundFilter){
+        var filter = {};
+        
+        filter.div = chart_div;
+        filters.push(filter);
+        //}
+
+        if (selectedFilter.type == 'range') {
+          if (foundFilter)
+            filter.extents = update_extents(old_filter.extents, selectedFilter.extents);
+          else {
+
+            filter.extents = selectedFilter.extents;
+            
+          }
+          filter.type = 'range';
+          
+        } else if(selectedFilter.type == 'contains') {
+          if (foundFilter){
+              filter.chars = old_filter.chars.slice()
+              filter.chars.push(selectedFilter.char);
+          }
+          else{
+            filter.chars = [selectedFilter.char];
+          }
+          filter.char = selectedFilter.char;
+          filter.type = 'contains';
+        }
+
+        size = selectedFilter.size; 
+
+
+
+        // }
+        
+
+        name = 'NEW Filter!';
+        filter_data = { 'name': name,
+                     'value': 0,
+                     'filter_type': filter
+
+                   };
+
+        filter_node = add_child_node(d, filter_data);
+
+        
+        //console.log('Resulting segment has size: ', size);
+
+        segment_data = { 'name': name,
+                     'value': 1,
+                     'filters': filters,
+                     'size': size
+                   };
+
+        segment_node = add_child_node(filter_node, segment_data);
+
+        selectedExtents = null;
+        selectedChar = null;
+
+        
+        update(d);
+        
+      } else {
+        if (!selected)
+          alert('Segment was not selected!');
+        else
+          alert('Please choose range to filter!');
+      }  
+
+    }
+
+
+    function toggle_segments(d){
+      var treeData = tree(root);
+      var nodes = treeData.descendants();
+
+      nodes.forEach(function(d) {
+            if (d.value == 1)
+                 d.data.visible = 1 - d.data.visible;
+        });
+
+      update(root);
+    }
+
+
+
+    function remove_filter(){
+
+
+      d = selected
+
+      if (d.parent && d.parent.children && d.data.value !=1){
+            console.log('removing ' + d.data.name);
+            d.parent.children.forEach( function(n){
+              if (n.id == d.id){
+                nodeToDelete = n;
+
+              }
+
+            });
+            console.log('node :', nodeToDelete);
+            if (nodeToDelete){
+                d.parent.children = _.without(d.parent.children, nodeToDelete);
+                if(d.parent.children.length==0){
+                  d.parent.children = null;
+                };
+            }
+      } else {
+        alert('Please select a filter to be removed!');
+      } 
+
+      console.log('The parent that removes node', d.parent)
+
+      update(d.parent)
+
+    }
+
+    function filter_partition(d){
+      parent = d.parent;
+
+      if (parent.data.value == 2) {
+        parent.data.value = 3;
+        parent._children = parent.children;
+        parent.children = [];
+        parent.children.push(d);
+      } else if (parent.data.value == 3) {
+        parent.data.value = 2;
+        parent.children = parent._children;
+      }
+      update(parent);
+    }
+
+
+    function create_rect_path(d) {
+        d = d.data;
+
+
+        height = RECT_H; //fixed height
+        //width = RECT_W;
+        width = wScale(d.size)
+
+        //parent_size = d.parent.size
+
+        if (!d.visible) {
+          height = 0;
+          width = 0;
+        }
+
+        return 'M' + (-width/2) + ',' + (-height/2) +
+          'l' + '0,' + height +
+          'l' + width+ ',' + 0 +
+          'l' + '0,' + -height +
+          'l' + -width + ',0';
+
+
+    }
+    var only_path = 0
+
+    var toggleColor = (function(){
+       var currentColor = "white";
+
+        return function(){
+            currentColor = currentColor == "white" ? "magenta" : "white";
+            d3.select(this).style("fill", currentColor);
+        }
+    })();
+
+    var original_color = "white",
+        pressed_color = "lightgray",
+        current_color = original_color;
+
+    function show_path_only() {
+
+      only_path = !only_path;
+
+      current_color = current_color == original_color? pressed_color : original_color;
+      d3.select("#path_button").style("background-color", current_color);
+
+      n = selected;
+
+      while(n.value !=-1) {
+          p = n.parent;
+          if (only_path) {
+            p._children = p.children;
+            p.children = [];
+            p.children.push(n);
+          } else {
+            p.children = p._children;
+          }
+
+          n = p;
+
+
+      }
+
+      update(root);
+
+    }
+
+
+  });
+});
+
+</script>
+    
+  </body>
+</html>
