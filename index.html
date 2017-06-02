@@ -504,7 +504,7 @@ d3.csv(csv_file, function(error, data) {
       var leftover_count = 0;
 
       if (x_max){
-        x_max = x_max - 2;
+        x_max = x_max - 1;
         var idx = groups.length-1;
         grp = groups[idx];
 
@@ -533,13 +533,16 @@ d3.csv(csv_file, function(error, data) {
           axisY = d3.axisLeft(),
           brush = d3.brushX(),
           x_domain_max,
+          x_max,
           brushDirty,
+          leftover_count,
           dim_name,
           dimension,
           group,
           round;
 
       console.log('ID', id);
+
       
 
       function chart(div) {
@@ -565,6 +568,8 @@ d3.csv(csv_file, function(error, data) {
             y.domain([0, group.top(1)[0].value]);
 
             x_domain_max = get_x_limit(group.all(), y);
+            x_max = group.all()[group.all().length-1].key;
+            console.log('max x', x_max);
 
 
            
@@ -595,19 +600,38 @@ d3.csv(csv_file, function(error, data) {
               .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            // leftovers = div.append("svg")
-            //   .attr("height", height + margin.top + margin.bottom)
-            //   .attr("width", "9px")
-
             
             console.log(width)
+            leftover_x = width + margin.right - 18
             g.append("rect")
                     .attr("class", "leftovers")
                     .attr("id", "leftovers")
-                    .attr("x", width + margin.right - 18)
-                    .attr("y", height - leftover_height)
-                    .attr("height", leftover_height)
-                    .attr("width", 9);
+                    .attr("x", leftover_x)
+                    // .attr("y", height - leftover_height)
+                    // .attr("height", leftover_height)
+                    .attr("width", 9)
+                    .on("click", function(d) {
+
+                       var extents = [x_domain_max, x_max+1];
+
+
+                       selectedFilter.div = div.attr('id');
+                       selectedFilter.extents = extents;
+                       selectedFilter.type = 'range';
+                       
+                       leftover_count = reduce_leftover_count(x_domain_max, group.all());
+                       selectedFilter.size = leftover_count
+                      update_selected_bar(d3.select(this));
+                    })
+            g.append("text")
+              .attr("y", height+2)
+              .attr("x", leftover_x)
+              .attr("dy", "1em")
+              .style("text-anchor", "left")
+              .style("font-size", "8px")
+              .style("fill","black")
+              .text(function(d) { return x_domain_max? "LO" : "";});
+
 
             g.append("clipPath")
                 .attr("id", "clip-" + id)
@@ -691,16 +715,25 @@ d3.csv(csv_file, function(error, data) {
           }
 
           var leftover_count = reduce_leftover_count(x_domain_max, group.all());
-          var leftover_height = 100 - y(leftover_count);
+          //var leftover_height = 100 - y(leftover_count);
 
 
           if (new_selection){
 
-              y.domain([0, group.top(1)[0].value]);
+              y_max = group.top(1)[0].value;
+              new_y_max = leftover_count > y_max ? leftover_count : y_max;
+
+              y.domain([0, new_y_max]);
               t1 = g.transition().duration(1000);
               
               t1.selectAll(".bar").attr("d", barPath);
               t1.selectAll(".axisY").call(axisY);
+
+              if (x_domain_max){
+                t1.select('#leftovers')
+                  .attr("height", height - y(leftover_count))
+                  .attr("y", y(leftover_count));
+              }
 
 
               
@@ -712,8 +745,8 @@ d3.csv(csv_file, function(error, data) {
               g.selectAll(".bar").attr("d", barPath);
               if (x_domain_max){
                 g.select('#leftovers')
-                  .attr("height", leftover_height)
-                  .attr("y", height - leftover_height);
+                  .attr("height", height - y(leftover_count))
+                  .attr("y", y(leftover_count));
               }
               
             }
@@ -776,7 +809,7 @@ d3.csv(csv_file, function(error, data) {
       brush.on("start.chart", function() {
         var div = d3.select(this.parentNode.parentNode.parentNode);
         update_selected_chart(div);
-        //reset_filters();
+        reset_filters(id);
         div.select(".title a").style("display", null);
         selectedDiv = div.attr('id');
       });
@@ -1238,17 +1271,22 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    function reset_filters() {
+    function reset_filters(exception) {
 
       l.filterAll();
       h.filterAll();
       hour.filterAll();
       len.filterAll();
       action_strings.filterAll();
-      reset(0);
-      reset(1);
-      reset(2);
-      reset(3);
+
+      max_id = 3
+      exception = exception || -1;
+      for(var i=0; i<= max_id; i++){
+        if (i != exception)
+          reset(i);
+
+      }
+
 
     }
     var dim;
@@ -1270,13 +1308,15 @@ d3.csv(csv_file, function(error, data) {
           new_selection = true;
         
 
-          selected_filters = selected.data.filters;
+          var selected_filters = selected.data.filters;
           if (dim) {
               dim.filterAll();
               reset_filters();
 
             }
           if(selected_filters) {
+
+          console.log('SELECTED FILTERS', selected_filters);
 
           selected_filters.forEach(function(f){
               type = f.type;
@@ -1310,7 +1350,7 @@ d3.csv(csv_file, function(error, data) {
                 });
                 
               }
-
+              console.log('filtered-size', all.reduceCount().value());
               renderAll();
 
             })
@@ -1441,7 +1481,8 @@ d3.csv(csv_file, function(error, data) {
     var selected_bar;
 
     function update_selected_bar(rect){
-      box = d3.select(rect).select(".outer_box")
+      //box = d3.select(rect).select(".outer_box")
+      var box = rect;
                             
       if (selected_bar)
         selected_bar.style('stroke', "none");
@@ -1528,9 +1569,10 @@ d3.csv(csv_file, function(error, data) {
                     selectedFilter.size = d.abs;
                     selectedFilter.type = 'contains';
 
-                    selectedChar = d.char;
-                    selectedDiv = 'action_strings';
-                    update_selected_bar(this);
+                    // selectedChar = d.char;
+                    // selectedDiv = 'action_strings';
+                    //update_selected_bar(this);
+                    update_selected_bar(d3.select(this).select('.outer_box'));
                     
 
 
@@ -1588,9 +1630,6 @@ d3.csv(csv_file, function(error, data) {
         max_key = dims[dims.length-1].key;
 
         d_filters = d.data.filters;
-
-
-        console.log('GROUPS', groups);
 
         low_bound = 0;
 
@@ -1672,7 +1711,7 @@ d3.csv(csv_file, function(error, data) {
     }
     function create_filter() {
 
-      if (selected && selectedDiv) {
+      if (selected && selectedFilter) {
 
         d = selected;
 
