@@ -600,11 +600,11 @@ d3.csv(csv_file, function(error, data) {
             //   .attr("width", "9px")
 
             
-
+            console.log(width)
             g.append("rect")
                     .attr("class", "leftovers")
                     .attr("id", "leftovers")
-                    .attr("x", width + 18)
+                    .attr("x", width + margin.right - 18)
                     .attr("y", height - leftover_height)
                     .attr("height", leftover_height)
                     .attr("width", 9);
@@ -776,7 +776,7 @@ d3.csv(csv_file, function(error, data) {
       brush.on("start.chart", function() {
         var div = d3.select(this.parentNode.parentNode.parentNode);
         update_selected_chart(div);
-        reset_filters();
+        //reset_filters();
         div.select(".title a").style("display", null);
         selectedDiv = div.attr('id');
       });
