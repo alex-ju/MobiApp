@@ -82,7 +82,7 @@
         fill: steelblue;
       }
 
-      .partition {
+      .partition rect{
         fill: red;
       }
 
@@ -481,33 +481,53 @@ d3.csv(csv_file, function(error, data) {
 
     function add_partition_bar(x_location) {
 
-      range_bar.append('rect')
+
+      
+      var range_partition = range_bar.selectAll('g.partition')
+                                .data(partitions)
+                                .enter()
+                                .append('g')
+                                .attr('class', 'partition')
+                                // .attr("transform", function(d) { return "translate(" + d.x + "," + 0 + ")"; })
+                                .call(d3.drag()
+                                  .on("start", dragstarted)
+                                  .on("drag", dragged)
+                                  .on("end", dragended));
+
+      range_partition.append('rect')
       .attr('class', 'partition')
       .attr('width', 5)
       .attr('height', 20)
-      .attr('x', x_location)
+      .attr('x', function(d){console.log(d); return d.x})
       .attr('y', -10)
-      .call(d3.drag()
-          .on("start", dragstarted)
-          .on("drag", dragged)
-          .on("end", dragended));
+      
+      range_partition.append('text')
+        .attr("dy", ".15em")
+        .attr("y", function(d) { return 10; })
+        .attr('x', function(d){console.log(d); return d.x})
+        .style("font-size", "10px")
+        .style("fill", "black")
+        .style("text-anchor", "middle")
+        .text(function(d) { return d.x})
 
       function dragstarted(d) {
         d3.select(this).raise().classed("active", true);
       }
 
       function dragged(d) {
-        d3.select(this).attr("x", function(d)  {
-          console.log(d);
-          var event = d3.event.x;
-          var x_loc = event;
-          if (event < 0)
-            x_loc = 0;
-          else if (event > fv_width)
-            x_loc = fv_width - 5;
-          
-            return x_loc;
-        });
+        console.log(d);
+        var event = d3.event.x;
+        var x_loc = event;
+        if (event < 0)
+          x_loc = 0;
+        else if (event > fv_width)
+          x_loc = fv_width - 5;
+
+        console.log(x_loc);
+        d3.select(this).select("rect").attr("x", function(d)  {return d.x = x_loc;});
+        d3.select(this).select("text")
+            .text(function(d) {return d.x})
+            .attr("x", function(d)  {return d.x = x_loc;});
       }
 
       function dragended(d) {
@@ -537,6 +557,9 @@ d3.csv(csv_file, function(error, data) {
 
         add_partition_bar(fv_width*0.25);
         add_partition_bar(fv_width*0.75);
+
+        partition_bars = d3.selectAll(".partition")
+
         
  
 
