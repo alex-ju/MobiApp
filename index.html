@@ -83,7 +83,7 @@
       }
 
       .partition rect{
-        fill: red;
+        fill: steelblue;
       }
 
       .axis path, .axis line {
@@ -169,7 +169,7 @@
                      type="button" 
                     value="Show only path" />
       </div>
-      <div class= "button" id="group_button">
+      <div class= "button" id="partition_button">
         <input name="groupButton" 
                      type="button" 
                     value="Add Partition" />
@@ -181,13 +181,14 @@
       </div>
   </div>
   <div class="charts" style="display:none;" id="attributes">
-    <div class="charts" id="partition_view"> 
+
+    <div class="charts" style="display:none;" id="partition_view"> 
       <div class= "button" id="addPartition_button">
           <input name="addPartitionButton" 
                        type="button" 
                       value="Add Partition" />
         </div>
-      <div class= "button" id="removePartition_button">
+      <div class= "button"  id="removePartition_button">
         <input name="removePartitionButton" 
                      type="button" 
                     value="Remove Partition" />
@@ -408,8 +409,8 @@ d3.csv(csv_file, function(error, data) {
     
     d3.select("#filter_button")
       .on("click", create_filter);
-    d3.select("#group_button")
-      .on("click", update_partition_view);
+    d3.select("#partition_button")
+      .on("click", add_partition);
     d3.select("#remove_button")
       .on("click", remove_filter);
     d3.select("#segment_button")
@@ -512,7 +513,7 @@ d3.csv(csv_file, function(error, data) {
       if (selected_partition_bar){
         selected_partition_bar.value = value;
         selected_partition_bar.x = x_range(value);
-        update_partition_bars()
+        update_partition_bars();
       }else {
         alert('Select partition bar first');
       }
@@ -520,7 +521,10 @@ d3.csv(csv_file, function(error, data) {
     }
     function add_partition_bar(x_location){
       x_location = x_location || 0;
-      partitions.push({'id': barId++, 'x': x_location, 'value': x_range.invert(x_location)});
+      //artitions.forEach(function(p){p.selected = false;})
+      var new_partition = {'id': barId++, 'x': x_location, 'value': x_range.invert(x_location)}
+      select_partition_bar(new_partition);
+      partitions.push(new_partition);
       update_partition_bars();
 
     }
@@ -570,19 +574,21 @@ d3.csv(csv_file, function(error, data) {
                                   .on("start", dragstarted)
                                   .on("drag", dragged)
                                   .on("end", dragended));
+      var partition_width = 4,
+          partition_height = 30;
 
       range_partition.append('rect')
       .attr('class', 'partition')
-      .attr('width', 5)
-      .attr('height', 20)
+      .attr('width', partition_width)
+      .attr('height', partition_height)
       .attr('x', function(d){return d.x})
-      .attr('y', -10)
+      .attr('y', -(partition_height/2))
       .attr('stroke', function(d) { return d.selected? 'black' : 'none' })
       .on('click', select_partition_bar)
       
       range_partition.append('text')
         .attr("dy", ".15em")
-        .attr("y", function(d) { return -13; })
+        .attr("y", function(d) { return -(partition_height/2)-3; })
         .attr('x', function(d){return d.x + 2})
         .style("font-size", "10px")
         .style("fill", "black")
@@ -611,6 +617,10 @@ d3.csv(csv_file, function(error, data) {
         else if (event > fv_width)
           x_loc = fv_width;
 
+        if (typeof x_range.domain()[0] == 'number'){
+          x_loc = x_range(Math.round(x_range.invert(x_loc)));
+        }
+
         d3.select(this).select("rect").attr("x", function(d)  {return d.x = x_loc;});
         d3.select(this).select("text")
             .text(function(d) {
@@ -634,6 +644,8 @@ d3.csv(csv_file, function(error, data) {
     
 
     function update_partition_view(){
+
+     
 
       if (chart_range){
         console.log('CHART RANGE', chart_range);
@@ -1842,7 +1854,7 @@ d3.csv(csv_file, function(error, data) {
         name = 'NEW Partition!';
         partition_data = { 'name': name,
                      'value': 2,
-                    // 'partition_type': partition
+                     'thresholds': thresholds.slice()
 
                    };
         partition_node = add_child_node(d, partition_data);
@@ -2148,6 +2160,11 @@ d3.csv(csv_file, function(error, data) {
     var original_color = "white",
         pressed_color = "lightgray",
         current_color = original_color;
+
+    function add_partition() {
+      d3.select("#partition_view").style("display", "block");
+      update_partition_view();
+    }
 
     function show_path_only() {
 
