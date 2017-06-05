@@ -10,137 +10,134 @@
     <style>
 
     
-    @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700);
+      @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700);
 
-    body {
-      font-family: "Helvetica Neue";
-      /*margin: 40px auto;*/
-      width: 960px;
-      min-height: 2000px;
-    }
+      body {
+        font-family: "Helvetica Neue";
+        /*margin: 40px auto;*/
+        width: 960px;
+        min-height: 2000px;
+      }
 
-    #body {
-      position: relative;
-    }
+      #body {
+        position: relative;
+      }
 
-    text {
+      text {
 
-      font: 10px sans-serif;
-    }
+        font: 10px sans-serif;
+      }
 
-/*    footer {
-      padding: 2em 0 1em 0;
-      font-size: 12px;
-    }*/
+      h1 {
+        font-size: 96px;
+        margin-top: .3em;
+        margin-bottom: 0;
+      }
 
-    h1 {
-      font-size: 96px;
-      margin-top: .3em;
-      margin-bottom: 0;
-    }
+      h1 + h2 {
+        margin-top: 0;
+      }
 
-    h1 + h2 {
-      margin-top: 0;
-    }
+      h2 {
+        font-weight: 400;
+        font-size: 28px;
+      }
 
-    h2 {
-      font-weight: 400;
-      font-size: 28px;
-    }
+      h1, h2 {
+        font-family: "Yanone Kaffeesatz";
+        text-rendering: optimizeLegibility;
+      }
 
-    h1, h2 {
-      font-family: "Yanone Kaffeesatz";
-      text-rendering: optimizeLegibility;
-    }
+      #body > p {
+        line-height: 1.5em;
+        width: 640px;
+        text-rendering: optimizeLegibility;
+      }
 
-    #body > p {
-      line-height: 1.5em;
-      width: 640px;
-      text-rendering: optimizeLegibility;
-    }
+      #charts {
+        padding: 2px 0;
+      }
 
-    #charts {
-      padding: 2px 0;
-    }
+      .leftovers {
+        fill: gray;
+      }
 
-    .leftovers {
-      fill: gray;
-    }
+      .chart {
+        display: inline-block;
+        /*height: 151px;*/
+        margin-bottom: 10px;
+      }
 
-    .chart {
-      display: inline-block;
-      /*height: 151px;*/
-      margin-bottom: 10px;
-    }
+      .reset {
+        padding-left: 1em;
+        font-size: smaller;
+        color: #ccc;
+      }
 
-    .reset {
-      padding-left: 1em;
-      font-size: smaller;
-      color: #ccc;
-    }
+      .background.bar {
+        fill: #ccc;
+      }
 
-    .background.bar {
-      fill: #ccc;
-    }
+      .foreground.bar {
+        fill: steelblue;
+      }
 
-    .foreground.bar {
-      fill: steelblue;
-    }
+      .partition {
+        fill: red;
+      }
 
-    .axis path, .axis line {
-      fill: none;
-      stroke: #000;
-      shape-rendering: crispEdges;
-    }
+      .axis path, .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
 
-/*    .axis text {
-      font: 10px sans-serif;
-    }
-*/
-    .axisY path, .axisY line {
-      fill: none;
-      stroke: #000;
-      shape-rendering: crispEdges;
-    }
+        /*    .axis text {
+              font: 10px sans-serif;
+            }
+        */
+      .axisY path, .axisY line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
 
-/*    .axisY text {
-      font: 10px sans-serif;
-    }
-*/
+        /*    .axisY text {
+              font: 10px sans-serif;
+            }
+        */
 
-    .noAxis path, .noAxis line {
-      fill: none;
-      stroke:none;
-      shape-rendering: crispEdges;
-    }
+      .noAxis path, .noAxis line {
+        fill: none;
+        stroke:none;
+        shape-rendering: crispEdges;
+      }
 
-    .brush rect.extent {
-      fill: steelblue;
-      fill-opacity: .125;
-    }
+      .brush rect.extent {
+        fill: steelblue;
+        fill-opacity: .125;
+      }
 
-    .brush .resize path {
-      fill: #eee;
-      stroke: #666;
-    }
+      .brush .resize path {
+        fill: #eee;
+        stroke: #666;
+      }
 
-    #hour-chart {
-      width: 260px;
-    }
+      #hour-chart {
+        width: 260px;
+      }
 
-    #delay-chart {
-      width: 230px;
-    }
+      #delay-chart {
+        width: 230px;
+      }
 
-    #distance-chart {
-      width: 420px;
-    }
+      #distance-chart {
+        width: 420px;
+      }
 
-    #date-chart {
-      width: 920px;
-    }
-
-
+      #date-chart {
+        width: 920px;
+      }
     </style>
 
   </head>
@@ -184,6 +181,13 @@
       </div>
   </div>
   <div class="charts" style="display:none;" id="attributes">
+    <div class="charts" id="filter_view"> 
+    <div class= "button" id="addPartition_button">
+        <input name="addPartitionButton" 
+                     type="button" 
+                    value="Add Partition" />
+      </div>
+    </div>
 
     
 
@@ -216,96 +220,102 @@
 <!-- load the d3.js library --> 
 <script src="http://d3js.org/d3.v4.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 
 <script src="js/crossfilter.js"></script>
+<!-- <script src="dist/rangebar.js"></script> -->
 
     
 <script>
 
-console.log('scripting')
+$(document).ready(function(){
 
-var node_types = {},
-    filter = {},
-    filter_p = {},
-    segment = {},
-    partition = {},
-    top_level = {};
+console.log(document);
 
-partition.value = 2;
-partition.shape = "diamond";
-partition.fill = "lightgreen";
-partition.stroke = "lightgreen";
-partition.stroke_width = "1px";
-partition.size = 300;
+  var node_types = {},
+      filter = {},
+      filter_p = {},
+      segment = {},
+      partition = {},
+      top_level = {};
 
-node_types[partition.value] = partition;
+  partition.value = 2;
+  partition.shape = "diamond";
+  partition.fill = "lightgreen";
+  partition.stroke = "lightgreen";
+  partition.stroke_width = "1px";
+  partition.size = 300;
 
-filter.value = 0;
-filter.shape = "triangle-down";
-filter.fill = "lightblue";
-filter.stroke = "lightblue";
-filter.stroke_width = "1px";
-filter.size = 300;
+  node_types[partition.value] = partition;
 
-node_types[filter.value] = filter;
+  filter.value = 0;
+  filter.shape = "triangle-down";
+  filter.fill = "lightblue";
+  filter.stroke = "lightblue";
+  filter.stroke_width = "1px";
+  filter.size = 300;
 
-filter_p.value = 3;
-filter_p.shape = "triangle-down";
-filter_p.fill = "lightgreen";
-filter_p.stroke = "lightgreen";
-filter_p.stroke_width = "1px";
-filter_p.size = 300;
+  node_types[filter.value] = filter;
 
-node_types[filter_p.value] = filter_p;
+  filter_p.value = 3;
+  filter_p.shape = "triangle-down";
+  filter_p.fill = "lightgreen";
+  filter_p.stroke = "lightgreen";
+  filter_p.stroke_width = "1px";
+  filter_p.size = 300;
 
-segment.value = 1;
-segment.shape = "square";
-segment.fill = "lightgray",
-segment.stroke = "lightgray",
-segment.stroke_width = "3px";
-segment.size = 1000;
+  node_types[filter_p.value] = filter_p;
 
-node_types[segment.value] = segment;
+  segment.value = 1;
+  segment.shape = "square";
+  segment.fill = "lightgray",
+  segment.stroke = "lightgray",
+  segment.stroke_width = "3px";
+  segment.size = 1000;
 
-top_level.value = -1;
-top_level.shape = "circle",
-top_level.fill = "black",
-top_level.stroke = "black",
-top_level.stroke_width = "1px";
-top_level.size = 20;
+  node_types[segment.value] = segment;
 
-node_types[top_level.value] = top_level;
+  top_level.value = -1;
+  top_level.shape = "circle",
+  top_level.fill = "black",
+  top_level.stroke = "black",
+  top_level.stroke_width = "1px";
+  top_level.size = 20;
 
-chart_data = {},
-hour_chart ={},
-start_chart = {},
-duration_chart = {},
-len_chart = {};
+  node_types[top_level.value] = top_level;
 
-chart_data['hour_chart'] = hour_chart;
-chart_data['date_chart'] = start_chart;
-chart_data['duration_chart'] = duration_chart;
-chart_data['len_chart'] = len_chart;
+  chart_data = {},
+  hour_chart ={},
+  start_chart = {},
+  duration_chart = {},
+  len_chart = {};
+
+  chart_data['hour_chart'] = hour_chart;
+  chart_data['date_chart'] = start_chart;
+  chart_data['duration_chart'] = duration_chart;
+  chart_data['len_chart'] = len_chart;
 
 
 
-var margin = {top: 20, right:20, bottom: 20, left: 20},
-    width = 300 - margin.right - margin.left,
-    height = 600 - margin.top - margin.bottom;
+  var margin = {top: 20, right:20, bottom: 20, left: 20},
+      width = 300 - margin.right - margin.left,
+      height = 600 - margin.top - margin.bottom;
 
-var selectedFilter ={},
-    selectedDiv,
-    selectedChar,
-    selectedExtents,
-    new_selection = false;
+  var selectedFilter ={},
+      selectedDiv,
+      selectedChar,
+      selectedExtents,
+      new_selection = false;
 
-var dataset = []
-var parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S.%L")
-//var parseTimeDelta = d3.timeParse("%d %H:%M:%S.%L")
+  var dataset = []
+  var parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S.%L")
+  //var parseTimeDelta = d3.timeParse("%d %H:%M:%S.%L")
 
-var csv_file = "sample_table.csv"; //100K
-//var csv_file = "sample_table1.6M.csv";
-var seq_data;
+  var csv_file = "sample_table.csv"; //100K
+  //var csv_file = "sample_table1.6M.csv";
+  var seq_data;
+
+
 d3.csv(csv_file, function(error, data) {
   if (error) throw error;
   seq_data = data;
@@ -357,17 +367,12 @@ d3.csv(csv_file, function(error, data) {
           start_filter = seqs.dimension(function(d) {return d.start}),
           starts = start.group(d3.timeDay);
           
-
-          duration = seqs.dimension(function(d) {return (d.end - d.start)/(1000*60*60)});
-          dur_filter = seqs.dimension(function(d) {return (d.end - d.start)/(1000*60*60)});
-          //durations = duration.group(function(d) {return Math.floor(d/(1000*60*60*24))});
+          interval = 1000*60*60*24
+          duration = seqs.dimension(function(d) {return (d.end - d.start)/(interval)});
+          dur_filter = seqs.dimension(function(d) {return (d.end - d.start)/(interval)});
           durations = duration.group(Math.floor);
 
           action_strings = seqs.dimension(function(d) {return d.general_actions});
-
-
-          // last = durations.all()[durations.all().length-1].key;
-          // console.log(last);
 
 
     //console.log(lens.top(Number.POSITIVE_INFINITY).length);
@@ -440,16 +445,109 @@ d3.csv(csv_file, function(error, data) {
 
     var chart = d3.selectAll(".chart")
                   .data(charts)
-                  
-
-    renderAll();
-
-
+    
     var all_charts = d3.selectAll(".chart")
                   .on('click', function(d) {
+                    
                     update_selected_chart(d3.select(this));
+                    d3.select(this).call(d);
+                    console.log(chart_range);
                     
                   });
+
+                 
+    renderAll();
+
+    var fv_margin = {top: 20, right:20, bottom: 20, left: 20},
+      fv_width = 500 - fv_margin.right - fv_margin.left,
+      fv_height = 200 - fv_margin.top - fv_margin.bottom;
+
+    var fv_svg = d3.select("#filter_view")
+                    .append("svg")
+                    .attr("width", fv_width + fv_margin.left + fv_margin.right)
+                    .attr("height", fv_height + fv_margin.top + fv_margin.bottom)
+                    //.attr("transform", "translate(" + fv_margin.left + "," + fv_margin.top + ")");
+                    
+        filter_view = fv_svg.append("g")
+                      .attr("transform", "translate(" + fv_margin.left + "," + fv_margin.top + ")");
+
+      
+    range_bar = filter_view.append("g")
+      .attr("transform", "translate(" + margin.left + "," + fv_height/2 +")")
+      .attr("class", "axis")
+
+    partitions = [{'x':fv_width*0.25}, {'x':fv_width*0.75}]
+
+
+    function add_partition_bar(x_location) {
+
+      range_bar.append('rect')
+      .attr('class', 'partition')
+      .attr('width', 5)
+      .attr('height', 20)
+      .attr('x', x_location)
+      .attr('y', -10)
+      .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+
+      function dragstarted(d) {
+        d3.select(this).raise().classed("active", true);
+      }
+
+      function dragged(d) {
+        d3.select(this).attr("x", function(d)  {
+          console.log(d);
+          var event = d3.event.x;
+          var x_loc = event;
+          if (event < 0)
+            x_loc = 0;
+          else if (event > fv_width)
+            x_loc = fv_width - 5;
+          
+            return x_loc;
+        });
+      }
+
+      function dragended(d) {
+        d3.select(this).classed("active", false);
+      }
+
+    }
+
+
+
+    
+
+    function update_filter_view(){
+
+      if (chart_range){
+        if(typeof chart_range[0] == "number")
+          x_range = d3.scaleLinear().range([0,fv_width])
+        else
+          x_range = d3.scaleTime().range([0,fv_width])
+        
+        range_axis = d3.axisBottom(x_range)
+                    .ticks(5)  
+        x_range.domain(chart_range);
+        range_bar.call(range_axis);
+
+        d3.selectAll(".partition").remove();
+
+        add_partition_bar(fv_width*0.25);
+        add_partition_bar(fv_width*0.75);
+        
+ 
+
+      }
+
+      
+
+    }
+
+    
+
 
     function update_selected_chart(div) {
       if (selected_chart)
@@ -525,7 +623,7 @@ d3.csv(csv_file, function(error, data) {
     function barChart() {
       if (!barChart.id) barChart.id = 0;
 
-      var margin = {top: 10, right: 50, bottom: 35, left: 55},
+      var margin = {top: 10, right: 13, bottom: 35, left: 55},
           x,
           y = d3.scaleLinear().range([100, 0]),
           id = barChart.id++,
@@ -534,6 +632,7 @@ d3.csv(csv_file, function(error, data) {
           brush = d3.brushX(),
           x_domain_max,
           x_max,
+          x_min,
           brushDirty,
           leftover_count,
           dim_name,
@@ -556,9 +655,6 @@ d3.csv(csv_file, function(error, data) {
           var div = d3.select(this),
               g = div.select("g");
 
-          
-
-
 
 
           // Create the skeletal chart.
@@ -569,15 +665,15 @@ d3.csv(csv_file, function(error, data) {
 
             x_domain_max = get_x_limit(group.all(), y);
             x_max = group.all()[group.all().length-1].key;
-            console.log('max x', x_max);
-
-
-           
-            
-            
+            x_min = group.all()[0].key;
+      
             if (x_domain_max){
               x.domain([x.domain()[0], x_domain_max]);
               x.range([0, x_domain_max*10])
+
+              width = x.range()[1];
+              brush.extent([[0,0], [width, height]]);
+              margin.right = 30;
               
               if (x_domain_max < 5)
                 axis.ticks(x_domain_max);
@@ -601,7 +697,7 @@ d3.csv(csv_file, function(error, data) {
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
             
-            console.log(width)
+
             leftover_x = width + margin.right - 18
             g.append("rect")
                     .attr("class", "leftovers")
@@ -717,6 +813,7 @@ d3.csv(csv_file, function(error, data) {
           var leftover_count = reduce_leftover_count(x_domain_max, group.all());
           //var leftover_height = 100 - y(leftover_count);
 
+          chart_range = [x_min, x_max]
 
           if (new_selection){
 
@@ -809,7 +906,7 @@ d3.csv(csv_file, function(error, data) {
       brush.on("start.chart", function() {
         var div = d3.select(this.parentNode.parentNode.parentNode);
         update_selected_chart(div);
-        reset_filters(id);
+        //reset_filters(id);
         div.select(".title a").style("display", null);
         selectedDiv = div.attr('id');
       });
@@ -1025,7 +1122,8 @@ d3.csv(csv_file, function(error, data) {
 
 
   var selected,
-      selected_chart;
+      selected_chart,
+      chart_range;
 
 
 
@@ -1599,6 +1697,7 @@ d3.csv(csv_file, function(error, data) {
     function create_partition() {
       if (selected && selected_chart) {
 
+        update_filter_view()
 
         var d = selected,
             dim,
@@ -1943,6 +2042,8 @@ d3.csv(csv_file, function(error, data) {
 
 
   });
+});
+
 });
 
 </script>
