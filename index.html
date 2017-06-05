@@ -181,11 +181,25 @@
       </div>
   </div>
   <div class="charts" style="display:none;" id="attributes">
-    <div class="charts" id="filter_view"> 
-    <div class= "button" id="addPartition_button">
-        <input name="addPartitionButton" 
+    <div class="charts" id="partition_view"> 
+      <div class= "button" id="addPartition_button">
+          <input name="addPartitionButton" 
+                       type="button" 
+                      value="Add Partition" />
+        </div>
+      <div class= "button" id="removePartition_button">
+        <input name="removePartitionButton" 
                      type="button" 
-                    value="Add Partition" />
+                    value="Remove Partition" />
+      </div>
+      <div class= "button" id="applyPartition_button">
+        <input name="applyPartitionButton" 
+                     type="button" 
+                    value="Apply Partition" />
+      </div>
+      
+      <div class= "button" id="input_partition_value">
+          <input type="text" id="partition_value">
       </div>
     </div>
 
@@ -305,7 +319,8 @@ console.log(document);
       selectedDiv,
       selectedChar,
       selectedExtents,
-      new_selection = false;
+      new_selection = false.
+      thresholds = [20, 10, 5, 2, 1, 0];
 
   var dataset = []
   var parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S.%L")
@@ -367,7 +382,7 @@ d3.csv(csv_file, function(error, data) {
           start_filter = seqs.dimension(function(d) {return d.start}),
           starts = start.group(d3.timeDay);
           
-          interval = 1000*60*60*24
+          interval = 1000*60*60
           duration = seqs.dimension(function(d) {return (d.end - d.start)/(interval)});
           dur_filter = seqs.dimension(function(d) {return (d.end - d.start)/(interval)});
           durations = duration.group(Math.floor);
@@ -394,7 +409,7 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#filter_button")
       .on("click", create_filter);
     d3.select("#group_button")
-      .on("click", create_partition);
+      .on("click", update_partition_view);
     d3.select("#remove_button")
       .on("click", remove_filter);
     d3.select("#segment_button")
@@ -403,6 +418,12 @@ d3.csv(csv_file, function(error, data) {
       .on("click", show_path_only);
     d3.select("#action_button")
       .on("click", contains_action);
+    d3.select("#addPartition_button")
+      .on("click", add_partition_bar);
+    d3.select("#removePartition_button")
+      .on("click", remove_partition_bar);
+    d3.select("#applyPartition_button")
+      .on("click", create_partition);
 
     var charts = [
 
@@ -451,7 +472,7 @@ d3.csv(csv_file, function(error, data) {
                     
                     update_selected_chart(d3.select(this));
                     d3.select(this).call(d);
-                    console.log(chart_range);
+                    update_partition_view();
                     
                   });
 
@@ -462,27 +483,83 @@ d3.csv(csv_file, function(error, data) {
       fv_width = 500 - fv_margin.right - fv_margin.left,
       fv_height = 200 - fv_margin.top - fv_margin.bottom;
 
-    var fv_svg = d3.select("#filter_view")
+    var fv_svg = d3.select("#partition_view")
                     .append("svg")
                     .attr("width", fv_width + fv_margin.left + fv_margin.right)
                     .attr("height", fv_height + fv_margin.top + fv_margin.bottom)
                     //.attr("transform", "translate(" + fv_margin.left + "," + fv_margin.top + ")");
                     
-        filter_view = fv_svg.append("g")
+        partition_view = fv_svg.append("g")
                       .attr("transform", "translate(" + fv_margin.left + "," + fv_margin.top + ")");
 
-      
-    range_bar = filter_view.append("g")
-      .attr("transform", "translate(" + margin.left + "," + fv_height/2 +")")
-      .attr("class", "axis")
+     var x_range, 
+        selected_partition_bar,
+        barId= 1,
+        range_bar = partition_view.append("g")
+          .attr("transform", "translate(" + 0 + "," + fv_height/2 +")")
+          .attr("class", "axis"),
 
-    partitions = [{'x':fv_width*0.25}, {'x':fv_width*0.75}]
+        partitions = [];
+
+    var partition_input = d3.select("#partition_value")
+              
+
+        partition_input.on("input", function(){
+                updatePartition(this.value);
+                })
+
+    function updatePartition(value){
+      if (selected_partition_bar){
+        selected_partition_bar.value = value;
+        selected_partition_bar.x = x_range(value);
+        update_partition_bars()
+      }else {
+        alert('Select partition bar first');
+      }
+
+    }
+    function add_partition_bar(x_location){
+      x_location = x_location || 0;
+      partitions.push({'id': barId++, 'x': x_location, 'value': x_range.invert(x_location)});
+      update_partition_bars();
+
+    }
+
+    function remove_partition_bar(){
+      var remove_index;
+
+      console.log('the selected partition', selected_partition_bar)
+
+      for(var i = 0; i < partitions.length; i++){
+        var p = partitions[i];
+        if (p.id == selected_partition_bar.id)
+          remove_index = i;
+      }
+
+      if (remove_index > -1){
+        partitions.splice(remove_index,1);
+        update_partition_bars();
+      }else {
+        alert('Please select partition bar to remove')
+      }
 
 
-    function add_partition_bar(x_location) {
+    }
+
+    function select_partition_bar(d){
+      if (selected_partition_bar)
+          selected_partition_bar.selected = false;
+        selected_partition_bar = d;
+        d.selected = true;
+        //partition_input.attr('value', selected_partition_bar.value);
+        partition_input.property("value", selected_partition_bar.value)
+        update_partition_bars();
+    }
+
+    function update_partition_bars() {
 
 
-      
+      d3.selectAll(".partition").remove(); 
       var range_partition = range_bar.selectAll('g.partition')
                                 .data(partitions)
                                 .enter()
@@ -498,36 +575,52 @@ d3.csv(csv_file, function(error, data) {
       .attr('class', 'partition')
       .attr('width', 5)
       .attr('height', 20)
-      .attr('x', function(d){console.log(d); return d.x})
+      .attr('x', function(d){return d.x})
       .attr('y', -10)
+      .attr('stroke', function(d) { return d.selected? 'black' : 'none' })
+      .on('click', select_partition_bar)
       
       range_partition.append('text')
         .attr("dy", ".15em")
-        .attr("y", function(d) { return 10; })
-        .attr('x', function(d){console.log(d); return d.x})
+        .attr("y", function(d) { return -13; })
+        .attr('x', function(d){return d.x + 2})
         .style("font-size", "10px")
         .style("fill", "black")
         .style("text-anchor", "middle")
-        .text(function(d) { return d.x})
+        .text(function(d) { 
+            var value = x_range.invert(d.x);
+            if (typeof value =='number')
+              return Math.floor(value);
+            else
+              return value;
+
+          })
 
       function dragstarted(d) {
         d3.select(this).raise().classed("active", true);
       }
 
       function dragged(d) {
-        console.log(d);
+        if (!d.selected){
+          select_partition_bar(d);
+        }
         var event = d3.event.x;
         var x_loc = event;
         if (event < 0)
           x_loc = 0;
         else if (event > fv_width)
-          x_loc = fv_width - 5;
+          x_loc = fv_width;
 
-        console.log(x_loc);
         d3.select(this).select("rect").attr("x", function(d)  {return d.x = x_loc;});
         d3.select(this).select("text")
-            .text(function(d) {return d.x})
+            .text(function(d) {
+              d.value = x_range.invert(d.x)
+              if (typeof d.value =='number')
+                return Math.floor(d.value);
+              else
+                return d.value;})
             .attr("x", function(d)  {return d.x = x_loc;});
+         partition_input.property("value", selected_partition_bar.value);
       }
 
       function dragended(d) {
@@ -540,9 +633,10 @@ d3.csv(csv_file, function(error, data) {
 
     
 
-    function update_filter_view(){
+    function update_partition_view(){
 
       if (chart_range){
+        console.log('CHART RANGE', chart_range);
         if(typeof chart_range[0] == "number")
           x_range = d3.scaleLinear().range([0,fv_width])
         else
@@ -553,8 +647,8 @@ d3.csv(csv_file, function(error, data) {
         x_range.domain(chart_range);
         range_bar.call(range_axis);
 
-        d3.selectAll(".partition").remove();
-
+        partitions =[];
+        
         add_partition_bar(fv_width*0.25);
         add_partition_bar(fv_width*0.75);
 
@@ -569,7 +663,6 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    
 
 
     function update_selected_chart(div) {
@@ -662,9 +755,6 @@ d3.csv(csv_file, function(error, data) {
           dimension,
           group,
           round;
-
-      console.log('ID', id);
-
       
 
       function chart(div) {
@@ -836,7 +926,11 @@ d3.csv(csv_file, function(error, data) {
           var leftover_count = reduce_leftover_count(x_domain_max, group.all());
           //var leftover_height = 100 - y(leftover_count);
 
-          chart_range = [x_min, x_max]
+          // if (x_domain_max)
+          //   chart_range = [x_min, x_domain_max]
+          // else
+            chart_range = [x_min, x_max]
+
 
           if (new_selection){
 
@@ -1077,9 +1171,9 @@ d3.csv(csv_file, function(error, data) {
   //var data = d3.range(1000).map(d3.randomBates(10));
   //make_histogram(data);
 
-  function group_count(d) {
-    thresholds = [20, 10, 5, 2, 1, 0];
-    //thresholds = [10, 5, 2, 1];
+  function group_count(d, thresholds) {
+    
+    thresholds = thresholds || [10, 2, 1, 0];
 
     var index = 0;
     t = thresholds[index];
@@ -1717,10 +1811,29 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+    function update_thresholds(){
+
+      console.log('current partitions', partitions);
+      console.log('current x-range domain', x_range.domain());
+      var x_min = x_range.domain()[0]
+      var isNumber = false;
+      if (typeof x_min == 'number')
+        isNumber = true;
+      new_thresholds = [x_range.domain()[0]]
+      partitions.forEach(function(p) {
+        var value = isNumber? parseFloat(p.value) : p.value;
+
+        new_thresholds.push(value);
+      })
+      thresholds = new_thresholds.sort(function(a, b){return b-a});
+      console.log('updated thresholds', thresholds);
+    }
+
     function create_partition() {
       if (selected && selected_chart) {
 
-        update_filter_view()
+        update_thresholds();
+        
 
         var d = selected,
             dim,
@@ -1741,8 +1854,9 @@ d3.csv(csv_file, function(error, data) {
         dim = chart_div.dim;
         dims = chart_div.dims;
 
+        console.log('thresholds for grouping', thresholds)
         groups = dim.group(function(d) {
-            return group_count(d);
+            return group_count(d, thresholds);
           }).all()
 
         partition = {};
