@@ -396,10 +396,16 @@ d3.csv(csv_file, function(error, data) {
 
 
     len_chart.dim = l;
+    len_chart.dim1 = len;
 
     hour_chart.dim = h;
+    hour_chart.dim1 = hour;
+
     start_chart.dim = start_filter;
+    start_chart.dim1 = start;
+
     duration_chart.dim = dur_filter;
+    duration_chart.dim1= duration;
 
     len_chart.dims = lens.all();
     
@@ -1863,10 +1869,13 @@ d3.csv(csv_file, function(error, data) {
 
 
         chart_div = chart_data[chart_id];
-        dim = chart_div.dim;
+        dim = chart_div.dim1;
         dims = chart_div.dims;
 
+
+
         console.log('thresholds for grouping', thresholds)
+        console.log('Number of seqs: ', all.reduceCount().value())
         groups = dim.group(function(d) {
             return group_count(d, thresholds);
           }).all()
@@ -1893,16 +1902,20 @@ d3.csv(csv_file, function(error, data) {
           extents = [low_bound, high_bound];
           size = g.value;
           
-          if (d_filters)
-            filters = d_filters.slice();
-          else
-            filters = [];
+          // if (d_filters)
+          //   filters = d_filters.slice();
+          // else
+          //   filters = [];
 
           var filter = {};
           filter.div = chart_id;
           filter.extents = extents;
           filter.type = 'range';
-          filters.push(filter);
+          //filters.push(filter);
+
+          new_filters = create_new_filter_set(d_filters, filter);
+          filters =new_filters[0];
+          //filter = new_filters[1];
 
           name = 'NEW SEGMENT!'
           segment_data = { 'name': name,
@@ -1954,27 +1967,18 @@ d3.csv(csv_file, function(error, data) {
 
       return s;
 
-
-      //^(?=.*B)(?=.*T).*$
     }
-    function create_filter() {
 
-      if (selected && selectedFilter) {
+    function create_new_filter_set(old_set, new_filter) {
+      var filters,
+          foundFilter=false,
+          chart_div = new_filter.div;
 
-        d = selected;
-
-        d_filters = d.data.filters;
-
-        if (d_filters)
-          filters = d_filters.slice();
+       if (old_set)
+          filters = old_set.slice();
         else
           filters = [];
 
-
-        var filter,
-            foundFilter=false;
-
-        chart_div = selectedFilter.div;
         
 
         for( var f = 0; f < filters.length; f++){
@@ -1997,27 +2001,98 @@ d3.csv(csv_file, function(error, data) {
         filters.push(filter);
         //}
 
-        if (selectedFilter.type == 'range') {
+        if (new_filter.type == 'range') {
           if (foundFilter)
-            filter.extents = update_extents(old_filter.extents, selectedFilter.extents);
+            filter.extents = update_extents(old_filter.extents, new_filter.extents);
           else {
 
-            filter.extents = selectedFilter.extents;
+            filter.extents = new_filter.extents;
             
           }
           filter.type = 'range';
           
-        } else if(selectedFilter.type == 'contains') {
+        } else if(new_filter.type == 'contains') {
           if (foundFilter){
               filter.chars = old_filter.chars.slice()
-              filter.chars.push(selectedFilter.char);
+              filter.chars.push(new_filter.char);
           }
           else{
-            filter.chars = [selectedFilter.char];
+            filter.chars = [new_filter.char];
           }
-          filter.char = selectedFilter.char;
+          filter.char = new_filter.char;
           filter.type = 'contains';
         }
+
+        //size = new_filter.size; 
+        return [filters, filter];
+    }
+
+
+    function create_filter() {
+
+      if (selected && selectedFilter) {
+
+        d = selected;
+
+        d_filters = d.data.filters;
+
+        new_filters = create_new_filter_set(d_filters, selectedFilter);
+        filters =new_filters[0];
+        filter = new_filters[1];
+
+        // if (d_filters)
+        //   filters = d_filters.slice();
+        // else
+        //   filters = [];
+
+
+        // var filter,
+        //     foundFilter=false;
+
+        // chart_div = selectedFilter.div;
+        
+
+        // for( var f = 0; f < filters.length; f++){
+        //   fil = filters[f];
+        //   if (fil.div == chart_div){
+        //     old_filter = fil;
+        //     foundFilter = true;
+        //     break;
+        //   }
+        // }
+
+        // if (foundFilter){
+        //   filters.splice(f, 1);
+        // }
+
+        // //if (!foundFilter){
+        // var filter = {};
+        
+        // filter.div = chart_div;
+        // filters.push(filter);
+        // //}
+
+        // if (selectedFilter.type == 'range') {
+        //   if (foundFilter)
+        //     filter.extents = update_extents(old_filter.extents, selectedFilter.extents);
+        //   else {
+
+        //     filter.extents = selectedFilter.extents;
+            
+        //   }
+        //   filter.type = 'range';
+          
+        // } else if(selectedFilter.type == 'contains') {
+        //   if (foundFilter){
+        //       filter.chars = old_filter.chars.slice()
+        //       filter.chars.push(selectedFilter.char);
+        //   }
+        //   else{
+        //     filter.chars = [selectedFilter.char];
+        //   }
+        //   filter.char = selectedFilter.char;
+        //   filter.type = 'contains';
+        // }
 
         size = selectedFilter.size; 
 
