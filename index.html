@@ -252,8 +252,6 @@
 
 $(document).ready(function(){
 
-console.log(document);
-
   var node_types = {},
       filter = {},
       filter_p = {},
@@ -483,10 +481,8 @@ d3.csv(csv_file, function(error, data) {
     
     var all_charts = d3.selectAll(".chart")
                   .on('click', function(d) {
-                    
+               
                     update_selected_chart(d3.select(this));
-                    d3.select(this).call(d);
-                    update_partition_view();
                     
                   });
 
@@ -668,7 +664,10 @@ d3.csv(csv_file, function(error, data) {
 
     function update_partition_view(){
 
-     
+     //render selected chart
+
+     selected_chart.call(selected_chart.data()[0]);
+
 
       if (chart_range){
         console.log('CHART RANGE', chart_range);
@@ -701,6 +700,7 @@ d3.csv(csv_file, function(error, data) {
 
 
     function update_selected_chart(div) {
+     
       if (selected_chart)
         selected_chart.style("background-color", "white" );
       selected_chart = div;
@@ -1013,11 +1013,6 @@ d3.csv(csv_file, function(error, data) {
           //var leftover_height = 100 - y(leftover_count);
           x_max = group.all()[group.all().length-1].key;
           x_min = group.all()[0].key;
-
-          console.log(dim_name);
-          console.log('top group: ' + group.top(1)[0].key + ' ' + group.top(1)[0].value);
-          console.log('number of groups', group.all().length);
-          console.log('group all first', group.all()[0].key + " : " + group.all()[0].value);
 
           // if (x_domain_max)
           //   chart_range = [x_min, x_domain_max]
