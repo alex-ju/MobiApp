@@ -229,7 +229,7 @@
     </div>
 
     <div class= "charts" id= "list_box">
-      <div class= "chart" id="contains_action">
+      <div class= "chart" id="contains_action_chart">
       </div>
     </div>
 
@@ -421,7 +421,7 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#filter_button")
       .on("click", create_filter);
     d3.select("#partition_button")
-      .on("click", add_partition);
+      .on("click", show_partition_view);
     d3.select("#remove_button")
       .on("click", remove_filter);
     d3.select("#segment_button")
@@ -489,24 +489,149 @@ d3.csv(csv_file, function(error, data) {
                  
     renderAll();
 
-    var fv_margin = {top: 20, right:20, bottom: 20, left: 20},
-      fv_width = 500 - fv_margin.right - fv_margin.left,
-      fv_height = 200 - fv_margin.top - fv_margin.bottom;
+    //=========================== Views ====================================//
 
-    var fv_svg = d3.select("#create_partition_view")
+    function update_info_view(view_id){
+      view_id = view_id || null;
+      active_view = view_id;
+      d3.selectAll(".info")
+        .style('display', function(d) {
+          var id = d3.select(this).attr('id');
+          if (id != active_view)
+            return 'none';
+        });
+      if (view_id){
+        d3.select("#"+view_id)
+          .style('display', 'block');
+      }
+    }
+
+    //------------ Node view ------------- //
+
+    var activeview;
+
+    function show_node_view(selected){
+      console.log(selected.data);
+      var d = selected.data;
+      if (d.value == 1){
+        update_info_view("segment_view");
+        update_segment_view(selected);
+      }else if(d.value == 0){
+        update_info_view("filter_view")
+        get_filter_info(selected);
+        //update_filter_view(selected);
+      }
+
+    }
+
+     var nv_margin = {top: 20, right:20, bottom: 20, left: 20},
+      nv_width = 500 - nv_margin.right - nv_margin.left,
+      nv_height = 200 - nv_margin.top - nv_margin.bottom;
+
+    var filter_object = [];
+
+    //----------- Filter View -------------- //
+    var fv_svg = d3.select("#filter_view")
                     .append("svg")
-                    .attr("width", fv_width + fv_margin.left + fv_margin.right)
-                    .attr("height", fv_height + fv_margin.top + fv_margin.bottom)
-                    //.attr("transform", "translate(" + fv_margin.left + "," + fv_margin.top + ")");
+                    .attr("width", nv_width + nv_margin.left + nv_margin.right)
+                    .attr("height", nv_height + nv_margin.top + nv_margin.bottom),
+                    //.attr("transform", "translate(" + pv_margin.left + "," + pv_margin.top + ")");
                     
-        partition_view = fv_svg.append("g")
-                      .attr("transform", "translate(" + fv_margin.left + "," + fv_margin.top + ")");
+    filter_view = fv_svg.append("g")
+                      .attr("transform", "translate(" + nv_margin.left + "," + nv_margin.top + ")"),
+
+    filter_text = filter_view.selectAll('.filterText')
+        //.data([filter_info])
+        .data(filter_object)
+        .enter()
+        .append('text')
+        .attr('class', 'filterText')
+
+    function get_filter_info(selected){
+      console.log('its a filter view with', selected);
+      var d = selected.data,
+          filter_info = d.filter_type,
+          chart = filter_info.chart;
+
+      update_selected_chart(chart);
+
+      filter_object.pop();
+      update_filter_view();
+      filter_object.push(filter_info);
+      update_filter_view();
+      
+
+    }
+
+
+    function update_filter_view() {
+
+      var selection = filter_view.selectAll('.filterText')
+                  .data(filter_object)
+
+      selection.enter()
+        .append('text')
+        .attr('class', 'filterText')
+        .style("font-size", "10px")
+        .style("text-anchor", "left")
+        .style('fill', 'black')
+        .html(function(d) {
+          console.log('d', d);
+          var values="";
+          if (d.type=="range")
+            values = d.extents;
+          else if (d.type =="contains")
+            values = alphabet_rev[d.char];
+          return d.chart.attr('id') + ": " + d.type +" -> [" + values + ']';
+        })
+
+      selection.exit().remove();
+
+
+    }
+
+
+    // -------- Segment View ------------- //
+    var sv_svg = d3.select("#segment_view")
+                    .append("svg")
+                    .attr("width", nv_width + nv_margin.left + nv_margin.right)
+                    .attr("height", nv_height + nv_margin.top + nv_margin.bottom)
+                    //.attr("transform", "translate(" + pv_margin.left + "," + pv_margin.top + ")");
+                    
+    segment_view = sv_svg.append("g")
+                      .attr("transform", "translate(" + nv_margin.left + "," + nv_margin.top + ")");
+
+    function update_segment_view(selected) {
+      console.log('its a segment view with', selected);
+
+
+
+    }
+
+
+
+
+
+    //------------ Partition view ------- //
+
+    var pv_margin = {top: 20, right:20, bottom: 20, left: 20},
+      pv_width = 500 - pv_margin.right - pv_margin.left,
+      pv_height = 200 - pv_margin.top - pv_margin.bottom;
+
+    var pv_svg = d3.select("#create_partition_view")
+                    .append("svg")
+                    .attr("width", pv_width + pv_margin.left + pv_margin.right)
+                    .attr("height", pv_height + pv_margin.top + pv_margin.bottom)
+                    //.attr("transform", "translate(" + pv_margin.left + "," + pv_margin.top + ")");
+                    
+        partition_view = pv_svg.append("g")
+                      .attr("transform", "translate(" + pv_margin.left + "," + pv_margin.top + ")");
 
      var x_range, 
         selected_partition_bar,
         barId= 1,
         range_bar = partition_view.append("g")
-          .attr("transform", "translate(" + 0 + "," + fv_height/2 +")")
+          .attr("transform", "translate(" + 0 + "," + pv_height/2 +")")
           .attr("class", "axis"),
 
         partitions = [];
@@ -515,20 +640,16 @@ d3.csv(csv_file, function(error, data) {
               
 
         partition_input.on("input", function(){
-                updatePartition(this.value);
+                set_partition_value(this.value);
                 })
 
-    function update_info_view(view_id){
-      view_id = view_id || null;
-      d3.selectAll(".info")
-        .style('display', 'none');
-      if (view_id){
-        d3.select("#"+view_id)
-          .style('display', 'block');
-      }
+    function show_partition_view() {
+      //d3.select("#create_partition_view").style("display", "block");
+      update_info_view("create_partition_view");
+      update_partition_view();
     }
 
-    function updatePartition(value){
+    function set_partition_value(value){
       if (selected_partition_bar){
         selected_partition_bar.value = value;
         selected_partition_bar.x = x_range(value);
@@ -633,8 +754,8 @@ d3.csv(csv_file, function(error, data) {
         var x_loc = event;
         if (event < 0)
           x_loc = 0;
-        else if (event > fv_width)
-          x_loc = fv_width;
+        else if (event > pv_width)
+          x_loc = pv_width;
 
         if (typeof x_range.domain()[0] == 'number'){
           x_loc = x_range(Math.round(x_range.invert(x_loc)));
@@ -657,47 +778,47 @@ d3.csv(csv_file, function(error, data) {
       }
 
     }
-
-
-
     
 
     function update_partition_view(){
 
      //render selected chart
+     console.log('in update partition view, selected chart: ', selected_chart.node());
+     console.log('in update partition view, selected chart: ', selected_chart.data());
 
-     selected_chart.call(selected_chart.data()[0]);
+     if (selected_chart.data()[0]){
+
+       selected_chart.call(selected_chart.data()[0]);
 
 
-      if (chart_range){
-        console.log('CHART RANGE', chart_range);
-        if(typeof chart_range[0] == "number")
-          x_range = d3.scaleLinear().range([0,fv_width])
-        else
-          x_range = d3.scaleTime().range([0,fv_width])
-        
-        range_axis = d3.axisBottom(x_range)
-                    .ticks(5)  
-        x_range.domain(chart_range);
-        range_bar.call(range_axis);
+        if (chart_range){
+          if(typeof chart_range[0] == "number")
+            x_range = d3.scaleLinear().range([0,pv_width])
+          else
+            x_range = d3.scaleTime().range([0,pv_width])
+          
+          range_axis = d3.axisBottom(x_range)
+                      .ticks(5)  
+          x_range.domain(chart_range);
+          range_bar.call(range_axis);
 
-        partitions =[];
-        
-        add_partition_bar(fv_width*0.25);
-        add_partition_bar(fv_width*0.75);
+          partitions =[];
+          
+          add_partition_bar(pv_width*0.25);
+          add_partition_bar(pv_width*0.75);
 
-        partition_bars = d3.selectAll(".partition")
+          partition_bars = d3.selectAll(".partition");
 
-        
- 
 
-      }
+        }
 
-      
+     } else {
+      alert('Choose another chart to partition!');
+     }
 
     }
 
-
+    //----------- end of partition view ----------//
 
     function update_selected_chart(div) {
      
@@ -705,6 +826,9 @@ d3.csv(csv_file, function(error, data) {
         selected_chart.style("background-color", "white" );
       selected_chart = div;
       selected_chart.style("background-color", "lightyellow" );
+
+      if (active_view == 'create_partition_view')
+        update_partition_view();
 
     }
 
@@ -798,30 +922,8 @@ d3.csv(csv_file, function(error, data) {
     return [x_min, x_max];
   }
 
-  // function reduce_leftover_count(x_max, groups){
-  //     var leftover_count = 0;
 
-  //     if (x_max){
-  //       x_max = x_max - 1;
-
-  //       groups.forEach(function(grp){
-  //         if (grp.key > x_max){
-  //           leftover_count = leftover_count + grp.value;
-  //         }
-
-
-  //       })
-
-  //       return leftover_count;
-
-  //     } 
-
-  //     return 0;
-  //   }
-
-
-
-    function barChart() {
+  function barChart() {
       if (!barChart.id) barChart.id = 0;
 
       var margin = {top: 10, right: 13, bottom: 35, left: 55},
@@ -909,7 +1011,7 @@ d3.csv(csv_file, function(error, data) {
 
                        var extents = [x_domain_max, x_max+1];
 
-
+                       selectedFilter.chart = selected_chart;
                        selectedFilter.div = div.attr('id');
                        selectedFilter.extents = extents;
                        selectedFilter.type = 'range';
@@ -963,7 +1065,7 @@ d3.csv(csv_file, function(error, data) {
               .style("text-anchor", "middle")
               .style("font-size", "10px")
               .style("fill","black")
-              .text("Frequency"); 
+              .text("# of Sequences"); 
 
             //set up x axis title
             g.append("text")             
@@ -1165,7 +1267,7 @@ d3.csv(csv_file, function(error, data) {
     
         dimension.filterRange(extents);
         //selectedExtents = extents;
-
+        selectedFilter.chart = selected_chart;
         selectedFilter.div = selectedDiv;
         selectedFilter.extents = extents;
         selectedFilter.type = 'range';
@@ -1409,7 +1511,12 @@ d3.csv(csv_file, function(error, data) {
       nodeEnter.append("path")
             .attr('class', 'node')
             .each( format_nodes)
-            .on("click", select_node);
+            .on("click", select_node)
+            .on("mouseover", show_node_view)
+            // .on("mouseover", function(d){ 
+            //       if (d.value != 1)
+            //         select_node(d);
+            //     });
 
       nodeEnter.append("text")
         .attr("dy", ".15em")
@@ -1419,10 +1526,10 @@ d3.csv(csv_file, function(error, data) {
         .text(function(d) { 
           if (d.data.value == 1)
             return d.data.size;
-          else if (d.data.value == 0){
+          // else if (d.data.value == 0){
 
-            return d.data.filter_type.type;
-          }
+          //   return d.data.filter_type.type;
+          // }
           // else if (d.data.value == 0){
                
           //     f = d.data.filter_type;
@@ -1611,6 +1718,8 @@ d3.csv(csv_file, function(error, data) {
         }
         console.log("Selected node: ", selected);
 
+        show_node_view(selected);
+
         if (selected.data.value == 1) {
           update_info_view("segment_view");
           new_selection = true;
@@ -1637,6 +1746,7 @@ d3.csv(csv_file, function(error, data) {
                 current_chart = chart_data[div];
                 dim = current_chart.dim;
                 reset(current_chart.id);
+
 
                 if (extents)
                   dim.filter(extents);
@@ -1705,6 +1815,9 @@ d3.csv(csv_file, function(error, data) {
       return new_node;
 
     }
+
+
+    //******** horizontal chart ***********
     var char;
 
 
@@ -1770,7 +1883,7 @@ d3.csv(csv_file, function(error, data) {
       var margin_hc = {top: 20, right: 20, bottom: 30, left: 100},
       width_hc = 300 - margin_hc.left - margin_hc.right,
       height_hc = 150 - margin_hc.top - margin_hc.bottom,
-      horizontal_chart = d3.select("#contains_action").append('svg').append("g").attr("transform", "translate(" + margin_hc.left + "," + margin_hc.top + ")");
+      horizontal_chart = d3.select("#contains_action_chart").append('svg').append("g").attr("transform", "translate(" + margin_hc.left + "," + margin_hc.top + ")");
 
       
       console.log('svg width', width_hc);
@@ -1873,8 +1986,10 @@ d3.csv(csv_file, function(error, data) {
 
                 bar
                   .on("click", function(d) {
+                    update_selected_bar(d3.select(this).select('.outer_box'));
 
                     selectedFilter.div = 'action_strings';
+                    selectedFilter.chart = d3.select("#contains_action_chart");
                     selectedFilter.char = d.char;
                     selectedFilter.size = d.abs;
                     selectedFilter.type = 'contains';
@@ -1882,7 +1997,7 @@ d3.csv(csv_file, function(error, data) {
                     // selectedChar = d.char;
                     // selectedDiv = 'action_strings';
                     //update_selected_bar(this);
-                    update_selected_bar(d3.select(this).select('.outer_box'));
+                    
                     
 
 
@@ -1985,6 +2100,7 @@ d3.csv(csv_file, function(error, data) {
           //   filters = [];
 
           var filter = {};
+          filter.chart = selected_chart;
           filter.div = chart_id;
           filter.extents = extents;
           filter.type = 'range';
@@ -2075,6 +2191,8 @@ d3.csv(csv_file, function(error, data) {
         var filter = {};
         
         filter.div = chart_div;
+        console.log('Filter chart', new_filter.chart.node())
+        filter.chart = new_filter.chart;
         filters.push(filter);
         //}
 
@@ -2118,65 +2236,8 @@ d3.csv(csv_file, function(error, data) {
         filters =new_filters[0];
         filter = new_filters[1];
 
-        // if (d_filters)
-        //   filters = d_filters.slice();
-        // else
-        //   filters = [];
-
-
-        // var filter,
-        //     foundFilter=false;
-
-        // chart_div = selectedFilter.div;
-        
-
-        // for( var f = 0; f < filters.length; f++){
-        //   fil = filters[f];
-        //   if (fil.div == chart_div){
-        //     old_filter = fil;
-        //     foundFilter = true;
-        //     break;
-        //   }
-        // }
-
-        // if (foundFilter){
-        //   filters.splice(f, 1);
-        // }
-
-        // //if (!foundFilter){
-        // var filter = {};
-        
-        // filter.div = chart_div;
-        // filters.push(filter);
-        // //}
-
-        // if (selectedFilter.type == 'range') {
-        //   if (foundFilter)
-        //     filter.extents = update_extents(old_filter.extents, selectedFilter.extents);
-        //   else {
-
-        //     filter.extents = selectedFilter.extents;
-            
-        //   }
-        //   filter.type = 'range';
-          
-        // } else if(selectedFilter.type == 'contains') {
-        //   if (foundFilter){
-        //       filter.chars = old_filter.chars.slice()
-        //       filter.chars.push(selectedFilter.char);
-        //   }
-        //   else{
-        //     filter.chars = [selectedFilter.char];
-        //   }
-        //   filter.char = selectedFilter.char;
-        //   filter.type = 'contains';
-        // }
-
+       
         size = selectedFilter.size; 
-
-
-
-        // }
         
 
         name = 'NEW Filter!';
@@ -2187,9 +2248,6 @@ d3.csv(csv_file, function(error, data) {
                    };
 
         filter_node = add_child_node(d, filter_data);
-
-        
-        //console.log('Resulting segment has size: ', size);
 
         segment_data = { 'name': name,
                      'value': 1,
@@ -2314,11 +2372,7 @@ d3.csv(csv_file, function(error, data) {
         pressed_color = "lightgray",
         current_color = original_color;
 
-    function add_partition() {
-      //d3.select("#create_partition_view").style("display", "block");
-      update_info_view("create_partition_view");
-      update_partition_view();
-    }
+
 
     function show_path_only() {
 
