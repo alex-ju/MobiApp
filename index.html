@@ -183,7 +183,8 @@
 
   <div class="charts" style="display:none;" id="attributes">
 
-    <div class="info" style="display:none;" id="create_partition_view"> 
+    <div class="info" style="display:none;" id="create_partition_view">
+    <div class="title"> Create Partition View </div> 
       <div class= "button" id="addPartition_button">
           <input name="addPartitionButton" 
                        type="button" 
@@ -206,16 +207,22 @@
     </div>
 
   <div class="info" style="display:none;" id="segment_view">
+    <div class="title"> Segment View </div>
   </div>
 
   <div class="info" style="display:none;" id="filter_view">
+    <div class="title"> Filter View </div>
+  </div>
+
+  <div class="info" style="display:none;" id="partition_view">
+    <div class="title"> Partition View </div>
   </div>
 
     
 
     <div class="charts" id="chart_box">
       <div class="chart" id="len_chart"> 
-        <div class="title"> Number of Actions </div>
+        <div class="title"> # of Actions </div>
       </div>
       <div class="chart" id="duration_chart"> 
         <div class="title"> Duration chart </div>
@@ -500,27 +507,52 @@ d3.csv(csv_file, function(error, data) {
           if (id != active_view)
             return 'none';
         });
-      if (view_id){
-        d3.select("#"+view_id)
-          .style('display', 'block');
-      }
+      // if (view_id){
+      //   d3.select("#"+view_id)
+      //     .style('display', 'block');
+      // }
     }
 
     //------------ Node view ------------- //
 
     var activeview;
+    var text_object = [];
 
     function show_node_view(selected){
-      console.log(selected.data);
       var d = selected.data;
       if (d.value == 1){
         update_info_view("segment_view");
-        update_segment_view(selected);
+        //update_segment_view(selected);
+        get_segment_info(selected);
       }else if(d.value == 0){
         update_info_view("filter_view")
         get_filter_info(selected);
-        //update_filter_view(selected);
+        //update_filter_text(selected);
+      }else if(d.value == 2){
+        update_info_view("partition_view")
+        get_partition_info(selected);
+        //update_filter_text(selected);
       }
+
+    }
+
+
+    function update_text(view, text_format) {
+
+      var selection = view.selectAll('.filterText')
+                  .data(text_object)
+
+      selection.enter()
+        .append('text')
+        .attr('class', 'filterText')
+        .attr("dy", function(d,i){ return i+2 +"em";})
+        .style("font-size", "10px")
+        .style("text-anchor", "left")
+        .style('fill', 'black')
+        .text(text_format)
+
+      selection.exit().remove();
+
 
     }
 
@@ -528,7 +560,7 @@ d3.csv(csv_file, function(error, data) {
       nv_width = 500 - nv_margin.right - nv_margin.left,
       nv_height = 200 - nv_margin.top - nv_margin.bottom;
 
-    var filter_object = [];
+    
 
     //----------- Filter View -------------- //
     var fv_svg = d3.select("#filter_view")
@@ -538,71 +570,139 @@ d3.csv(csv_file, function(error, data) {
                     //.attr("transform", "translate(" + pv_margin.left + "," + pv_margin.top + ")");
                     
     filter_view = fv_svg.append("g")
-                      .attr("transform", "translate(" + nv_margin.left + "," + nv_margin.top + ")"),
+                      .attr("transform", "translate(" + nv_margin.left + "," + nv_margin.top + ")")
 
-    filter_text = filter_view.selectAll('.filterText')
-        //.data([filter_info])
-        .data(filter_object)
-        .enter()
-        .append('text')
-        .attr('class', 'filterText')
 
     function get_filter_info(selected){
-      console.log('its a filter view with', selected);
       var d = selected.data,
           filter_info = d.filter_type,
           chart = filter_info.chart;
 
       update_selected_chart(chart);
 
-      filter_object.pop();
-      update_filter_view();
-      filter_object.push(filter_info);
-      update_filter_view();
+      text_object = [];
+      update_filter_text(filter_view);
+      text_object.push(filter_info);
+      update_filter_text(filter_view);
+      
+
+    }
+
+    function format_filter_text(d){
+      var values="";
+      if (d.type=="range")
+        values = d.extents;
+      else if (d.type =="contains")
+        values = alphabet_rev[d.char];
+      return d.chart.attr('id') + ": " + d.type +" -> [" + values + ']';
+    }
+
+    
+
+    function update_filter_text(view){
+      update_text(view, format_filter_text);
+    }
+
+
+    // --------------- Partition View --------------------- //
+
+    var pv_svg = d3.select("#partition_view")
+                    .append("svg")
+                    .attr("width", nv_width + nv_margin.left + nv_margin.right)
+                    .attr("height", nv_height + nv_margin.top + nv_margin.bottom),
+                    //.attr("transform", "translate(" + pv_margin.left + "," + pv_margin.top + ")");
+                    
+    partition_view = pv_svg.append("g")
+                      .attr("transform", "translate(" + nv_margin.left + "," + nv_margin.top + ")")
+    pv_chart_title = partition_view.append('g')
+                    .append('text').attr('class', 'gtitle')
+                  .style("font-size", "10px")
+                  .style("text-anchor", "left")
+                  .style('fill', 'black')
+                  .text('Chart used in partition: ' + chart.attr('id'))
+                      
+
+    pv_partitions = partition_view.append("g")
+                      .attr("transform", "translate(" + 0 + "," + 20 + ")");
+    
+    pv_partitions.append('g').append('text')
+          .style("font-size", "10px")
+          .style("text-anchor", "left")
+          .style('fill', 'black')
+          .text('Partitions: ')
+
+    partition_list = pv_partitions.append('g')
+          .attr("transform", "translate(" + 5 + "," + 0 + ")");               
+
+    function get_partition_info(selected){
+
+      var d = selected.data,
+          partitions = d.partitions,
+          chart = d.chart;
+
+      update_selected_chart(chart);
+      
+      d3.selectAll('.gtitle').text('Chart used in partition: ' + chart.attr('id'));
+
+
+      
+      text_object = [];
+      update_partition_text(partition_list);
+      text_object = partitions;
+      update_partition_text(partition_list);
       
 
     }
 
 
-    function update_filter_view() {
+    function format_partition_text(d){
 
-      var selection = filter_view.selectAll('.filterText')
-                  .data(filter_object)
-
-      selection.enter()
-        .append('text')
-        .attr('class', 'filterText')
-        .style("font-size", "10px")
-        .style("text-anchor", "left")
-        .style('fill', 'black')
-        .html(function(d) {
-          console.log('d', d);
-          var values="";
-          if (d.type=="range")
-            values = d.extents;
-          else if (d.type =="contains")
-            values = alphabet_rev[d.char];
-          return d.chart.attr('id') + ": " + d.type +" -> [" + values + ']';
-        })
-
-      selection.exit().remove();
-
+      return 'range: [' + d.range[0] + ', ' + d.range[1] + '],' + '    # of seqs: ' + d3.format(",")(d.size) + ',    % of seqs: ' + d3.format(".1%")(d.percent);
 
     }
-
+    
+    function update_partition_text(view){
+      update_text(view, format_partition_text);
+    }
 
     // -------- Segment View ------------- //
     var sv_svg = d3.select("#segment_view")
                     .append("svg")
                     .attr("width", nv_width + nv_margin.left + nv_margin.right)
-                    .attr("height", nv_height + nv_margin.top + nv_margin.bottom)
-                    //.attr("transform", "translate(" + pv_margin.left + "," + pv_margin.top + ")");
+                    .attr("height", nv_height + nv_margin.top + nv_margin.bottom),
                     
-    segment_view = sv_svg.append("g")
-                      .attr("transform", "translate(" + nv_margin.left + "," + nv_margin.top + ")");
+        segment_view = sv_svg.append("g")
+                          .attr("transform", "translate(" + nv_margin.left + "," + nv_margin.top + ")"),
+        sv_filters = segment_view.append("g"),
+        sv_sizes = segment_view.append("g");
+    
+    sv_filters.append('g').append('text')
+          .style("font-size", "12px")
+          .style("text-anchor", "left")
+          .style('fill', 'black')
+          .text('Filters: ')
+
+    filter_list = sv_filters.append('g')
+          .attr("transform", "translate(" + 5 + "," + 0 + ")");
+
+
+
+    function get_segment_info(selected) {
+      var d = selected.data,
+          filters = d.filters;
+
+
+
+      text_object = [];
+      update_filter_text(filter_list);
+      if (filters){
+        text_object = filters;
+        update_filter_text(filter_list);
+      }
+
+    }
 
     function update_segment_view(selected) {
-      console.log('its a segment view with', selected);
 
 
 
@@ -1512,7 +1612,7 @@ d3.csv(csv_file, function(error, data) {
             .attr('class', 'node')
             .each( format_nodes)
             .on("click", select_node)
-            .on("mouseover", show_node_view)
+            //.on("mouseover", show_node_view)
             // .on("mouseover", function(d){ 
             //       if (d.value != 1)
             //         select_node(d);
@@ -1778,9 +1878,8 @@ d3.csv(csv_file, function(error, data) {
           console.log('The current selection has ' + selected.data.size + ' sequences!' );
           contains_action();
 
-        } else {
-          update_info_view("filter_view")
-        }
+        } 
+
 
         update(selected);
         showDiv();
@@ -2049,16 +2148,20 @@ d3.csv(csv_file, function(error, data) {
             dim,
             dims;
 
+        chart_id = selected_chart.attr('id');
+
+
         name = 'NEW Partition!';
         partition_data = { 'name': name,
                      'value': 2,
-                     'thresholds': thresholds.slice()
+                     'thresholds': thresholds.slice(),
+                     'div': chart_id,
+                     'chart': selected_chart
 
                    };
         partition_node = add_child_node(d, partition_data);
 
-        chart_id = selected_chart.attr('id');
-
+        
 
         chart_div = chart_data[chart_id];
         dim = chart_div.dim1;
@@ -2079,9 +2182,12 @@ d3.csv(csv_file, function(error, data) {
         max_key = dims[dims.length-1].key;
 
         d_filters = d.data.filters;
+        d_size = d.data.size;
 
         low_bound = 0;
 
+        partition_data.partitions = [];
+        partition_data.fullSize = d_size;
         
         for (var i = 0; i < groups.length; i++) {
           g = groups[i];
@@ -2094,6 +2200,11 @@ d3.csv(csv_file, function(error, data) {
           extents = [low_bound, high_bound];
           size = g.value;
           
+          var partition = {};
+          partition.range = extents;
+          partition.size = size;
+          partition.percent = size/d_size;
+          partition_data.partitions.push(partition);
           // if (d_filters)
           //   filters = d_filters.slice();
           // else
@@ -2191,7 +2302,6 @@ d3.csv(csv_file, function(error, data) {
         var filter = {};
         
         filter.div = chart_div;
-        console.log('Filter chart', new_filter.chart.node())
         filter.chart = new_filter.chart;
         filters.push(filter);
         //}
@@ -2236,8 +2346,12 @@ d3.csv(csv_file, function(error, data) {
         filters =new_filters[0];
         filter = new_filters[1];
 
+
        
-        size = selectedFilter.size; 
+        size = selectedFilter.size;
+
+
+
         
 
         name = 'NEW Filter!';
@@ -2252,7 +2366,8 @@ d3.csv(csv_file, function(error, data) {
         segment_data = { 'name': name,
                      'value': 1,
                      'filters': filters,
-                     'size': size
+                     'size': size,
+                     'prev_size': d.data.size
                    };
 
         segment_node = add_child_node(filter_node, segment_data);
