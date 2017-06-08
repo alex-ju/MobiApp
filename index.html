@@ -4,7 +4,7 @@
     <meta charset="utf-8">
 
     <title>Tree Example</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style1.css" />
     <meta http-equiv="content-type" content="text/html; charset=UTF8"> 
 
     <style>
@@ -123,21 +123,16 @@
         stroke: #666;
       }
 
-/*      #hour-chart {
-        width: 260px;
+      .links line {
+        stroke: #999;
+        stroke-opacity: 0.6;
       }
 
-      #delay-chart {
-        width: 230px;
+      .nodes circle {
+        stroke: #fff;
+        stroke-width: 1.5px;
       }
 
-      #distance-chart {
-        width: 420px;
-      }
-
-      #date-chart {
-        width: 920px;
-      }*/
     </style>
 
   </head>
@@ -244,15 +239,19 @@
           <div class="title"> Number of Sequences that Contains Action </div>
         </div>
       </div>
+
+      <div class ="charts" id="action_transition">
+
+        <div class ="chart" id="node_link">
+          <svg width="400" height="250"></svg>
+        </div>
+
+      </div>
+
+
     </div>
 
-    <div class ="charts" id="action_transition">
-
-    <div class ="chart" id="node_link">
-      <svg width="200" height="200"></svg>
-    </div>
-
-  </div>
+    
 </div>
 
 
@@ -507,7 +506,164 @@ d3.csv(csv_file, function(error, data) {
                  
     renderAll();
 
-    //=========================== Views ====================================//
+    //=========================== Node Link =====================================//
+
+    var nl_margin = {top: 20, right:20, bottom: 20, left: 20},
+        nl_svg = d3.select("#node_link").select("svg"),
+        width = +nl_svg.attr("width")- nl_margin.right - nl_margin.left,
+        height = +nl_svg.attr("height")- nl_margin.top - nl_margin.bottom;
+
+    var nl_graph = nl_svg.append("g")
+                    .attr("transform", "translate(" + nl_margin.left + "," + nl_margin.top + ")")
+
+    var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+    var simulation = d3.forceSimulation()
+        .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(80))
+        .force("charge", d3.forceManyBody())
+        .force("center", d3.forceCenter(width / 2, height/2));
+
+    var node_link = {};
+
+    var nl_nodes = [{"id": "C", "group": 1, fx: width/2, fy: 0},
+                {"id": "B", "group": 2},
+                {"id": "F", "group": 3},
+                {"id": "D", "group": 4},
+                {"id": "E", "group": 5},
+                {"id": "A", "group": 6, fx: width/2, fy: height}],
+        nl_links =  [
+                {"source": "A", "target": "B", "value": 1},
+                {"source": "A", "target": "D", "value": 8},
+                {"source": "A", "target": "F", "value": 10},
+                {"source": "B", "target": "D", "value": 6},
+                {"source": "B", "target": "C", "value": 1},
+                {"source": "C", "target": "A", "value": 1},
+                {"source": "C", "target": "E", "value": 1},
+                {"source": "C", "target": "F", "value": 1},
+                {"source": "C", "target": "D", "value": 2},
+                {"source": "D", "target": "A", "value": 1},
+                {"source": "D", "target": "B", "value": 1},
+                {"source": "E", "target": "A", "value": 3},
+                {"source": "F", "target": "E", "value": 3}]
+
+      node_link.nodes = nl_nodes;
+      node_link.links = nl_links;
+    update_node_link();
+
+
+    function update_node_link(){
+      //build the arrow
+      nl_graph.append("svg:defs").selectAll("marker")
+          .data(["end"])      // Different link/path types can be defined here
+        .enter().append("svg:marker")    // This section adds in the arrows
+          .attr("id", String)
+          .attr("viewBox", "0 -5 10 10")
+          .attr("refX", 20)
+          .attr("refY", 0)
+          .attr("markerWidth", 4)
+          .attr("markerHeight", 4)
+          .attr("orient", "auto")
+
+        .append("svg:path")
+          .attr("d", "M0,-5L10,0L0,5")
+          .attr("fill", "gray");
+
+      
+
+      var link = nl_graph.append("g")
+          .attr("class", "links")
+        .selectAll("line")
+        .data(node_link.links)
+        .enter().append("line")
+          .attr("stroke-width", function(d) { 
+            //return Math.sqrt(d.value);
+            return 2; 
+          })
+          .attr("marker-end", "url(#end)");
+          
+      var node = nl_graph.append("g")
+        .attr("class", "nodes")
+        .selectAll("g")
+        .data(node_link.nodes)
+        .enter().append("g")
+        .on('click', function(d){console.log(d)})
+        .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+        
+      node.append('circle')
+          .attr("r", 8)
+          .attr("fill", function(d) { return color(d.group); })
+      
+      node.append('text')
+          .style('fill', 'black')
+          .text(function(d) {return d.id;})
+
+      // var node = nl_graph.append("g")
+      //     .attr("class", "nodes")
+      //   .selectAll("circle")
+      //   .data(node_link.nodes)
+      //   .enter().append("circle")
+      //     .attr("r", 8)
+      //     .attr("fill", function(d) { return color(d.group); })
+      //     .on('click', function(d){console.log(d)})
+      //     .call(d3.drag()
+      //       .on("start", dragstarted)
+      //       .on("drag", dragged)
+      //       .on("end", dragended));
+
+
+
+      node.append("title") 
+          .text(function(d) { return d.id; })
+
+
+      simulation
+          .nodes(node_link.nodes)
+          .on("tick", ticked);
+
+
+      simulation.force("link")
+          .links(node_link.links)
+
+      function ticked() {
+        link
+            .attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
+
+        node.selectAll('circle')
+            .attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; });
+
+        node.selectAll('text')
+            .attr("x", function(d) { return d.x; })
+            .attr("y", function(d) { return d.y; });
+      }
+
+    }
+
+    function dragstarted(d) {
+      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+
+    function dragged(d) {
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+    }
+
+    function dragended(d) {
+      if (!d3.event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+
+
+    //=========================== Info Views ====================================//
 
     function update_info_view(view_id){
       view_id = view_id || null;
@@ -518,10 +674,6 @@ d3.csv(csv_file, function(error, data) {
           if (id != active_view)
             return 'none';
         });
-      // if (view_id){
-      //   d3.select("#"+view_id)
-      //     .style('display', 'block');
-      // }
     }
 
     //------------ Node view ------------- //
@@ -533,16 +685,13 @@ d3.csv(csv_file, function(error, data) {
       var d = selected.data;
       if (d.value == 1){
         update_info_view("segment_view");
-        //update_segment_view(selected);
         get_segment_info(selected);
       }else if(d.value == 0){
         update_info_view("filter_view")
         get_filter_info(selected);
-        //update_filter_text(selected);
       }else if(d.value == 2){
         update_info_view("partition_view")
         get_partition_info(selected);
-        //update_filter_text(selected);
       }
 
     }
@@ -715,18 +864,11 @@ d3.csv(csv_file, function(error, data) {
       var d = selected.data,
           filters = d.filters;
 
-      // if (d.prev_size){
-      //   rel_percent = d3.format(".1%")(d.size/d.prev_size);
-      // } else {
-      //   rel_percent = "None"
-      // }
-      rel_percent = d3.format(".1%")(d.size/total_size);
-      console.log(original_size);
-       console.log(total_size);
+      var size = d3.format(",")(d.size),
+          rel = d3.format(".1%")(d.size/total_size),
+          abs = d3.format(".1%")(d.size/original_size);
 
-      var abs = d3.format(".1%")(d.size/original_size)
-
-      sizes = ["Number of seqs: "+ d.size, "Percent of total: " + abs, "Percent of previous: " + rel_percent]
+      sizes = ["Number of seqs: "+ size, "Percent of total: " + abs, "Percent of previous: " + rel]
 
       text_object = [];
       update_filter_text(filter_list);
@@ -1154,6 +1296,7 @@ d3.csv(csv_file, function(error, data) {
                     .on("click", function(d) {
 
                        var extents = [x_domain_max, x_max+1];
+                       update_selected_chart(div);
 
                        selectedFilter.chart = selected_chart;
                        selectedFilter.div = div.attr('id');
@@ -2472,7 +2615,6 @@ d3.csv(csv_file, function(error, data) {
         alert('Please select a filter to be removed!');
       } 
 
-      console.log('The parent that removes node', d.parent)
 
       update(d.parent)
 
