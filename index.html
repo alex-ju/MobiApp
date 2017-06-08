@@ -208,6 +208,8 @@
 
   <div class="info" style="display:none;" id="segment_view">
     <div class="title"> Segment View </div>
+    <div id="sv_size"> </div>
+    <div id="sv_filters"> </div>
   </div>
 
   <div class="info" style="display:none;" id="filter_view">
@@ -216,13 +218,14 @@
 
   <div class="info" style="display:none;" id="partition_view">
     <div class="title"> Partition View </div>
+
   </div>
 
     
 
     <div class="charts" id="chart_box">
       <div class="chart" id="len_chart"> 
-        <div class="title"> # of Actions </div>
+        <div class="title"> Number of Actions </div>
       </div>
       <div class="chart" id="duration_chart"> 
         <div class="title"> Duration chart </div>
@@ -237,6 +240,7 @@
 
     <div class= "charts" id= "list_box">
       <div class= "chart" id="contains_action_chart">
+        <div class="title"> Number of Sequences that Contains Action </div>
       </div>
     </div>
 
@@ -448,7 +452,7 @@ d3.csv(csv_file, function(error, data) {
 
           barChart()
           .dimension(len)
-          .dim_name('Number of actions')
+          .dim_name('# of actions')
           .group(lens)
           .x(d3.scaleLinear()
           .domain([0, 30])
@@ -673,9 +677,22 @@ d3.csv(csv_file, function(error, data) {
                     
         segment_view = sv_svg.append("g")
                           .attr("transform", "translate(" + nv_margin.left + "," + nv_margin.top + ")"),
-        sv_filters = segment_view.append("g"),
+        sv_filters = segment_view.append("g")
+                      .attr("transform", "translate(" + 0 + "," + 60 + ")"),
+        //sv_filters = d3.select('#sv_filters').append('g');
         sv_sizes = segment_view.append("g");
-    
+        //sv_sizes = d3.select('#sv_size').append('g')
+    sv_sizes.append('g').append('text')
+          .style("font-size", "12px")
+          .style("text-anchor", "left")
+          .style('fill', 'black')
+          .text('Size: ')
+
+
+    size_list = sv_sizes.append('g')
+          .attr("transform", "translate(" + 5 + "," + 0 + ")");
+
+
     sv_filters.append('g').append('text')
           .style("font-size", "12px")
           .style("text-anchor", "left")
@@ -691,10 +708,27 @@ d3.csv(csv_file, function(error, data) {
       var d = selected.data,
           filters = d.filters;
 
+      // if (d.prev_size){
+      //   rel_percent = d3.format(".1%")(d.size/d.prev_size);
+      // } else {
+      //   rel_percent = "None"
+      // }
+      rel_percent = d3.format(".1%")(d.size/total_size);
+      console.log(original_size);
+       console.log(total_size);
 
+      var abs = d3.format(".1%")(d.size/original_size)
+
+      sizes = ["Number of seqs: "+ d.size, "Percent of total: " + abs, "Percent of previous: " + rel_percent]
 
       text_object = [];
       update_filter_text(filter_list);
+      update_size_text(size_list);
+
+      text_object = sizes;
+      update_size_text(size_list);
+
+      
       if (filters){
         text_object = filters;
         update_filter_text(filter_list);
@@ -702,12 +736,15 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    function update_segment_view(selected) {
+    function format_size_text(d){
 
-
+      return d;
 
     }
-
+    
+    function update_size_text(view){
+      update_text(view, format_size_text);
+    }
 
 
 
@@ -1494,6 +1531,7 @@ d3.csv(csv_file, function(error, data) {
 
   total_size = all.reduceCount().value();
   data0[1].size = total_size;
+  original_size = data0[1].size;
 
   wScale = d3.scaleLinear().domain([0,total_size]).range([RECT_W_min, RECT_W_max]);
 
