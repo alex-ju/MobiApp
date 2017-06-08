@@ -15,8 +15,8 @@
       body {
         font-family: "Helvetica Neue";
         /*margin: 40px auto;*/
-        width: 960px;
-        min-height: 2000px;
+/*        width: 960px;
+        min-height: 2000px;*/
       }
 
       #body {
@@ -54,19 +54,19 @@
         text-rendering: optimizeLegibility;
       }
 
-      #charts {
+/*      #charts {
         padding: 2px 0;
-      }
+      }*/
 
       .leftovers {
         fill: gray;
       }
 
-      .chart {
+/*      .chart {
         display: inline-block;
-        /*height: 151px;*/
+        height: 151px;
         margin-bottom: 10px;
-      }
+      }*/
 
       .reset {
         padding-left: 1em;
@@ -123,7 +123,7 @@
         stroke: #666;
       }
 
-      #hour-chart {
+/*      #hour-chart {
         width: 260px;
       }
 
@@ -137,7 +137,7 @@
 
       #date-chart {
         width: 920px;
-      }
+      }*/
     </style>
 
   </head>
@@ -181,69 +181,76 @@
       </div>
   </div>
 
-  <div class="charts" style="display:none;" id="attributes">
-
-    <div class="info" style="display:none;" id="create_partition_view">
-    <div class="title"> Create Partition View </div> 
-      <div class= "button" id="addPartition_button">
-          <input name="addPartitionButton" 
-                       type="button" 
-                      value="Add Partition" />
-        </div>
-      <div class= "button"  id="removePartition_button">
-        <input name="removePartitionButton" 
-                     type="button" 
-                    value="Remove Partition" />
-      </div>
-      <div class= "button" id="applyPartition_button">
-        <input name="applyPartitionButton" 
-                     type="button" 
-                    value="Apply Partition" />
-      </div>
-      
-      <div class= "button" id="input_partition_value">
-          <input type="text" id="partition_value">
-      </div>
-    </div>
-
-  <div class="info" style="display:none;" id="segment_view">
-    <div class="title"> Segment View </div>
-    <div id="sv_size"> </div>
-    <div id="sv_filters"> </div>
-  </div>
-
-  <div class="info" style="display:none;" id="filter_view">
-    <div class="title"> Filter View </div>
-  </div>
-
-  <div class="info" style="display:none;" id="partition_view">
-    <div class="title"> Partition View </div>
-
-  </div>
-
+  <div class="charts" id="right_panel">
     
+    <div class="charts" id="info_box">
+      <div class="info" style="display:none;" id="create_partition_view">
+        <div class="title"> Create Partition View </div> 
+          <div class= "button" id="addPartition_button">
+              <input name="addPartitionButton" 
+                           type="button" 
+                          value="Add Partition" />
+          </div>
+        <div class= "button"  id="removePartition_button">
+          <input name="removePartitionButton" 
+                       type="button" 
+                      value="Remove Partition" />
+        </div>
+        <div class= "button" id="applyPartition_button">
+          <input name="applyPartitionButton" 
+                       type="button" 
+                      value="Apply Partition" />
+        </div>
+        
+        <div class= "button" id="input_partition_value">
+            <input type="text" id="partition_value">
+        </div>
+      </div>  
 
-    <div class="charts" id="chart_box">
-      <div class="chart" id="len_chart"> 
-        <div class="title"> Number of Actions </div>
+      <div class="info" style="display:none;" id="segment_view">
+        <div class="title"> Segment View </div>
       </div>
-      <div class="chart" id="duration_chart"> 
-        <div class="title"> Duration chart </div>
+
+      <div class="info" style="display:none;" id="filter_view">
+        <div class="title"> Filter View </div>
       </div>
-      <div class="chart" id="hour_chart"> 
-          <div class="title"> Start hour chart </div>
+
+      <div class="info" style="display:none;" id="partition_view">
+        <div class="title"> Partition View </div>
+
       </div>
-      <div class="chart" id="date_chart"> 
-          <div class="title"> Start Date </div>
+
+    </div>
+
+    <div class="charts" style="display:none;" id="attributes">
+
+      <div class="charts" id="chart_box">
+        <div class="chart" id="len_chart"> 
+          <div class="title"> Number of Actions </div>
+        </div>
+        <div class="chart" id="duration_chart"> 
+          <div class="title"> Duration chart </div>
+        </div>
+        <div class="chart" id="hour_chart"> 
+            <div class="title"> Start hour chart </div>
+        </div>
+        <div class="chart" id="date_chart"> 
+            <div class="title"> Start Date </div>
+        </div>
+      </div>
+
+      <div class= "charts" id= "list_box">
+        <div class= "chart" id="contains_action_chart">
+          <div class="title"> Number of Sequences that Contains Action </div>
+        </div>
       </div>
     </div>
 
-    <div class= "charts" id= "list_box">
-      <div class= "chart" id="contains_action_chart">
-        <div class="title"> Number of Sequences that Contains Action </div>
-      </div>
-    </div>
+    <div class ="charts" id="action_transition">
 
+    <div class ="chart" id="node_link">
+      <svg width="200" height="200"></svg>
+    </div>
 
   </div>
 </div>

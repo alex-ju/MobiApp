@@ -37,9 +37,9 @@
 
 }
 
-div {
+/*div {
   border: 1px solid black;
-}
+}*/
 
 .button {
   position: relative;
@@ -48,13 +48,13 @@ div {
   text-align:center;
 }
 
-.graph {
+/*.graph {
   left: 0px;
   position: static;
   display: inline-block;
   top: 20px;
 
-}
+}*/
 
 .wrapper {
   display: inline-flex;
@@ -110,15 +110,15 @@ h1, h2 {
   text-rendering: optimizeLegibility;
 }
 
-#charts {
+/*#charts {
   padding: 2px 0;
 }
-
-.chart {
+*/
+/*.chart {
   display: inline-block;
   height: 151px;
   margin-bottom: 20px;
-}
+}*/
 
 .reset {
   padding-left: 1em;
@@ -160,18 +160,3 @@ h1, h2 {
   stroke: #666;
 }
 
-#hour-chart {
-  width: 260px;
-}
-
-#delay-chart {
-  width: 230px;
-}
-
-#distance-chart {
-  width: 420px;
-}
-
-#date-chart {
-  width: 920px;
-}
