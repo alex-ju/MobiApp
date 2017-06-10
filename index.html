@@ -174,6 +174,11 @@
                      type="button" 
                     value="Contains actions" />
       </div>
+      <div class= "button" id="demo_button">
+        <input name="demoButton" 
+                     type="button" 
+                    value="length of string" />
+      </div>
   </div>
 
   <div class="charts" id="right_panel">
@@ -243,7 +248,7 @@
       <div class ="charts" id="action_transition">
 
         <div class ="chart" id="node_link">
-          <svg width="400" height="250"></svg>
+          
         </div>
 
       </div>
@@ -333,11 +338,6 @@ $(document).ready(function(){
   chart_data['len_chart'] = len_chart;
 
 
-
-  var margin = {top: 20, right:20, bottom: 20, left: 20},
-      width = 300 - margin.right - margin.left,
-      height = 600 - margin.top - margin.bottom;
-
   var selectedFilter ={},
       selectedDiv,
       selectedChar,
@@ -352,6 +352,7 @@ $(document).ready(function(){
   var csv_file = "sample_table.csv"; //100K
   //var csv_file = "sample_table1.6M.csv";
   var seq_data;
+
 
 
 d3.csv(csv_file, function(error, data) {
@@ -382,7 +383,13 @@ d3.csv(csv_file, function(error, data) {
         alphabet_rev[d.Character] = d.Action
       })
 
+      alphabet['start'] = '0';
+      alphabet['end'] = '1';
+      alphabet_rev['0'] = 'start';
+      alphabet_rev['1'] = 'end';
+
       console.log('Alphabet: ', alphabet);
+      console.log('data', data[2])
 
 
       var seqs = crossfilter(data),
@@ -453,6 +460,8 @@ d3.csv(csv_file, function(error, data) {
       .on("click", remove_partition_bar);
     d3.select("#applyPartition_button")
       .on("click", create_partition);
+    d3.select("#demo_button")
+      .on("click", get_node_link_info);
 
     var charts = [
 
@@ -502,6 +511,11 @@ d3.csv(csv_file, function(error, data) {
                     update_selected_chart(d3.select(this));
                     
                   });
+    var action_hierarchy = {},
+        current_level;
+
+        action_hierarchy.general_actions = ['addToCart', 'removeFromCart', 'purchase', 'search', 'pageview']
+    current_level = action_hierarchy.general_actions;
 
                  
     renderAll();
@@ -509,12 +523,16 @@ d3.csv(csv_file, function(error, data) {
     //=========================== Node Link =====================================//
 
     var nl_margin = {top: 20, right:20, bottom: 20, left: 20},
-        nl_svg = d3.select("#node_link").select("svg"),
+        nl_svg = d3.select("#node_link").append("svg")
+                    .attr("width", 400)
+                    .attr("height", 250),
         width = +nl_svg.attr("width")- nl_margin.right - nl_margin.left,
         height = +nl_svg.attr("height")- nl_margin.top - nl_margin.bottom;
 
     var nl_graph = nl_svg.append("g")
                     .attr("transform", "translate(" + nl_margin.left + "," + nl_margin.top + ")")
+
+
 
     var color = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -546,14 +564,13 @@ d3.csv(csv_file, function(error, data) {
                 {"source": "E", "target": "A", "value": 3},
                 {"source": "F", "target": "E", "value": 3}]
 
-      node_link.nodes = nl_nodes;
-      node_link.links = nl_links;
-    update_node_link();
+    
 
+    node_link.nodes = nl_nodes;
+    node_link.links = nl_links;
 
-    function update_node_link(){
-      //build the arrow
-      nl_graph.append("svg:defs").selectAll("marker")
+    //build the arrow
+    nl_graph.append("svg:defs").selectAll("marker")
           .data(["end"])      // Different link/path types can be defined here
         .enter().append("svg:marker")    // This section adds in the arrows
           .attr("id", String)
@@ -563,11 +580,115 @@ d3.csv(csv_file, function(error, data) {
           .attr("markerWidth", 4)
           .attr("markerHeight", 4)
           .attr("orient", "auto")
+          .append("svg:path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", "gray");
 
-        .append("svg:path")
-          .attr("d", "M0,-5L10,0L0,5")
-          .attr("fill", "gray");
+    
 
+    function reduceInitial1() {
+        return {
+            str: ''
+        };
+      }
+
+      function reduceAdd1(p, v) {
+          
+          p.str = p.str + '0' + v.general_actions + '1';
+        
+        return p;
+
+      }
+
+      function reduceRemove1(p, v) {
+        var index = p.str.length - (v.general_actions.length + 2)
+
+        p.str = p.str.substring(0, index)
+        
+        return p;
+
+      }
+
+    var action_string;
+
+    get_node_link_info();
+    update_node_link();
+    
+    function get_previous_char(str, char){
+      var regex = '[^' + char + ']' + '(?=' + char + ')',
+          re = new RegExp(regex, 'g'),
+          matches = str.match(re);
+
+      
+
+      return matches;
+    }
+
+    function get_next_char(str, char){
+      var regex = '' + char + '' + '([^' + char + '])' ,
+          re = new RegExp(regex, 'g'),
+          matches = str.match(re);
+
+      
+      new_matches = [];
+      matches.forEach(function(m){
+        new_matches.push(m[1]);
+      })
+
+
+      return new_matches;
+    }
+
+    function get_node_link_info(){
+      action_string = all.reduce(reduceAdd1, reduceRemove1, reduceInitial1).value().str;
+      console.log(action_string.length)
+      var nodes =[],
+          links = [];
+      //create nodes
+      nodes.push({id:"start"});
+      nodes.push({id:"exit"});
+
+      for ( var i =0; i < current_level.length; i ++){
+        var action = current_level[i];
+        nodes.push({id:action})
+      }
+
+      current_level.push("start")
+      console.log(current_level);
+
+      //create edges
+      for ( var i =0; i < current_level.length; i ++){
+        var action = current_level[i],
+            char = alphabet[action];
+
+            source = action;
+
+        console.log('Action: '+ action + ' Char: ' + char);
+
+        var matches = get_next_char(action_string, char),
+          total_matches =  matches.length;
+          counts = _.countBy(matches, function(char){
+            return char;
+          });
+
+          for (var c in counts) {
+            if (counts.hasOwnProperty(c)) {
+              console.log(c + " -> " + counts[c]);
+              var target = alphabet_rev[c],
+                  value = counts[c];
+              links.push({'source':source, 'target':target, 'value':value})
+            }
+          }
+      }
+
+      node_link.nodes = nodes;
+      node_link.links = links;
+
+      
+      
+    }
+
+    function update_node_link(){
       
 
       var link = nl_graph.append("g")
@@ -580,6 +701,8 @@ d3.csv(csv_file, function(error, data) {
             return 2; 
           })
           .attr("marker-end", "url(#end)");
+
+      var node_radius = 8;
           
       var node = nl_graph.append("g")
         .attr("class", "nodes")
@@ -593,26 +716,15 @@ d3.csv(csv_file, function(error, data) {
           .on("end", dragended));
         
       node.append('circle')
-          .attr("r", 8)
+          .attr("r", node_radius)
           .attr("fill", function(d) { return color(d.group); })
       
       node.append('text')
           .style('fill', 'black')
+          .style("font-size", "10px")
+          .style("text-anchor", "middle")
+          .attr('dy', node_radius/2 )
           .text(function(d) {return d.id;})
-
-      // var node = nl_graph.append("g")
-      //     .attr("class", "nodes")
-      //   .selectAll("circle")
-      //   .data(node_link.nodes)
-      //   .enter().append("circle")
-      //     .attr("r", 8)
-      //     .attr("fill", function(d) { return color(d.group); })
-      //     .on('click', function(d){console.log(d)})
-      //     .call(d3.drag()
-      //       .on("start", dragstarted)
-      //       .on("drag", dragged)
-      //       .on("end", dragended));
-
 
 
       node.append("title") 
@@ -658,8 +770,8 @@ d3.csv(csv_file, function(error, data) {
 
     function dragended(d) {
       if (!d3.event.active) simulation.alphaTarget(0);
-      d.fx = null;
-      d.fy = null;
+      // d.fx = null;
+      // d.fy = null;
     }
 
 
@@ -1648,8 +1760,6 @@ d3.csv(csv_file, function(error, data) {
       data.push(newNumber);             //Add new number to array
   }
 
-  //var data = d3.range(1000).map(d3.randomBates(10));
-  //make_histogram(data);
 
   function group_count(d, thresholds) {
     
@@ -1666,7 +1776,9 @@ d3.csv(csv_file, function(error, data) {
   }
 
 
-  
+  var margin = {top: 20, right:20, bottom: 20, left: 20},
+      width = 300 - margin.right - margin.left,
+      height = 750 - margin.top - margin.bottom;
 
   var RECT_W_max = 100,
       RECT_W_min = 1,
@@ -1696,8 +1808,6 @@ d3.csv(csv_file, function(error, data) {
 
   // ************** Generate the tree diagram  *****************
   var buttons = d3.select("#buttons")
-
-
 
 
       
@@ -2130,11 +2240,7 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    var action_hierarchy = {},
-    current_level;
-
-    action_hierarchy.general_actions = ['addToCart', 'removeFromCart', 'purchase', 'search', 'pageview']
-    current_level = action_hierarchy.general_actions;
+   
 
 
     function contains_action() {
