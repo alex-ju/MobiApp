@@ -384,9 +384,9 @@ d3.csv(csv_file, function(error, data) {
       })
 
       alphabet['start'] = '0';
-      alphabet['end'] = '1';
+      alphabet['exit'] = '1';
       alphabet_rev['0'] = 'start';
-      alphabet_rev['1'] = 'end';
+      alphabet_rev['1'] = 'exit';
 
       console.log('Alphabet: ', alphabet);
       console.log('data', data[2])
@@ -645,19 +645,19 @@ d3.csv(csv_file, function(error, data) {
       var nodes =[],
           links = [];
       //create nodes
-      nodes.push({id:"start"});
-      nodes.push({id:"exit"});
+      nodes.push({id:"start", group:0, fx: width/2, fy: 0});
+      nodes.push({id:"exit", group:0, fx: width/2, fy: height});
 
-      for ( var i =0; i < current_level.length; i ++){
+      for ( var i =0; i < current_level.length; i++){
         var action = current_level[i];
-        nodes.push({id:action})
+        nodes.push({id:action, group:i+1});
       }
 
       current_level.push("start")
       console.log(current_level);
 
       //create edges
-      for ( var i =0; i < current_level.length; i ++){
+      for ( var i =0; i < current_level.length; i++){
         var action = current_level[i],
             char = alphabet[action];
 
@@ -675,7 +675,7 @@ d3.csv(csv_file, function(error, data) {
             if (counts.hasOwnProperty(c)) {
               console.log(c + " -> " + counts[c]);
               var target = alphabet_rev[c],
-                  value = counts[c];
+                  value = counts[c]*100/total_matches;
               links.push({'source':source, 'target':target, 'value':value})
             }
           }
@@ -684,12 +684,15 @@ d3.csv(csv_file, function(error, data) {
       node_link.nodes = nodes;
       node_link.links = links;
 
+      console.log('nodes', nodes);
+      console.log('links', links);
       
       
     }
 
     function update_node_link(){
       
+      var strokeScale = d3.scaleLinear().domain([0,100]).range([1,5]);
 
       var link = nl_graph.append("g")
           .attr("class", "links")
@@ -698,7 +701,9 @@ d3.csv(csv_file, function(error, data) {
         .enter().append("line")
           .attr("stroke-width", function(d) { 
             //return Math.sqrt(d.value);
-            return 2; 
+            //return 2; 
+
+            return strokeScale(d.value);
           })
           .attr("marker-end", "url(#end)");
 
