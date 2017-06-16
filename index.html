@@ -15,8 +15,8 @@
       body {
         font-family: "Helvetica Neue";
         /*margin: 40px auto;*/
-/*        width: 960px;
-        min-height: 2000px;*/
+        /*        width: 960px;
+                min-height: 2000px;*/
       }
 
       #body {
@@ -54,19 +54,19 @@
         text-rendering: optimizeLegibility;
       }
 
-/*      #charts {
-        padding: 2px 0;
-      }*/
+      /*      #charts {
+              padding: 2px 0;
+            }*/
 
       .leftovers {
         fill: gray;
       }
 
-/*      .chart {
-        display: inline-block;
-        height: 151px;
-        margin-bottom: 10px;
-      }*/
+      /*      .chart {
+              display: inline-block;
+              height: 151px;
+              margin-bottom: 10px;
+            }*/
 
       .reset {
         padding-left: 1em;
@@ -177,7 +177,7 @@
       <div class= "button" id="demo_button">
         <input name="demoButton" 
                      type="button" 
-                    value="length of string" />
+                    value="update node link" />
       </div>
   </div>
 
@@ -461,7 +461,7 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#applyPartition_button")
       .on("click", create_partition);
     d3.select("#demo_button")
-      .on("click", get_node_link_info);
+      .on("click", update_node_link);
 
     var charts = [
 
@@ -526,48 +526,24 @@ d3.csv(csv_file, function(error, data) {
         nl_svg = d3.select("#node_link").append("svg")
                     .attr("width", 400)
                     .attr("height", 250),
-        width = +nl_svg.attr("width")- nl_margin.right - nl_margin.left,
-        height = +nl_svg.attr("height")- nl_margin.top - nl_margin.bottom;
+        nl_width = +nl_svg.attr("width")- nl_margin.right - nl_margin.left,
+        nl_height = +nl_svg.attr("height")- nl_margin.top - nl_margin.bottom;
 
     var nl_graph = nl_svg.append("g")
-                    .attr("transform", "translate(" + nl_margin.left + "," + nl_margin.top + ")")
+                    .attr("transform", "translate(" + nl_margin.left + "," + nl_margin.top + ")"),
+        nl_links = nl_graph.append("g")
+                      .attr("class", "links"),
+        nl_nodes = nl_graph.append("g");
 
 
 
-    var color = d3.scaleOrdinal(d3.schemeCategory20);
+    var color = d3.scaleOrdinal(d3.schemeCategory20),
+        node_link = {};
 
-    var simulation = d3.forceSimulation()
-        .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(80))
-        .force("charge", d3.forceManyBody())
-        .force("center", d3.forceCenter(width / 2, height/2));
 
-    var node_link = {};
 
-    var nl_nodes = [{"id": "C", "group": 1, fx: width/2, fy: 0},
-                {"id": "B", "group": 2},
-                {"id": "F", "group": 3},
-                {"id": "D", "group": 4},
-                {"id": "E", "group": 5},
-                {"id": "A", "group": 6, fx: width/2, fy: height}],
-        nl_links =  [
-                {"source": "A", "target": "B", "value": 1},
-                {"source": "A", "target": "D", "value": 8},
-                {"source": "A", "target": "F", "value": 10},
-                {"source": "B", "target": "D", "value": 6},
-                {"source": "B", "target": "C", "value": 1},
-                {"source": "C", "target": "A", "value": 1},
-                {"source": "C", "target": "E", "value": 1},
-                {"source": "C", "target": "F", "value": 1},
-                {"source": "C", "target": "D", "value": 2},
-                {"source": "D", "target": "A", "value": 1},
-                {"source": "D", "target": "B", "value": 1},
-                {"source": "E", "target": "A", "value": 3},
-                {"source": "F", "target": "E", "value": 3}]
-
-    
-
-    node_link.nodes = nl_nodes;
-    node_link.links = nl_links;
+    // node_link.nodes = nl_nodes;
+    // node_link.links = nl_links;
 
     //build the arrow
     nl_graph.append("svg:defs").selectAll("marker")
@@ -586,13 +562,13 @@ d3.csv(csv_file, function(error, data) {
 
     
 
-    function reduceInitial1() {
+    function reduceInitial_concat() {
         return {
             str: ''
         };
       }
 
-      function reduceAdd1(p, v) {
+      function reduceAdd_concat(p, v) {
           
           p.str = p.str + '0' + v.general_actions + '1';
         
@@ -600,7 +576,7 @@ d3.csv(csv_file, function(error, data) {
 
       }
 
-      function reduceRemove1(p, v) {
+      function reduceRemove_concat(p, v) {
         var index = p.str.length - (v.general_actions.length + 2)
 
         p.str = p.str.substring(0, index)
@@ -609,10 +585,10 @@ d3.csv(csv_file, function(error, data) {
 
       }
 
-    var action_string;
+    
 
-    get_node_link_info();
-    update_node_link();
+    // node_link = update_node_link_info();
+    // draw_node_link(node_link);
     
     function get_previous_char(str, char){
       var regex = '[^' + char + ']' + '(?=' + char + ')',
@@ -631,30 +607,63 @@ d3.csv(csv_file, function(error, data) {
 
       
       new_matches = [];
-      matches.forEach(function(m){
-        new_matches.push(m[1]);
-      })
+      if (matches){
+        matches.forEach(function(m){
+          new_matches.push(m[1]);
+        })
+      }
 
 
       return new_matches;
     }
 
-    function get_node_link_info(){
-      action_string = all.reduce(reduceAdd1, reduceRemove1, reduceInitial1).value().str;
-      console.log(action_string.length)
+
+
+    function update_node_link(){
+      
+      var node_link;
+
+      node_link = clear_node_link_data();
+      draw_node_link(node_link);
+
+      node_link = update_node_link_info();
+      draw_node_link(node_link);
+
+    }
+
+    function clear_node_link_data(){
+      //var node_link = {};
+
+      node_link.nodes = [];
+      node_link.links = [];
+
+      return node_link;
+
+
+    }
+
+    function update_node_link_info(){
+      //var node_link = {},
+      var nl_nodes = [],
+        nl_links = [];
+      var action_string;
+      
+
       var nodes =[],
           links = [];
+
+
+      action_string = all.reduce(reduceAdd_concat, reduceRemove_concat, reduceInitial_concat).value().str;    
       //create nodes
-      nodes.push({id:"start", group:0, fx: width/2, fy: 0});
-      nodes.push({id:"exit", group:0, fx: width/2, fy: height});
+      nodes.push({id:"start", group:0, fx: nl_width/2, fy: 0});
+      nodes.push({id:"exit", group:0, fx: nl_width/2, fy: nl_height});
 
       for ( var i =0; i < current_level.length; i++){
         var action = current_level[i];
-        nodes.push({id:action, group:i+1});
+        nodes.push({id:action, action:action, group:i+1});
       }
 
-      current_level.push("start")
-      console.log(current_level);
+      current_level.push("start");
 
       //create edges
       for ( var i =0; i < current_level.length; i++){
@@ -663,7 +672,7 @@ d3.csv(csv_file, function(error, data) {
 
             source = action;
 
-        console.log('Action: '+ action + ' Char: ' + char);
+        //console.log('Action: '+ action + ' Char: ' + char);
 
         var matches = get_next_char(action_string, char),
           total_matches =  matches.length;
@@ -673,58 +682,82 @@ d3.csv(csv_file, function(error, data) {
 
           for (var c in counts) {
             if (counts.hasOwnProperty(c)) {
-              console.log(c + " -> " + counts[c]);
+              //console.log(c + " -> " + counts[c]);
               var target = alphabet_rev[c],
                   value = counts[c]*100/total_matches;
               links.push({'source':source, 'target':target, 'value':value})
             }
           }
       }
+      current_level.pop();
 
       node_link.nodes = nodes;
       node_link.links = links;
 
-      console.log('nodes', nodes);
-      console.log('links', links);
+
+      return node_link;
       
       
     }
 
-    function update_node_link(){
+    function select_action_node(d){
+      if (selected_action_node){
+        selected_action_node.selected = false;
+      }
+      selected_action_node = d;
+      d.selected = true;
+      console.log("Selected action node: ", selected_action_node);
+
+      draw_node_link(node_link)
+
+    }
+    
+
+    function draw_node_link(node_link){
+
       
+
       var strokeScale = d3.scaleLinear().domain([0,100]).range([1,5]);
 
-      var link = nl_graph.append("g")
-          .attr("class", "links")
-        .selectAll("line")
-        .data(node_link.links)
-        .enter().append("line")
+      simulation = d3.forceSimulation()
+        .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(80))
+        .force("charge", d3.forceManyBody())
+        .force("center", d3.forceCenter(nl_width / 2, nl_height/2));
+      
+      
+
+      var link = nl_links.selectAll("line").data(node_link.links);
+
+
+      var link_enter = link.enter().append("line")
           .attr("stroke-width", function(d) { 
             //return Math.sqrt(d.value);
-            //return 2; 
+            return 2; 
 
-            return strokeScale(d.value);
+            //return strokeScale(d.value);
           })
           .attr("marker-end", "url(#end)");
 
+      var link_update = link_enter.merge(link);
+
+      var link_exit = link.exit().remove();
+
       var node_radius = 8;
-          
-      var node = nl_graph.append("g")
-        .attr("class", "nodes")
-        .selectAll("g")
-        .data(node_link.nodes)
-        .enter().append("g")
-        .on('click', function(d){console.log(d)})
+
+      var node = nl_nodes.selectAll("g").data(node_link.nodes);
+
+      var node_enter = node.enter().append("g")
+        .on('click', select_action_node)
         .call(d3.drag()
           .on("start", dragstarted)
           .on("drag", dragged)
           .on("end", dragended));
         
-      node.append('circle')
+      node_enter.append('circle')
           .attr("r", node_radius)
           .attr("fill", function(d) { return color(d.group); })
       
-      node.append('text')
+      node_enter.append('text')
           .style('fill', 'black')
           .style("font-size", "10px")
           .style("text-anchor", "middle")
@@ -732,8 +765,15 @@ d3.csv(csv_file, function(error, data) {
           .text(function(d) {return d.id;})
 
 
-      node.append("title") 
+      node_enter.append("title") 
           .text(function(d) { return d.id; })
+
+      var node_update = node_enter.merge(node);
+      node_update.select('circle')
+        .attr('stroke', function(d) { return d.selected? 'black' : 'none' })
+
+
+      node.exit().remove();
 
 
       simulation
@@ -745,17 +785,17 @@ d3.csv(csv_file, function(error, data) {
           .links(node_link.links)
 
       function ticked() {
-        link
+        link_enter
             .attr("x1", function(d) { return d.source.x; })
             .attr("y1", function(d) { return d.source.y; })
             .attr("x2", function(d) { return d.target.x; })
             .attr("y2", function(d) { return d.target.y; });
 
-        node.selectAll('circle')
+        node_enter.selectAll('circle')
             .attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; });
 
-        node.selectAll('text')
+        node_enter.selectAll('text')
             .attr("x", function(d) { return d.x; })
             .attr("y", function(d) { return d.y; });
       }
@@ -1836,7 +1876,8 @@ d3.csv(csv_file, function(error, data) {
 
   var selected,
       selected_chart,
-      chart_range;
+      chart_range,
+      selected_action_node;
 
 
 
@@ -1929,28 +1970,6 @@ d3.csv(csv_file, function(error, data) {
         .text(function(d) { 
           if (d.data.value == 1)
             return d.data.size;
-          // else if (d.data.value == 0){
-
-          //   return d.data.filter_type.type;
-          // }
-          // else if (d.data.value == 0){
-               
-          //     f = d.data.filter_type;
-          //     div = f.div;
-          //     type = div.slice(0, div.indexOf('_'));
-          //     ext = f.extents;
-          //     e1 = ext[0];
-          //     e2 = ext[1];
-          //     if ((typeof e1)=="number") {
-          //       e1 = Math.round(e1);
-          //       e2 = Math.round(e2);
-          //     } else {
-          //       console.log(e1);
-          //       e1 = e1.getDate() + '/' + (e1.getMonth()+1) + '/' + e1.getFullYear();
-          //       e2 = e2.getDate() + '/' + (e2.getMonth()+1 )+ '/' + e2.getFullYear();
-          //     }
-          //     return type + ' [' + e1 + ',' + e2 +']';
-          //   }
           else
             return ''; });
       
@@ -2180,6 +2199,7 @@ d3.csv(csv_file, function(error, data) {
           new_selection = false;
           console.log('The current selection has ' + selected.data.size + ' sequences!' );
           contains_action();
+          update_node_link();
 
         } 
 
