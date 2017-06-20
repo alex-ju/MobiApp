@@ -274,7 +274,7 @@
             <div class= "button" id="create_funnel_button">
               <input name="addLinkButton" 
                            type="button" 
-                          value="Create Filter" />
+                          value="Create Funnel" />
             </div>
 
           </div>
@@ -875,7 +875,7 @@ d3.csv(csv_file, function(error, data) {
           add_action_node();
           current_node_id = selected_pattern_node.id;
           pattern_data.links.push({"source": previous_node_id, "target": current_node_id, "value": 0.5});
-
+          draw_pattern_graph(pattern_data);
 
         }else{
           add_action_node();
@@ -888,7 +888,7 @@ d3.csv(csv_file, function(error, data) {
       console.log("Selected action node: ", selected_action_node);
 
       draw_action_transition_graph(nl_graph_data);
-      draw_pattern_graph(pattern_data);
+      
       
 
     }
@@ -1005,6 +1005,7 @@ d3.csv(csv_file, function(error, data) {
     function create_funnel(){
       toggle_button_color("#create_funnel_button");
       pressed = !pressed;
+      d3.select("#create_funnel_button").text(function(d){return pressed? 'Complete Funnel': 'Create Filter'});
 
 
 
