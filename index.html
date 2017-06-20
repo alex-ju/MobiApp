@@ -247,8 +247,35 @@
 
       <div class ="charts" id="action_transition">
 
-        <div class ="chart" id="node_link">
-          
+        <div class ="chart" id="node_link"></div>
+
+        <div  class="chart" id="pattern_builder">
+
+
+          <div  class="chart" id="pb_graph"></div>
+
+          <div class="button_box" id="pb_buttons">
+            <div class= "button" id="add_node_button">
+              <input name="addNodeButton" 
+                           type="button" 
+                          value="Add Action Node" 
+                           />
+            </div>
+            <div class= "button" id="remove_node_button">
+              <input name="removeNodeButton" 
+                           type="button" 
+                          value="Remove Node" />
+            </div>
+            <div class= "button" id="add_link_button">
+              <input name="addLinkButton" 
+                           type="button" 
+                          value="Add Link" />
+            </div>
+
+          </div>
+
+
+
         </div>
 
       </div>
@@ -461,7 +488,12 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#applyPartition_button")
       .on("click", create_partition);
     d3.select("#demo_button")
-      .on("click", update_node_link);
+      .on("click", update_action_transition_graph);
+    d3.select("#add_node_button")
+      .on("click", add_action_node);
+    d3.select("#add_link_button")
+      .on("click", add_link)
+
 
     var charts = [
 
@@ -538,12 +570,8 @@ d3.csv(csv_file, function(error, data) {
 
 
     var color = d3.scaleOrdinal(d3.schemeCategory20),
-        node_link = {};
+        node_link_data = {};
 
-
-
-    // node_link.nodes = nl_nodes;
-    // node_link.links = nl_links;
 
     //build the arrow
     nl_graph.append("svg:defs").selectAll("marker")
@@ -585,11 +613,6 @@ d3.csv(csv_file, function(error, data) {
 
       }
 
-    
-
-    // node_link = update_node_link_info();
-    // draw_node_link(node_link);
-    
     function get_previous_char(str, char){
       var regex = '[^' + char + ']' + '(?=' + char + ')',
           re = new RegExp(regex, 'g'),
@@ -619,31 +642,29 @@ d3.csv(csv_file, function(error, data) {
 
 
 
-    function update_node_link(){
+    function update_action_transition_graph(){
       
-      var node_link;
+      var node_link_data;
 
-      node_link = clear_node_link_data();
-      draw_node_link(node_link);
+      node_link_data = clear_node_link_data();
+      draw_action_transition_graph(node_link_data);
 
-      node_link = update_node_link_info();
-      draw_node_link(node_link);
+      node_link_data = update_node_link_info();
+      draw_action_transition_graph(node_link_data);
 
     }
 
     function clear_node_link_data(){
-      //var node_link = {};
 
-      node_link.nodes = [];
-      node_link.links = [];
+      node_link_data.nodes = [];
+      node_link_data.links = [];
 
-      return node_link;
+      return node_link_data;
 
 
     }
 
     function update_node_link_info(){
-      //var node_link = {},
       var nl_nodes = [],
         nl_links = [];
       var action_string;
@@ -691,14 +712,16 @@ d3.csv(csv_file, function(error, data) {
       }
       current_level.pop();
 
-      node_link.nodes = nodes;
-      node_link.links = links;
+      node_link_data.nodes = nodes;
+      node_link_data.links = links;
 
 
-      return node_link;
+
+      return node_link_data;
       
       
     }
+
 
     function select_action_node(d){
       if (selected_action_node){
@@ -706,27 +729,52 @@ d3.csv(csv_file, function(error, data) {
       }
       selected_action_node = d;
       d.selected = true;
+      if (pressed){
+        
+        if(pattern_data.nodes.length>0){
+          //add link to previously added node
+          previous_node_id = selected_pattern_node.id;
+          add_action_node();
+          current_node_id = selected_pattern_node.id;
+          // pattern_data.links.push({"source": previous_node_id, "target": current_node_id, "value": 0.5});
+
+
+        }else{
+          add_action_node();
+        }
+
+
+
+
+      }
       console.log("Selected action node: ", selected_action_node);
 
-      draw_node_link(node_link)
+      draw_action_transition_graph(node_link_data);
+      draw_pattern_graph(pattern_data);
 
     }
+
+    function draw_action_transition_graph(node_link_data){
+      draw_node_link(node_link_data, nl_links, nl_nodes, nl_width, nl_height);
+    }
     
+    var simulation;
 
-    function draw_node_link(node_link){
+    function draw_node_link(node_link_data, links, nodes, width, height){
 
-      
+      console.log('draw graph with data:', node_link_data);
+      console.log('width:' + width + ' height: ' +height);
 
       var strokeScale = d3.scaleLinear().domain([0,100]).range([1,5]);
 
       simulation = d3.forceSimulation()
         .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(80))
         .force("charge", d3.forceManyBody())
-        .force("center", d3.forceCenter(nl_width / 2, nl_height/2));
+        .force("center", d3.forceCenter(width / 2, height/2));
       
       
 
-      var link = nl_links.selectAll("line").data(node_link.links);
+      var link = links.selectAll("line").data(node_link_data.links);
 
 
       var link_enter = link.enter().append("line")
@@ -744,7 +792,7 @@ d3.csv(csv_file, function(error, data) {
 
       var node_radius = 8;
 
-      var node = nl_nodes.selectAll("g").data(node_link.nodes);
+      var node = nodes.selectAll("g").data(node_link_data.nodes);
 
       var node_enter = node.enter().append("g")
         .on('click', select_action_node)
@@ -762,7 +810,7 @@ d3.csv(csv_file, function(error, data) {
           .style("font-size", "10px")
           .style("text-anchor", "middle")
           .attr('dy', node_radius/2 )
-          .text(function(d) {return d.id;})
+          .text(function(d) {return d.action;})
 
 
       node_enter.append("title") 
@@ -777,12 +825,14 @@ d3.csv(csv_file, function(error, data) {
 
 
       simulation
-          .nodes(node_link.nodes)
+          .nodes(node_link_data.nodes)
           .on("tick", ticked);
 
 
       simulation.force("link")
-          .links(node_link.links)
+          .links(node_link_data.links)
+
+      simulation.alpha(1).restart()
 
       function ticked() {
         link_enter
@@ -806,6 +856,7 @@ d3.csv(csv_file, function(error, data) {
       if (!d3.event.active) simulation.alphaTarget(0.3).restart();
       d.fx = d.x;
       d.fy = d.y;
+
     }
 
     function dragged(d) {
@@ -818,6 +869,86 @@ d3.csv(csv_file, function(error, data) {
       // d.fx = null;
       // d.fy = null;
     }
+
+
+    // ========================== Pattern Builder ============================== //
+
+    var pb_margin = {top: 20, right:20, bottom: 20, left: 20},
+        pb_svg = d3.select("#pb_graph").append("svg")
+                    .attr("width", 200)
+                    .attr("height", 250),
+        pb_width = +pb_svg.attr("width")- pb_margin.right - pb_margin.left,
+        pb_height = +pb_svg.attr("height")- pb_margin.top - pb_margin.bottom;
+
+    var pb_graph = pb_svg.append("g")
+                    .attr("transform", "translate(" + pb_margin.left + "," + pb_margin.top + ")"),
+        pb_links = pb_graph.append("g")
+                      .attr("class", "links"),
+        pb_nodes = pb_graph.append("g");
+
+        pb_graph.append("svg:defs").selectAll("marker")
+          .data(["end"])      // Different link/path types can be defined here
+        .enter().append("svg:marker")    // This section adds in the arrows
+          .attr("id", String)
+          .attr("viewBox", "0 -5 10 10")
+          .attr("refX", 20)
+          .attr("refY", 0)
+          .attr("markerWidth", 4)
+          .attr("markerHeight", 4)
+          .attr("orient", "auto")
+          .append("svg:path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", "gray");
+
+    var pattern_data = {'nodes':[], 'links': []},
+        selected_pattern_node;
+
+    function add_action_node(){
+      if (selected_action_node){
+        console.log(selected_action_node);
+        var new_node = {
+          'action': selected_action_node.action,
+          'id': selected_action_node.id+'1',
+          'group': selected_action_node.group
+        }
+        var new_node1 = {
+          'action': 'sample',
+          'id': 'sample',
+          'group': 7
+        }
+        pattern_data.nodes =[];
+        pattern_data.links = [];
+        selected_pattern_node = new_node;
+        pattern_data.nodes.push(new_node);
+        pattern_data.nodes.push(new_node1);
+        draw_pattern_graph(pattern_data);
+        pattern_data.links.push({source:new_node, target: new_node1, value:50})
+        draw_pattern_graph(pattern_data);
+      }
+      else
+        console.log('Please select node to add!')
+    }
+    var pressed= false;
+    function add_link(){
+      toggle_button_color("#add_link_button");
+      pressed = !pressed;
+
+
+
+
+
+    }
+
+    function draw_pattern_graph(node_link_data){
+
+      draw_node_link(node_link_data, pb_links, pb_nodes, pb_width, pb_height);
+    }
+
+    
+
+
+
+
 
 
     //=========================== Info Views ====================================//
@@ -1852,7 +1983,7 @@ d3.csv(csv_file, function(error, data) {
 
 
   // ************** Generate the tree diagram  *****************
-  var buttons = d3.select("#buttons")
+  //var buttons = d3.select("#buttons")
 
 
       
@@ -2199,7 +2330,7 @@ d3.csv(csv_file, function(error, data) {
           new_selection = false;
           console.log('The current selection has ' + selected.data.size + ' sequences!' );
           contains_action();
-          update_node_link();
+          update_action_transition_graph();
 
         } 
 
@@ -2805,14 +2936,18 @@ d3.csv(csv_file, function(error, data) {
         pressed_color = "lightgray",
         current_color = original_color;
 
-
+    function toggle_button_color(button_id){
+      current_color = current_color == original_color? pressed_color : original_color;
+      d3.select(button_id).style("background-color", current_color);
+    }
 
     function show_path_only() {
 
       only_path = !only_path;
 
-      current_color = current_color == original_color? pressed_color : original_color;
-      d3.select("#path_button").style("background-color", current_color);
+      toggle_button_color("#path_button")
+      // current_color = current_color == original_color? pressed_color : original_color;
+      // d3.select("#path_button").style("background-color", current_color);
 
       n = selected;
 
