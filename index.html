@@ -169,7 +169,7 @@
                      type="button" 
                     value="Add Partition" />
       </div>
-      <div class= "button" id="funnel_button">
+      <div class= "button" id="apply_funnel_button">
         <input name="funnelButton" 
                      type="button" 
                     value="Apply Funnel" />
@@ -498,6 +498,8 @@ d3.csv(csv_file, function(error, data) {
       .on("click", add_action_node);
     d3.select("#create_funnel_button")
       .on("click", create_funnel)
+    d3.select("#apply_funnel_button")
+      .on("click", apply_funnel)
     d3.select("#remove_node_button")
       .on("click", remove_action_node)
 
@@ -518,7 +520,7 @@ d3.csv(csv_file, function(error, data) {
           .group(durations)
           .x(d3.scaleLinear()
           .domain([0, 30 ])
-          .range([0, 10])),
+          .rangeRound([0, 10])),
 
           barChart()
           .dimension(hour)
@@ -786,7 +788,7 @@ d3.csv(csv_file, function(error, data) {
       node_link_data = clear_node_link_data();
       draw_action_transition_graph(node_link_data);
 
-      node_link_data = update_node_link_info();
+      node_link_data = update_node_link_data();
       draw_action_transition_graph(node_link_data);
 
     }
@@ -801,7 +803,67 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    function update_node_link_info(){
+    function link_exists(links, source, target){
+
+      for (var i=0; i <links.length; i++){
+        var l = links[i];
+        if((l.source == source) && (l.target == target))
+          return l;
+      }
+
+      return null;
+      
+
+    }
+
+    function update_link_data(action_string, links, pageFunction, reverse){
+
+      var reverse = reverse || false;
+      //create edges
+      for ( var i =0; i < current_level.length; i++){
+        var action = current_level[i],
+            char = alphabet[action];
+
+            source = action;
+
+        //console.log('Action: '+ action + ' Char: ' + char);
+
+        var matches = pageFunction(action_string, char),
+          total_matches =  matches.length;
+          counts = _.countBy(matches, function(char){
+            return char;
+          });
+
+          for (var c in counts) {
+            if (counts.hasOwnProperty(c)) {
+              var target = alphabet_rev[c],
+                  count = counts[c];
+                  value = count*100/total_matches;
+
+              
+              if (reverse){
+                var link = link_exists(links, target, source);
+                
+                if(link){
+                  console.log('FOUND LINK');
+                  link.into_target_value = value;
+                  link.into_target_count = count;
+                }else{
+                  console.log('WEIRD! link not found for reverse')
+                }
+              }else{
+
+                links.push({source:source, target:target, value:value, count:count});
+                
+              }
+            }
+          }
+      }
+
+      return links;
+    }
+
+    function update_node_link_data(){
       // var nl_nodes = [],
       //   nl_links = [];
       var action_string;
@@ -823,31 +885,38 @@ d3.csv(csv_file, function(error, data) {
 
       current_level.push("start");
 
-      //create edges
-      for ( var i =0; i < current_level.length; i++){
-        var action = current_level[i],
-            char = alphabet[action];
+      // //create edges
+      // for ( var i =0; i < current_level.length; i++){
+      //   var action = current_level[i],
+      //       char = alphabet[action];
 
-            source = action;
+      //       source = action;
 
-        //console.log('Action: '+ action + ' Char: ' + char);
+      //   //console.log('Action: '+ action + ' Char: ' + char);
 
-        var matches = get_next_char(action_string, char),
-          total_matches =  matches.length;
-          counts = _.countBy(matches, function(char){
-            return char;
-          });
+      //   var matches = get_next_char(action_string, char),
+      //     total_matches =  matches.length;
+      //     counts = _.countBy(matches, function(char){
+      //       return char;
+      //     });
 
-          for (var c in counts) {
-            if (counts.hasOwnProperty(c)) {
-              //console.log(c + " -> " + counts[c]);
-              var target = alphabet_rev[c],
-                  value = counts[c]*100/total_matches;
-              links.push({source:source, target:target, value:value})
-            }
-          }
-      }
+      //     for (var c in counts) {
+      //       if (counts.hasOwnProperty(c)) {
+      //         //console.log(c + " -> " + counts[c]);
+      //         var target = alphabet_rev[c],
+      //             value = counts[c]*100/total_matches;
+      //         links.push({source:source, target:target, value:value})
+      //       }
+      //     }
+      // }
+      update_link_data(action_string,links, get_next_char);
       current_level.pop();
+
+      current_level.push("exit")
+      update_link_data(action_string,links, get_previous_char, true);
+      current_level.pop();
+
+      console.log(links);
 
       nl_graph_data.nodes = nodes;
       nl_graph_data.links = links;
@@ -862,6 +931,9 @@ d3.csv(csv_file, function(error, data) {
 
 
     function select_action_node(d){
+      var links = nl_graph_data.links,
+          before_links =[],
+          after_links= [];
       if (selected_action_node){
         selected_action_node.selected = false;
       }
@@ -885,7 +957,24 @@ d3.csv(csv_file, function(error, data) {
 
 
       }
+
+
+
+      links.forEach(function(l){
+
+        if (l.source == selected_action_node){
+          after_links.push(l);
+        }else if (l.target == selected_action_node){
+          before_links.push(l);
+        }
+        
+
+      })
+
+      
       console.log("Selected action node: ", selected_action_node);
+      console.log('before links', before_links);
+      console.log('after links', after_links);
 
       draw_action_transition_graph(nl_graph_data);
       
@@ -900,7 +989,18 @@ d3.csv(csv_file, function(error, data) {
       selected_pattern_node = d;
       d.selected = true;
       console.log('selected pattern node:', selected_pattern_node);
+      
+
+      var links = pattern_data.links,
+          before_links =[],
+          after_links = [];
+
+
+      
+
+
       draw_pattern_graph(pattern_data);
+
 
     }
 
@@ -1002,12 +1102,93 @@ d3.csv(csv_file, function(error, data) {
 
 
     var pressed= false;
+
     function create_funnel(){
       toggle_button_color("#create_funnel_button");
       pressed = !pressed;
       d3.select("#create_funnel_button").text(function(d){return pressed? 'Complete Funnel': 'Create Filter'});
 
+      if (!pressed){
+        create_funnel_regex()
+      }
 
+
+
+
+
+
+
+
+
+    }
+
+    function create_funnel_regex(){
+      var nodes = pattern_data.nodes,
+          regex = '.*';
+
+      nodes.forEach(function(n){
+        regex = regex + alphabet[n.id]; + '.*';
+
+      })
+    }
+
+
+    function apply_funnel(){
+
+      var nodes = pattern_data.nodes,
+          regex = '.*',
+          chars= [],
+          filters = [],
+          parent = selected;
+
+      nodes.forEach(function(n){
+        regex = regex + alphabet[n.id] + '.*';
+        console.log('regex', regex);
+        chars.push(alphabet[n.id]); 
+        var match = all.reduce(reduceAdd,reduceRemove, reduceInitial).value();
+        if (match){
+          var size = match.count,
+              filter = {};
+
+          selectedFilter.chart = selected_chart;
+          selectedFilter.size = size;
+          selectedFilter.type = 'regex';
+          selectedFilter.char = chars;
+
+          selectedFilter.div = "action_strings";
+
+          var filter = create_filter(parent);
+
+          parent = filter.children[0];
+
+
+          console.log(filter);
+          console.log(parent);
+        }
+
+      })
+
+      function reduceInitial() {
+        return {
+            count: 0
+        };
+      }
+
+      function reduceAdd(p, v) {
+        if (v.general_actions.match(regex))
+          p.count = p.count + 1;
+        
+        return p;
+
+      }
+
+      function reduceRemove(p, v) {
+        if (v.general_actions.match(chars))
+          p.count = p.count - 1;
+        
+        return p;
+
+      }
 
 
 
@@ -2468,13 +2649,14 @@ d3.csv(csv_file, function(error, data) {
                 else
                   dim.filterExact(null);
 
-              } else if (type == 'contains'){
+              } else if (type == 'regex'){
 
                 dim = action_strings;
                 
                 //char = f.char;
-                char_regex = create_action_regex(f.chars);
-                console.log('CHAR REGEX', char_regex)
+                //char_regex = create_action_regex(f.chars);
+                char_regex = f.regex;
+                console.log('CHAR REGEX', char_regex);
                 dim.filterFunction(function(d){
 
                     //return d.includes(char);
@@ -2703,13 +2885,7 @@ d3.csv(csv_file, function(error, data) {
                     selectedFilter.chart = d3.select("#contains_action_chart");
                     selectedFilter.char = d.char;
                     selectedFilter.size = d.abs;
-                    selectedFilter.type = 'contains';
-
-                    // selectedChar = d.char;
-                    // selectedDiv = 'action_strings';
-                    //update_selected_bar(this);
-                    
-                    
+                    selectedFilter.type = 'regex'; 
 
 
                   })
@@ -2846,6 +3022,7 @@ d3.csv(csv_file, function(error, data) {
 
    
         update(d);
+        return filter_node;
         
       } else {
         if (!selected)
@@ -2876,14 +3053,28 @@ d3.csv(csv_file, function(error, data) {
       s = '^'
 
       chars.forEach( function(c){
+        
+        if (c instanceof Array){
+          f = '.*'
+          
+          c.forEach(function(ch){
+            f = f + ch + '.*';
+          })
+        }
+        c = f;
+
         s = s + '(?=.*' + c + ')';
       })
 
       s = s + '.*$';
 
+      console.log('action regex created: ', s);
+
       return s;
 
     }
+
+
 
     function create_new_filter_set(old_set, new_filter) {
       var filters,
@@ -2928,16 +3119,18 @@ d3.csv(csv_file, function(error, data) {
           }
           filter.type = 'range';
           
-        } else if(new_filter.type == 'contains') {
+        } else if(new_filter.type == 'regex') {
           if (foundFilter){
               filter.chars = old_filter.chars.slice()
               filter.chars.push(new_filter.char);
+              
           }
           else{
             filter.chars = [new_filter.char];
           }
+          filter.regex = create_action_regex(filter.chars);
           filter.char = new_filter.char;
-          filter.type = 'contains';
+          filter.type = 'regex';
         }
 
         //size = new_filter.size; 
@@ -2945,13 +3138,14 @@ d3.csv(csv_file, function(error, data) {
     }
 
 
-    function create_filter() {
+    function create_filter(parent_segment) {
 
+      var d = parent_segment || selected;
 
-      if (selected && selectedFilter.type) {
+      // if (selected && selectedFilter.type) {
 
-        d = selected;
-
+        //d = selected;
+      if (d && selectedFilter.type) {
         d_filters = d.data.filters;
 
         new_filters = create_new_filter_set(d_filters, selectedFilter);
@@ -2989,13 +3183,18 @@ d3.csv(csv_file, function(error, data) {
 
         
         update(d);
+
+        return filter_node;
         
       } else {
         if (!selected)
           alert('Segment was not selected!');
         else
           alert('Please choose range to filter!');
+
       }  
+
+
 
     }
 
