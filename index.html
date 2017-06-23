@@ -182,7 +182,7 @@
       <div class= "button" id="demo_button">
         <input name="demoButton" 
                      type="button" 
-                    value="update node link" />
+                    value="DEMO" />
       </div>
   </div>
 
@@ -493,7 +493,7 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#applyPartition_button")
       .on("click", create_partition);
     d3.select("#demo_button")
-      .on("click", update_action_transition_graph);
+      .on("click", show_not_filter);
     d3.select("#add_node_button")
       .on("click", add_action_node);
     d3.select("#create_funnel_button")
@@ -1161,9 +1161,6 @@ d3.csv(csv_file, function(error, data) {
 
           parent = filter.children[0];
 
-
-          console.log(filter);
-          console.log(parent);
         }
 
       })
@@ -2644,8 +2641,13 @@ d3.csv(csv_file, function(error, data) {
                 reset(current_chart.id);
 
 
-                if (extents)
-                  dim.filter(extents);
+                if (extents){
+                  //dim.filter(extents);
+                  dim.filterFunction(function(d){
+
+                    return (d >= extents[0]) && (d <= extents[1]);
+                  })
+                }
                 else
                   dim.filterExact(null);
 
@@ -2692,7 +2694,9 @@ d3.csv(csv_file, function(error, data) {
       d3.select("#attributes").style("display", "block");
     }
 
-    function add_child_node(d, node_obj) {
+    function add_child_node(d, node_obj, display) {
+
+      var display = !display;
       if (d.children == null) {
           d.children = [];
         }
@@ -2706,10 +2710,16 @@ d3.csv(csv_file, function(error, data) {
       new_node.parent = d;
       new_node.id = id;
 
+      if (display)
+        d.children.push(new_node);
+      else{
+        d.not_children = [];
+        d.not_children.push(new_node);
+      }
 
-      d.children.push(new_node);
 
       return new_node;
+      
 
     }
 
@@ -3022,7 +3032,6 @@ d3.csv(csv_file, function(error, data) {
 
    
         update(d);
-        return filter_node;
         
       } else {
         if (!selected)
@@ -3136,7 +3145,19 @@ d3.csv(csv_file, function(error, data) {
         //size = new_filter.size; 
         return [filters, filter];
     }
+    function show_not_filter(){
 
+      if(selected && selected.data.value==0){
+        var d= selected;
+
+        d.children.push(d.not_children[0]);
+
+        update(selected);
+
+      }else{
+        alert('Please select filter')
+      }
+    }
 
     function create_filter(parent_segment) {
 
@@ -3153,7 +3174,7 @@ d3.csv(csv_file, function(error, data) {
         filter = new_filters[1];
 
 
-       
+        prev_size = d.data.size;
         size = selectedFilter.size;
 
 
@@ -3168,15 +3189,27 @@ d3.csv(csv_file, function(error, data) {
                    };
 
         filter_node = add_child_node(d, filter_data);
+        
 
-        segment_data = { 'name': name,
+        var segment_data = { 'name': name,
                      'value': 1,
                      'filters': filters,
                      'size': size,
                      'prev_size': d.data.size
                    };
 
-        segment_node = add_child_node(filter_node, segment_data);
+        var segment_node = add_child_node(filter_node, segment_data);
+
+
+        var not_segment_data = { 'name': name,
+                     'value': 1,
+                     'filters': filters,
+                     'size': prev_size - size,
+                     'prev_size': prev_size,
+                     'not': true
+                   };
+
+        var not_segment_node = add_child_node(filter_node, not_segment_data, true);
 
         selectedExtents = null;
         selectedChar = null;
