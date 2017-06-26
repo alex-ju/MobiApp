@@ -845,7 +845,6 @@ d3.csv(csv_file, function(error, data) {
                 var link = link_exists(links, target, source);
                 
                 if(link){
-                  console.log('FOUND LINK');
                   link.into_target_value = value;
                   link.into_target_count = count;
                 }else{
@@ -885,30 +884,6 @@ d3.csv(csv_file, function(error, data) {
 
       current_level.push("start");
 
-      // //create edges
-      // for ( var i =0; i < current_level.length; i++){
-      //   var action = current_level[i],
-      //       char = alphabet[action];
-
-      //       source = action;
-
-      //   //console.log('Action: '+ action + ' Char: ' + char);
-
-      //   var matches = get_next_char(action_string, char),
-      //     total_matches =  matches.length;
-      //     counts = _.countBy(matches, function(char){
-      //       return char;
-      //     });
-
-      //     for (var c in counts) {
-      //       if (counts.hasOwnProperty(c)) {
-      //         //console.log(c + " -> " + counts[c]);
-      //         var target = alphabet_rev[c],
-      //             value = counts[c]*100/total_matches;
-      //         links.push({source:source, target:target, value:value})
-      //       }
-      //     }
-      // }
       update_link_data(action_string,links, get_next_char);
       current_level.pop();
 
@@ -916,7 +891,6 @@ d3.csv(csv_file, function(error, data) {
       update_link_data(action_string,links, get_previous_char, true);
       current_level.pop();
 
-      console.log(links);
 
       nl_graph_data.nodes = nodes;
       nl_graph_data.links = links;
@@ -2362,13 +2336,6 @@ d3.csv(csv_file, function(error, data) {
 
 
 
-  // setTimeout(function(){
-  //     //toggle_segments(root);
-
-
-  // }, 2000);
-
-
   d3.select(self.frameElement).style("height", "500px");
 
 
@@ -2635,6 +2602,7 @@ d3.csv(csv_file, function(error, data) {
               
                 var div = f.div;
                 var extents = f.extents;
+                //var extents = f.extents.pos;
 
                 current_chart = chart_data[div];
                 dim = current_chart.dim;
@@ -2643,9 +2611,28 @@ d3.csv(csv_file, function(error, data) {
 
                 if (extents){
                   //dim.filter(extents);
-                  dim.filterFunction(function(d){
+                  // dim.filterFunction(function(d){
+                  //   var inRange = (d >= extents[0]) && (d <= extents[1]);
+                  //   if (f.not){
+                  //     return !inRange;
+                  //   }else{
+                  //     return inRange;
+                  //   }
 
-                    return (d >= extents[0]) && (d <= extents[1]);
+                    
+                  // })
+
+                  dim.filterFunction(function(d){
+                    var inRange = true;
+                    if (extents.pos)
+                      inRange= inRange && (d >= extents.pos[0]) && (d <= extents.pos[1]);
+
+                    extents.neg.forEach(function(ext){
+                      inRange = inRange && !((d>=ext[0]) && (d<= ext[1]));
+
+                    })
+
+                    return inRange;
                   })
                 }
                 else
@@ -2654,17 +2641,27 @@ d3.csv(csv_file, function(error, data) {
               } else if (type == 'regex'){
 
                 dim = action_strings;
-                
-                //char = f.char;
-                //char_regex = create_action_regex(f.chars);
+
                 char_regex = f.regex;
                 console.log('CHAR REGEX', char_regex);
                 dim.filterFunction(function(d){
 
-                    //return d.includes(char);
+
                     return d.match(char_regex);
 
                 });
+                // dim.filterFunction(function(d){
+                //     var matches = d.match(char_regex),
+                //         match = matches? true: false;
+
+
+                //     if (f.not){
+                //       return !match;
+                //     }else{
+                //       return match;
+                //     }
+
+                // });
                 
               }
               console.log('filtered-size', all.reduceCount().value());
@@ -3043,37 +3040,93 @@ d3.csv(csv_file, function(error, data) {
 
 
     }
+    //    function update_extents(old_extents, new_extents){
 
-    function update_extents(old_extents, new_extents){
+      
 
-      min = old_extents[0] < new_extents[0] ? old_extents : new_extents;
-      max = min == old_extents ? new_extents : old_extents;
+    //   min = old_extents[0] < new_extents[0] ? old_extents : new_extents;
+    //   max = min == old_extents ? new_extents : old_extents;
 
-      if (min[1] < max[0])
-        return null
+    //   if (min[1] < max[0])
+    //     return null
 
-      updated_extents = [max[0], (min[1]< max[1]? min[1]: max[1])];
+    //   var updated_extents = {},
+    //       updated_extents.pos = [],
+    //       updated_extents.neg = [];
 
+    //   updated_extents.pos = [max[0], (min[1]< max[1]? min[1]: max[1])];
+
+    //   return updated_extents
+
+    // }
+
+    function update_extents(old_extents, new_extents, not){
+
+      var not = not? true: false,
+          updated_extents ={'pos':[], 'neg':[]};
+
+      updated_extents.pos = old_extents.pos;
+      updated_extents.neg = old_extents.neg.slice();
+
+      if(not){
+        updated_extents.neg.push(new_extents);
+      }else{
+
+        var old = old_extents.pos;
+        if (old){ 
+          min = old[0] < new_extents[0] ? old : new_extents;
+          max = min == old ? new_extents : old;
+
+          if (min[1] < max[0])
+            updated_extents.pos = null;
+          else
+            updated_extents.pos = [max[0], (min[1]< max[1]? min[1]: max[1])];
+        }else{
+          updated_extents.pos = new_extents;
+        }
+      }
+      console.log('UPDATED EXTENTS', updated_extents);
       return updated_extents
 
     }
 
-    function create_action_regex(chars){
+    function create_action_regex(chars, not_chars){
       s = '^'
 
-      chars.forEach( function(c){
+      chars.pos.forEach( function(c){
         
         if (c instanceof Array){
-          f = '.*'
+          f = '';
           
           c.forEach(function(ch){
             f = f + ch + '.*';
           })
+          c = f;
         }
-        c = f;
+        
 
         s = s + '(?=.*' + c + ')';
       })
+
+      if (chars.neg.length>0){
+      s = s + '(?!.*(';
+        chars.neg.forEach( function(c){
+          
+          if (c instanceof Array){
+            f = '(.*';
+            
+            c.forEach(function(ch){
+              f = f + ch + '.*';
+            })
+            c = f +')';
+          }
+          
+
+          s = s + c + '|';
+        })
+        s = s.slice(0,-1);
+        s = s + '))';
+      }
 
       s = s + '.*$';
 
@@ -3085,7 +3138,13 @@ d3.csv(csv_file, function(error, data) {
 
 
 
-    function create_new_filter_set(old_set, new_filter) {
+    function create_new_filter_set(old_set, new_filter, not) {
+      var not_filter = false;
+      if (not)
+        not_filter = true;
+
+      console.log('NOT FILTER?', not_filter)
+
       var filters,
           foundFilter=false,
           chart_div = new_filter.div;
@@ -3114,33 +3173,69 @@ d3.csv(csv_file, function(error, data) {
         var filter = {};
         
         filter.div = chart_div;
+        filter.not = not_filter;
         filter.chart = new_filter.chart;
         filters.push(filter);
         //}
 
         if (new_filter.type == 'range') {
-          if (foundFilter)
-            filter.extents = update_extents(old_filter.extents, new_filter.extents);
-          else {
+          if (foundFilter){
 
-            filter.extents = new_filter.extents;
+            filter.extents = update_extents(old_filter.extents, new_filter.extents, not_filter);
+          }
+          else {
+            filter.extents ={},
+            filter.extents.neg =[],
+            filter.extents.pos = null;
+
+            if(not_filter)
+              filter.extents.neg.push(new_filter.extents);
+            else
+              filter.extents.pos = new_filter.extents;
+
+
+            //filter.extents = new_filter.extents;
             
           }
           filter.type = 'range';
           
         } else if(new_filter.type == 'regex') {
+          filter.chars ={};
+          filter.chars.pos =[],
+          filter.chars.neg =[];
+
           if (foundFilter){
-              filter.chars = old_filter.chars.slice()
-              filter.chars.push(new_filter.char);
+              filter.chars.pos = old_filter.chars.pos.slice();
+              filter.chars.neg = old_filter.chars.neg.slice();
+              //filter.chars.push(new_filter.char);
               
           }
-          else{
-            filter.chars = [new_filter.char];
+          // else{
+          //   filter.chars = [new_filter.char];
+          // }
+          if (not_filter){
+            filter.chars.neg.push(new_filter.char);
+          }else{
+            filter.chars.pos.push(new_filter.char)
           }
           filter.regex = create_action_regex(filter.chars);
           filter.char = new_filter.char;
           filter.type = 'regex';
         }
+
+        // else if(new_filter.type == 'regex') {
+        //   if (foundFilter){
+        //       filter.chars = old_filter.chars.slice()
+        //       filter.chars.push(new_filter.char);
+              
+        //   }
+        //   else{
+        //     filter.chars = [new_filter.char];
+        //   }
+        //   filter.regex = create_action_regex(filter.chars);
+        //   filter.char = new_filter.char;
+        //   filter.type = 'regex';
+        // }
 
         //size = new_filter.size; 
         return [filters, filter];
@@ -3177,6 +3272,8 @@ d3.csv(csv_file, function(error, data) {
         prev_size = d.data.size;
         size = selectedFilter.size;
 
+        not_filters = create_new_filter_set(d_filters, selectedFilter, true);
+
 
 
         
@@ -3203,10 +3300,9 @@ d3.csv(csv_file, function(error, data) {
 
         var not_segment_data = { 'name': name,
                      'value': 1,
-                     'filters': filters,
+                     'filters': not_filters[0],
                      'size': prev_size - size,
-                     'prev_size': prev_size,
-                     'not': true
+                     'prev_size': prev_size
                    };
 
         var not_segment_node = add_child_node(filter_node, not_segment_data, true);
