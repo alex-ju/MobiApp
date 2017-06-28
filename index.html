@@ -943,26 +943,34 @@ d3.csv(csv_file, function(error, data) {
     }
     
 
-    var bar_width = 15,
-        bar_length = 200;
-        // bar_length = 100;
+    
 
-    var bar_len = d3.scaleLinear()
-              .rangeRound([0, bar_length]);
+    var margin_ac = {top: 15, right: 15, bottom: 15, left: 15},
+      width_ac = 300 - margin_ac.left - margin_ac.right,
+      height_ac = 150 - margin_ac.top - margin_ac.bottom,
+      adjacency_chart = d3.select("#adjacency_chart").append('svg').append("g").attr("transform", "translate(" + margin_ac.left + "," + margin_ac.top + ")");
 
-    var margin_hc = {top: 20, right: 20, bottom: 30, left: 20},
-      width_hc = 300 - margin_hc.left - margin_hc.right,
-      height_hc = 150 - margin_hc.top - margin_hc.bottom,
-      adjacency_chart = d3.select("#adjacency_chart").append('svg').append("g").attr("transform", "translate(" + margin_hc.left + "," + margin_hc.top + ")");
+      before_nodes = adjacency_chart.append("g")
+                      .attr("transform", "translate(" + (margin_ac.left + width_ac/4)+ "," + 4 + ")");
+
+      after_nodes = adjacency_chart.append("g")
+                      .attr("transform", "translate(" + (width_ac*0.75)+ "," + 0 + ")");
 
       adj_node = adjacency_chart.append("g")
-                      .attr("transform", "translate(" + bar_length/2 + "," + (height_hc+8)/2 + ")");
-                      //.attr("transform", "translate(" + (width_hc+8)/2 + "," + (height_hc+8)/2 + ")");
+                      //.attr("transform", "translate(" + bar_length/2 + "," + (height_ac+8)/2 + ")"); //**HORIZONTAL
+                      .attr("transform", "translate(" + (width_ac+8)/2 + "," + (height_ac+8)/2 + ")");
 
       adj_node.append("circle")
 
       adj_node.append('text')
 
+
+  var bar_width = 10,
+        //bar_length = 200; **HORIZONTAL
+        bar_length = height_ac; 
+
+    var bar_len = d3.scaleLinear()
+              .rangeRound([0, bar_length]);
               
 
                       
@@ -972,10 +980,11 @@ d3.csv(csv_file, function(error, data) {
     function update_adjacency_chart_data(links){
 
      
-      // var after_data={type:'after', actions:[], y:245},
-      //     before_data ={type:'before', actions:[], y:0},
-      var after_data={type:'after', actions:[], y:height_hc},
+      var after_data={type:'after', actions:[], y:(width_ac - bar_width)},
           before_data ={type:'before', actions:[], y:0},
+      //**HORIZONTAL
+      // var after_data={type:'after', actions:[], y:height_ac},
+      //     before_data ={type:'before', actions:[], y:0},
           chart_data =[before_data, after_data],
           x0 = 0,
           total= 0;
@@ -1010,14 +1019,22 @@ d3.csv(csv_file, function(error, data) {
 
     function update_adjacent_action_chart(chart_data){
 
-      
+      var before_data,
+          after_data;
 
       chart_data.forEach(function(bar_data){
 
         var x0 = 0,
           total = 0;
 
+        
+
         data = bar_data.actions;
+
+        if (bar_data.type == 'before')
+          before_data = data;
+        else
+          after_data = data;
 
         data = data.sort(function(a,b) {return b.count - a.count});
         data.forEach(function(d){
@@ -1049,6 +1066,75 @@ d3.csv(csv_file, function(error, data) {
             .style('fill', 'black')
             .text(selected_action_node.action)
 
+      console.log('BEFORE DATA' , before_data);
+      var spacing = 25;
+
+     var adj_nodes = adjacency_chart.selectAll(".adjnodes")
+                    .remove()
+                    .exit()
+                    .data(chart_data)
+                    .enter().append("g")
+                    .attr("class", "adjnodes")
+                    .attr("transform", function (d) {
+                          var x = (d.type =='before')? width_ac/5 : width_ac*0.8;
+                          var y = (height_ac - (d.actions.length-1)*spacing)/2;
+                          return "translate(" + x + "," + y + ")"; })
+
+      var node_enter = adj_nodes.selectAll("circle")
+                        .remove()
+                        .exit()
+                        .data(d =>d.actions)
+                        .enter()
+                        .append('g')
+                        .attr("transform", function(d,i){return "translate(0," + spacing*i + ")" });
+
+      node_enter.append("circle")
+            .attr("r",node_radius)
+            .style("fill", function(d){ return color(d.group)})
+
+      node_enter.append('text')
+            .style("font-size", "10px")
+            .style("text-anchor", "middle")
+            .style('fill', 'black')
+            .text(function(d){return d.action})
+
+      // var b_nodes = before_nodes.selectAll(".bnodes")
+      //               .remove()
+      //               .exit()
+      //               .data(before_data)
+      //               .enter().append("g")
+      //               .attr("class", "bnodes")
+      //               .attr("transform", function (d,i) {return "translate(0," + ((height_ac/(before_data.length))+(node_radius/2))*i + ")"; })
+      
+      // b_nodes.append("circle")
+      //       .attr("r",node_radius)
+      //       .style("fill", function(d){ return color(d.group)})
+
+      // b_nodes.append('text')
+      //       .style("font-size", "10px")
+      //       .style("text-anchor", "middle")
+      //       .style('fill', 'black')
+      //       .text(function(d){return d.action})
+
+      // var a_nodes = after_nodes.selectAll(".anodes")
+      //               .remove()
+      //               .exit()
+      //               .data(after_data)
+      //               .enter().append("g")
+      //               .attr("class", "anodes")
+      //               .attr("transform", function (d,i) {return "translate(0," + ((height_ac/(after_data.length))+(node_radius/2))*i + ")"; })
+      
+      // a_nodes.append("circle")
+      //       .attr("r",node_radius)
+      //       .style("fill", function(d){ return color(d.group)})
+
+      // a_nodes.append('text')
+      //       .style("font-size", "10px")
+      //       .style("text-anchor", "middle")
+      //       .style('fill', 'black')
+      //       .text(function(d){return d.action})
+
+
 
          //drawing chart
       var bar = adjacency_chart
@@ -1058,8 +1144,9 @@ d3.csv(csv_file, function(error, data) {
               .data(chart_data)
               .enter().append("g")
               .attr("class", "adjbar")
-              .attr("transform", function (d) { return "translate(0," + d.y + ")"; })
-              //.attr("transform", function (d) {console.log('d.y', d.y); return "translate(" + d.y + ",0)"; })
+              //**HORIZONTAL
+              //.attr("transform", function (d) { return "translate(0," + d.y + ")"; })
+              .attr("transform", function (d) { return "translate(" + d.y + ",0)"; })
 
 
               
@@ -1069,29 +1156,30 @@ d3.csv(csv_file, function(error, data) {
           .data(d =>d.actions)
           .enter();
 
-        bar_enter.append("rect")
-              .attr("x", function(d){
-                  return bar_len(d.x0);
-              })
-              .attr("height", function(d){
-                  return bar_width;
-              })
-              .attr("width", function(d){
-                  return bar_len(d.x1) - bar_len(d.x0);
-              })
-              .attr("fill", function(d) {return color(d.group);});
-
+        //**HORIZONTAL
         // bar_enter.append("rect")
-        //       .attr("y", function(d){
+        //       .attr("x", function(d){
         //           return bar_len(d.x0);
         //       })
-        //       .attr("width", function(d){
+        //       .attr("height", function(d){
         //           return bar_width;
         //       })
-        //       .attr("height", function(d){
+        //       .attr("width", function(d){
         //           return bar_len(d.x1) - bar_len(d.x0);
         //       })
         //       .attr("fill", function(d) {return color(d.group);});
+
+        bar_enter.append("rect")
+              .attr("y", function(d){
+                  return bar_len(d.x0);
+              })
+              .attr("width", function(d){
+                  return bar_width;
+              })
+              .attr("height", function(d){
+                  return bar_len(d.x1) - bar_len(d.x0);
+              })
+              .attr("fill", function(d) {return color(d.group);});
 
 
 
