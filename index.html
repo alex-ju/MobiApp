@@ -246,44 +246,41 @@
 
       <div class= "charts" id= "list_box">
         <div class= "chart" id="contains_action_chart">
-          <div class="title"> Number of Sequences that Contains Action </div>
+            <div class="title"> Number of Sequences that Contains Action </div>
+          </div>
         </div>
-      </div>
 
-      <div class ="charts" id="action_transition">
-
-        <div class ="chart" id="node_link"></div>
-
-        <div  class="chart" id="pattern_builder">
-
-
-          <div  class="chart" id="pb_graph"></div>
-
-          <div class="button_box" id="pb_buttons">
-            <div class= "button" id="add_node_button">
-              <input name="addNodeButton" 
-                           type="button" 
-                          value="Add Action Node" 
-                           />
+        <div class ="charts" id="action_transition">
+          <div class ="chart" id="node_link">
+          </div>
+          <div  class="chart" id="pattern_builder">
+            <div  class="chart" id="pb_graph">
             </div>
-            <div class= "button" id="remove_node_button">
-              <input name="removeNodeButton" 
-                           type="button" 
-                          value="Remove Node" />
-            </div>
-            <div class= "button" id="create_funnel_button">
-              <input name="addLinkButton" 
-                           type="button" 
-                          value="Create Funnel" />
+            <div class="button_box" id="pb_buttons">
+              <div class= "button" id="add_node_button">
+                <input name="addNodeButton" 
+                             type="button" 
+                            value="Add Action Node" 
+                             />
+              </div>
+              <div class= "button" id="remove_node_button">
+                <input name="removeNodeButton" 
+                             type="button" 
+                            value="Remove Node" />
+              </div>
+              <div class= "button" id="create_funnel_button">
+                <input name="addLinkButton" 
+                             type="button" 
+                            value="Create Funnel" />
+              </div>
             </div>
 
           </div>
-
-
-
+          <div class="chart" id="adjacency_chart"></div>
         </div>
 
-      </div>
+        
+
 
 
     </div>
@@ -619,8 +616,6 @@ d3.csv(csv_file, function(error, data) {
 
     function draw_node_link(node_link_data){
 
-      console.log('draw graph with data:', node_link_data);
-
       var node_radius = 8;
 
       //var node = nodes.selectAll("g").data(node_link_data.nodes);
@@ -828,32 +823,35 @@ d3.csv(csv_file, function(error, data) {
 
         //console.log('Action: '+ action + ' Char: ' + char);
 
-        var matches = pageFunction(action_string, char),
-          total_matches =  matches.length;
-          counts = _.countBy(matches, function(char){
-            return char;
-          });
+        var matches = pageFunction(action_string, char);
+        
+          if (matches){ 
+            var total_matches =  matches.length;
+            counts = _.countBy(matches, function(char){
+              return char;
+            });
 
-          for (var c in counts) {
-            if (counts.hasOwnProperty(c)) {
-              var target = alphabet_rev[c],
-                  count = counts[c];
-                  value = count*100/total_matches;
+            for (var c in counts) {
+              if (counts.hasOwnProperty(c)) {
+                var target = alphabet_rev[c],
+                    count = counts[c];
+                    value = count*100/total_matches;
 
-              
-              if (reverse){
-                var link = link_exists(links, target, source);
                 
-                if(link){
-                  link.into_target_value = value;
-                  link.into_target_count = count;
+                if (reverse){
+                  var link = link_exists(links, target, source);
+                  
+                  if(link){
+                    link.into_target_percent = value;
+                    //link.into_target_count = count;
+                  }else{
+                    console.log('WEIRD! link not found for reverse')
+                  }
                 }else{
-                  console.log('WEIRD! link not found for reverse')
-                }
-              }else{
 
-                links.push({source:source, target:target, value:value, count:count});
-                
+                  links.push({source:source, target:target, percent:value, count:count});
+                  
+                }
               }
             }
           }
@@ -934,25 +932,116 @@ d3.csv(csv_file, function(error, data) {
 
 
 
+      update_adjacency_chart_data(links);
+      console.log("Selected action node: ", selected_action_node);
+
+
+      draw_action_transition_graph(nl_graph_data);
+      
+      
+
+    }
+    
+
+    var bar_height = 15,
+        bar_width = 200;
+
+    var x_adj = d3.scaleLinear()
+              .rangeRound([0, bar_width]);
+
+    var margin_hc = {top: 20, right: 20, bottom: 30, left: 20},
+      width_hc = 300 - margin_hc.left - margin_hc.right,
+      height_hc = 150 - margin_hc.top - margin_hc.bottom,
+      adjacency_chart = d3.select("#adjacency_chart").append('svg').append("g").attr("transform", "translate(" + margin_hc.left + "," + margin_hc.top + ")");
+
+
+    function update_adjacency_chart_data(links){
+
+     
+      var after_data={type:'after', actions:[], y:height_hc},
+          before_data ={type:'before', actions:[], y:0},
+          chart_data =[before_data, after_data],
+          x0 = 0,
+          total= 0;
+
       links.forEach(function(l){
 
         if (l.source == selected_action_node){
-          after_links.push(l);
+          //after_links.push(l);
+          after_data.actions.push({action: l.target.action, group: l.target.group, count:l.count, percent: l.percent});
+
         }else if (l.target == selected_action_node){
-          before_links.push(l);
+          //before_links.push(l);
+          before_data.actions.push({action: l.source.action, group: l.source.group, count:l.count, percent: l.into_target_percent});
         }
         
 
       })
 
-      
-      console.log("Selected action node: ", selected_action_node);
-      console.log('before links', before_links);
-      console.log('after links', after_links);
+      console.log('BEFORE', before_data);
+      console.log('AFTER', after_data);
 
-      draw_action_transition_graph(nl_graph_data);
+
+
+      update_adjacent_action_chart(chart_data)
       
-      
+
+
+    }
+
+
+    function update_adjacent_action_chart(bar_data){
+
+      var x0 = 0,
+          total = 0;
+
+      data = bar_data.actions;
+
+      data = data.sort(function(a,b) {return b.count - a.count});
+      data.forEach(function(d){
+        d.x0 =x0, 
+        d.x1= x0+= +d.percent;
+        total += d.count;
+
+
+      })
+      bar_data.total = total;
+
+      console.log(data);
+
+
+      x_adj.domain([0,100]);
+
+         //drawing chart
+      var bar = adjacency_chart
+          .selectAll("g")
+              .remove()
+              .exit()
+              .data(data)
+              .enter().append("g")
+              .attr("transform", function (d) { return "translate(0," + bar_data.y + ")"; })
+
+
+              
+     var bar_enter = bar.selectAll("rect")
+          .remove()
+          .exit()
+          .data(data)
+          .enter();
+
+        bar_enter.append("rect")
+              .attr("x", function(d){
+                  return x_adj(d.x0);
+              })
+              .attr("height", function(d){
+                  return bar_height;
+              })
+              .attr("width", function(d){
+                  return x_adj(d.x1) - x_adj(d.x0);
+              })
+              .attr("fill", function(d) {return color(d.group);});
+
+
 
     }
 
@@ -1127,7 +1216,9 @@ d3.csv(csv_file, function(error, data) {
           selectedFilter.chart = selected_chart;
           selectedFilter.size = size;
           selectedFilter.type = 'regex';
-          selectedFilter.char = chars;
+          selectedFilter.char = chars.slice();
+
+          console.log('creating filter:', selectedFilter);
 
           selectedFilter.div = "action_strings";
 
@@ -2602,7 +2693,6 @@ d3.csv(csv_file, function(error, data) {
               
                 var div = f.div;
                 var extents = f.extents;
-                //var extents = f.extents.pos;
 
                 current_chart = chart_data[div];
                 dim = current_chart.dim;
@@ -2610,17 +2700,6 @@ d3.csv(csv_file, function(error, data) {
 
 
                 if (extents){
-                  //dim.filter(extents);
-                  // dim.filterFunction(function(d){
-                  //   var inRange = (d >= extents[0]) && (d <= extents[1]);
-                  //   if (f.not){
-                  //     return !inRange;
-                  //   }else{
-                  //     return inRange;
-                  //   }
-
-                    
-                  // })
 
                   dim.filterFunction(function(d){
                     var inRange = true;
@@ -2650,18 +2729,6 @@ d3.csv(csv_file, function(error, data) {
                     return d.match(char_regex);
 
                 });
-                // dim.filterFunction(function(d){
-                //     var matches = d.match(char_regex),
-                //         match = matches? true: false;
-
-
-                //     if (f.not){
-                //       return !match;
-                //     }else{
-                //       return match;
-                //     }
-
-                // });
                 
               }
               console.log('filtered-size', all.reduceCount().value());
@@ -2816,6 +2883,7 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+
     function update_horizontal_chart(data){
 
             //data = all_matches;
@@ -2830,6 +2898,8 @@ d3.csv(csv_file, function(error, data) {
                 d.total = d.percents[d.percents.length - 1].x1;
 
             });
+
+            console.log('horizontal data', data);
 
             data.sort(function (a, b) { return b.total - a.total; });
 
@@ -3090,7 +3160,7 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    function create_action_regex(chars, not_chars){
+    function create_action_regex(chars){
       s = '^'
 
       chars.pos.forEach( function(c){
@@ -3143,7 +3213,6 @@ d3.csv(csv_file, function(error, data) {
       if (not)
         not_filter = true;
 
-      console.log('NOT FILTER?', not_filter)
 
       var filters,
           foundFilter=false,
@@ -3221,6 +3290,7 @@ d3.csv(csv_file, function(error, data) {
           filter.regex = create_action_regex(filter.chars);
           filter.char = new_filter.char;
           filter.type = 'regex';
+          console.log('CHARS', filter.chars);
         }
 
         // else if(new_filter.type == 'regex') {
