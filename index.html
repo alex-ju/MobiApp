@@ -950,26 +950,31 @@ d3.csv(csv_file, function(error, data) {
       height_ac = 150 - margin_ac.top - margin_ac.bottom,
       adjacency_chart = d3.select("#adjacency_chart").append('svg').append("g").attr("transform", "translate(" + margin_ac.left + "," + margin_ac.top + ")");
 
+    var center_node = {
+          x: (width_ac+8)/2,
+          y: (height_ac+8)/2
+        }
+        
+
       before_nodes = adjacency_chart.append("g")
                       .attr("transform", "translate(" + (margin_ac.left + width_ac/4)+ "," + 4 + ")");
 
       after_nodes = adjacency_chart.append("g")
                       .attr("transform", "translate(" + (width_ac*0.75)+ "," + 0 + ")");
 
-      adj_node = adjacency_chart.append("g")
-                      //.attr("transform", "translate(" + bar_length/2 + "," + (height_ac+8)/2 + ")"); //**HORIZONTAL
-                      .attr("transform", "translate(" + (width_ac+8)/2 + "," + (height_ac+8)/2 + ")");
+      // adj_node = adjacency_chart.append("g")
+      //                 .attr("class", "center_node")
+      //                 .attr("transform", "translate(" + center_node.x + "," + center_node.y  + ")");
 
-      adj_node.append("circle")
+      // adj_node.append("circle")
 
-      adj_node.append('text')
+      // adj_node.append('text')
 
 
-  var bar_width = 10,
+    var bar_width = 10,
         //bar_length = 200; **HORIZONTAL
-        bar_length = height_ac; 
-
-    var bar_len = d3.scaleLinear()
+        bar_length = height_ac,
+        bar_len = d3.scaleLinear()
               .rangeRound([0, bar_length]);
               
 
@@ -1019,29 +1024,30 @@ d3.csv(csv_file, function(error, data) {
 
     function update_adjacent_action_chart(chart_data){
 
-      var before_data,
-          after_data;
+      var link_data =[],
+          spacing = 25;
 
       chart_data.forEach(function(bar_data){
 
         var x0 = 0,
-          total = 0;
-
-        
-
-        data = bar_data.actions;
-
-        if (bar_data.type == 'before')
-          before_data = data;
-        else
-          after_data = data;
+          total = 0,
+          data = bar_data.actions;
 
         data = data.sort(function(a,b) {return b.count - a.count});
-        data.forEach(function(d){
+        data.forEach(function(d, i){
           d.x0 =x0, 
           d.x1= x0+= +d.percent;
           total += d.count;
 
+
+          d.x = (bar_data.type == 'before')? width_ac/7: width_ac*(6/7);
+          d.y = ((height_ac - (data.length-1)*spacing)/2) + (spacing*i);
+
+          if (bar_data.type == 'before'){
+            link_data.push({source:d, target:center_node})
+          }else{
+            link_data.push({source:center_node, target:d})
+          }
 
         })
         bar_data.total = total;
@@ -1051,23 +1057,57 @@ d3.csv(csv_file, function(error, data) {
       
 
       console.log(data);
-      console.log(node_radius)
+      console.log('link data', link_data);
 
 
       bar_len.domain([0,100]);
 
-      adj_node.select('circle')
-            .attr("r",node_radius)
-            .style("fill", color(selected_action_node.group))
+      var links = adjacency_chart.selectAll(".adjlinks")
+                  .remove()
+                  .exit()
+                  .data(link_data)
+                  .enter()
+                  .append("g")
+                  .attr("class", "adjlinks")
+ 
+        links.append("line")
+           .attr("class", "link")
+           .attr("x1", function(l) {return l.source.x})
+           .attr("y1", function(l){return l.source.y})
+           .attr("x2", function(l) {return l.target.x})
+           .attr("y2", function(l){return l.target.y})
+           .attr("marker-end", "url(#end)");
 
-      adj_node.select('text')
-            .style("font-size", "10px")
-            .style("text-anchor", "middle")
-            .style('fill', 'black')
-            .text(selected_action_node.action)
+      adjacency_chart.selectAll('.center_node')
+                      .remove()
+                      .exit()
+                      
+      var adj_node = adjacency_chart.append("g")
+                      .attr("class", "center_node")
+                      .attr("transform", "translate(" + center_node.x + "," + center_node.y  + ")");
 
-      console.log('BEFORE DATA' , before_data);
-      var spacing = 25;
+      adj_node.append("circle")
+          .attr("r",node_radius)
+          .style("fill", color(selected_action_node.group))
+
+      adj_node.append('text')
+          .style("font-size", "10px")
+          .style("text-anchor", "middle")
+          .style('fill', 'black')
+          .text(selected_action_node.action)
+
+      // adj_node.selectAll('circle')
+      //       .attr("r",node_radius)
+      //       .style("fill", color(selected_action_node.group))
+
+      // adj_node.select('text')
+      //       .style("font-size", "10px")
+      //       .style("text-anchor", "middle")
+      //       .style('fill', 'black')
+      //       .text(selected_action_node.action)
+
+
+      
 
      var adj_nodes = adjacency_chart.selectAll(".adjnodes")
                     .remove()
@@ -1075,10 +1115,6 @@ d3.csv(csv_file, function(error, data) {
                     .data(chart_data)
                     .enter().append("g")
                     .attr("class", "adjnodes")
-                    .attr("transform", function (d) {
-                          var x = (d.type =='before')? width_ac/5 : width_ac*0.8;
-                          var y = (height_ac - (d.actions.length-1)*spacing)/2;
-                          return "translate(" + x + "," + y + ")"; })
 
       var node_enter = adj_nodes.selectAll("circle")
                         .remove()
@@ -1086,7 +1122,8 @@ d3.csv(csv_file, function(error, data) {
                         .data(d =>d.actions)
                         .enter()
                         .append('g')
-                        .attr("transform", function(d,i){return "translate(0," + spacing*i + ")" });
+                        .attr("transform", function(d){return "translate(" + d.x + "," + d.y + ")"})
+                        .on("click", function(d) {console.log(d)})
 
       node_enter.append("circle")
             .attr("r",node_radius)
@@ -1098,42 +1135,7 @@ d3.csv(csv_file, function(error, data) {
             .style('fill', 'black')
             .text(function(d){return d.action})
 
-      // var b_nodes = before_nodes.selectAll(".bnodes")
-      //               .remove()
-      //               .exit()
-      //               .data(before_data)
-      //               .enter().append("g")
-      //               .attr("class", "bnodes")
-      //               .attr("transform", function (d,i) {return "translate(0," + ((height_ac/(before_data.length))+(node_radius/2))*i + ")"; })
       
-      // b_nodes.append("circle")
-      //       .attr("r",node_radius)
-      //       .style("fill", function(d){ return color(d.group)})
-
-      // b_nodes.append('text')
-      //       .style("font-size", "10px")
-      //       .style("text-anchor", "middle")
-      //       .style('fill', 'black')
-      //       .text(function(d){return d.action})
-
-      // var a_nodes = after_nodes.selectAll(".anodes")
-      //               .remove()
-      //               .exit()
-      //               .data(after_data)
-      //               .enter().append("g")
-      //               .attr("class", "anodes")
-      //               .attr("transform", function (d,i) {return "translate(0," + ((height_ac/(after_data.length))+(node_radius/2))*i + ")"; })
-      
-      // a_nodes.append("circle")
-      //       .attr("r",node_radius)
-      //       .style("fill", function(d){ return color(d.group)})
-
-      // a_nodes.append('text')
-      //       .style("font-size", "10px")
-      //       .style("text-anchor", "middle")
-      //       .style('fill', 'black')
-      //       .text(function(d){return d.action})
-
 
 
          //drawing chart
