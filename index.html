@@ -133,6 +133,32 @@
         stroke-width: 1.5px;
       }
 
+      #tooltip {
+        position: absolute;
+        height: 20px;
+        width: 60px;
+        padding: 2px;
+        background-color: white;
+/*        -webkit-border-radius: 2px;
+        -moz-border-radius: 2px;
+        border-radius: 2px;
+        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);*/
+        pointer-events: none;
+      }
+
+      #tooltip.hidden {
+        display: none;
+      }
+
+      #tooltip p {
+        margin: 0;
+        font-family: Futura;
+        font-size: 8px;
+        line-height: 20px;
+     }
+
     </style>
 
   </head>
@@ -251,7 +277,11 @@
         </div>
 
         <div class ="charts" id="action_transition">
-          <div class ="chart" id="node_link">
+          <div class ="chart" id="node_link"></div>
+          <div class="chart" id="adjacency_chart">
+            <div id="tooltip" class="hidden">
+              <p><span id="value">100</span></p>
+            </div>
           </div>
           <div  class="chart" id="pattern_builder">
             <div  class="chart" id="pb_graph">
@@ -276,7 +306,7 @@
             </div>
 
           </div>
-          <div class="chart" id="adjacency_chart"></div>
+          
         </div>
 
         
@@ -956,19 +986,6 @@ d3.csv(csv_file, function(error, data) {
         }
         
 
-      before_nodes = adjacency_chart.append("g")
-                      .attr("transform", "translate(" + (margin_ac.left + width_ac/4)+ "," + 4 + ")");
-
-      after_nodes = adjacency_chart.append("g")
-                      .attr("transform", "translate(" + (width_ac*0.75)+ "," + 0 + ")");
-
-      // adj_node = adjacency_chart.append("g")
-      //                 .attr("class", "center_node")
-      //                 .attr("transform", "translate(" + center_node.x + "," + center_node.y  + ")");
-
-      // adj_node.append("circle")
-
-      // adj_node.append('text')
 
 
     var bar_width = 10,
@@ -987,8 +1004,8 @@ d3.csv(csv_file, function(error, data) {
     function update_adjacency_chart_data(links){
 
      
-      var after_data={type:'after', actions:[], y:(width_ac - bar_width)},
-          before_data ={type:'before', actions:[], y:0},
+      var after_data={type:'after', actions:[], translate:(width_ac - bar_width)},
+          before_data ={type:'before', actions:[], translate:0},
           node_data =[before_data, after_data],
           link_data =[],
           x0 = 0,
@@ -1017,15 +1034,19 @@ d3.csv(csv_file, function(error, data) {
 
         var x0 = 0,
           total = 0,
+          translate = bar_data.translate,
           data = bar_data.actions;
+
 
         data = data.sort(function(a,b) {return b.count - a.count});
         data.forEach(function(d, i){
+          //bar coordinates
+          d.translate = translate;
           d.x0 =x0, 
           d.x1= x0+= +d.percent;
           total += d.count;
 
-
+          //node coordinates
           d.x = (bar_data.type == 'before')? width_ac/7: width_ac*(6/7);
           d.y = ((height_ac - (data.length-1)*spacing)/2) + (spacing*i);
 
@@ -1050,8 +1071,7 @@ d3.csv(csv_file, function(error, data) {
     }
 
     function select_adj_node(d){
-
-       if (selected_adj_node){
+      if (selected_adj_node){
         selected_adj_node.selected = false;
       }
       selected_adj_node = d;
@@ -1064,6 +1084,7 @@ d3.csv(csv_file, function(error, data) {
 
 
     function update_adj_chart(chart_data){
+      d3.select("#tooltip").classed("hidden", true);
 
      
       var link_data = chart_data.links,
@@ -1125,6 +1146,8 @@ d3.csv(csv_file, function(error, data) {
                         .append('g')
                         .attr("transform", function(d){return "translate(" + d.x + "," + d.y + ")"})
                         .on("click", select_adj_node)
+                        // .on("mouseover", select_adj_node)
+                        // .on("mouseout", function(d){return select_adj_node(null);});
 
       node_enter.append("circle")
             .attr("r",node_radius)
@@ -1152,7 +1175,7 @@ d3.csv(csv_file, function(error, data) {
               .data(node_data)
               .enter().append("g")
               .attr("class", "adjbar")
-              .attr("transform", function (d) { return "translate(" + d.y + ",0)"; })
+              .attr("transform", function (d) { return "translate(" + d.translate + ",0)"; })
 
 
               
@@ -1163,7 +1186,8 @@ d3.csv(csv_file, function(error, data) {
        
        var bar_enter = bar.enter().append('g');
 
-        
+        //bar_enter.append("div").attr("class", "toolTip")
+
 
         bar_enter.append("rect")
               .attr("y", function(d){
@@ -1181,9 +1205,35 @@ d3.csv(csv_file, function(error, data) {
 
         bar_update.selectAll('rect')
                 .attr('stroke', function(d){ return d.selected? "black": "none"})
+                .each(tooltip)
 
 
 
+    }
+
+    function tooltip(d){
+      
+      if (d.selected){
+        console.log('tooltip');
+        var xPosition = d.translate + margin_ac.left + bar_width;
+        var yPosition = bar_len(d.x0 +((d.x1-d.x0)/2)) 
+
+        console.log('x',xPosition);
+        console.log('y',yPosition);
+
+        var text = d3.format(".1%")(d.percent/100) + ', ' + d3.format(",")(d.count);
+
+        d3.select("#tooltip")
+            .style("left", xPosition + "px")
+            .style("top", yPosition + "px")
+            .select("#value")
+            .text(text);
+
+        d3.select("#tooltip").classed("hidden", false);
+
+      }
+      
+      
     }
 
     function select_pattern_node(d){
