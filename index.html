@@ -1347,7 +1347,8 @@ d3.csv(csv_file, function(error, data) {
             break;
           }
         }
-        if (selected_pattern_node != nodes[0])
+        //if its not the first node, remove the previous incoming link
+        if (idx>0)
           idx = idx-1;
 
 
