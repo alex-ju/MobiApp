@@ -918,7 +918,7 @@ d3.csv(csv_file, function(error, data) {
           previous_node_id = selected_pattern_node.id;
           add_action_node();
           current_node_id = selected_pattern_node.id;
-          pattern_data.links.push({"source": previous_node_id, "target": current_node_id, "value": 0.5});
+          pattern_data.links.push({"source": previous_node_id, "target": current_node_id, "value": 0.5, "consecutive": false});
           draw_pattern_graph(pattern_data);
 
         }else{
@@ -1449,7 +1449,7 @@ d3.csv(csv_file, function(error, data) {
 
             //return strokeScale(d.value);
           })
-          .style("stroke-dasharray", ("3, 3"))
+          .style("stroke-dasharray", function(d){return d.consecutive? ("1, 0"): ("3,3");})
           .attr("marker-end", "url(#end)");
 
       pb_link = link_enter.merge(pb_link);
