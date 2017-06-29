@@ -975,7 +975,9 @@ d3.csv(csv_file, function(error, data) {
         //bar_length = 200; **HORIZONTAL
         bar_length = height_ac,
         bar_len = d3.scaleLinear()
-              .rangeRound([0, bar_length]);
+              .rangeRound([0, bar_length]),
+        selected_adj_node,
+        adj_chart_data;
               
 
                       
@@ -987,12 +989,12 @@ d3.csv(csv_file, function(error, data) {
      
       var after_data={type:'after', actions:[], y:(width_ac - bar_width)},
           before_data ={type:'before', actions:[], y:0},
-      //**HORIZONTAL
-      // var after_data={type:'after', actions:[], y:height_ac},
-      //     before_data ={type:'before', actions:[], y:0},
-          chart_data =[before_data, after_data],
+          node_data =[before_data, after_data],
+          link_data =[],
+          adj_chart_data={nodes:node_data, links:link_data},
           x0 = 0,
-          total= 0;
+          total= 0,
+          spacing = 25;
 
 
 
@@ -1010,24 +1012,9 @@ d3.csv(csv_file, function(error, data) {
 
       })
 
-      console.log('BEFORE', before_data);
-      console.log('AFTER', after_data);
 
 
-
-      update_adjacent_action_chart(chart_data)
-      
-
-
-    }
-
-
-    function update_adjacent_action_chart(chart_data){
-
-      var link_data =[],
-          spacing = 25;
-
-      chart_data.forEach(function(bar_data){
+      node_data.forEach(function(bar_data){
 
         var x0 = 0,
           total = 0,
@@ -1054,9 +1041,32 @@ d3.csv(csv_file, function(error, data) {
 
       })
 
+
+      update_adj_chart(adj_chart_data);
       
 
-      console.log(data);
+
+    }
+
+    function select_adj_node(d){
+
+       if (selected_adj_node){
+        selected_adj_node.selected = false;
+      }
+      selected_adj_node = d;
+      d.selected = true;
+
+    }
+
+
+    function update_adj_chart(chart_data){
+
+     
+      var link_data = chart_data.links
+      node_data = chart_data.nodes
+      
+
+      
       console.log('link data', link_data);
 
 
@@ -1081,7 +1091,7 @@ d3.csv(csv_file, function(error, data) {
       adjacency_chart.selectAll('.center_node')
                       .remove()
                       .exit()
-                      
+
       var adj_node = adjacency_chart.append("g")
                       .attr("class", "center_node")
                       .attr("transform", "translate(" + center_node.x + "," + center_node.y  + ")");
@@ -1096,23 +1106,13 @@ d3.csv(csv_file, function(error, data) {
           .style('fill', 'black')
           .text(selected_action_node.action)
 
-      // adj_node.selectAll('circle')
-      //       .attr("r",node_radius)
-      //       .style("fill", color(selected_action_node.group))
-
-      // adj_node.select('text')
-      //       .style("font-size", "10px")
-      //       .style("text-anchor", "middle")
-      //       .style('fill', 'black')
-      //       .text(selected_action_node.action)
-
 
       
 
      var adj_nodes = adjacency_chart.selectAll(".adjnodes")
                     .remove()
                     .exit()
-                    .data(chart_data)
+                    .data(node_data)
                     .enter().append("g")
                     .attr("class", "adjnodes")
 
@@ -1123,7 +1123,7 @@ d3.csv(csv_file, function(error, data) {
                         .enter()
                         .append('g')
                         .attr("transform", function(d){return "translate(" + d.x + "," + d.y + ")"})
-                        .on("click", function(d) {console.log(d)})
+                        .on("click", select_adj_node)
 
       node_enter.append("circle")
             .attr("r",node_radius)
@@ -1143,11 +1143,9 @@ d3.csv(csv_file, function(error, data) {
           .selectAll(".adjbar")
               .remove()
               .exit()
-              .data(chart_data)
+              .data(node_data)
               .enter().append("g")
               .attr("class", "adjbar")
-              //**HORIZONTAL
-              //.attr("transform", function (d) { return "translate(0," + d.y + ")"; })
               .attr("transform", function (d) { return "translate(" + d.y + ",0)"; })
 
 
@@ -1158,18 +1156,7 @@ d3.csv(csv_file, function(error, data) {
           .data(d =>d.actions)
           .enter();
 
-        //**HORIZONTAL
-        // bar_enter.append("rect")
-        //       .attr("x", function(d){
-        //           return bar_len(d.x0);
-        //       })
-        //       .attr("height", function(d){
-        //           return bar_width;
-        //       })
-        //       .attr("width", function(d){
-        //           return bar_len(d.x1) - bar_len(d.x0);
-        //       })
-        //       .attr("fill", function(d) {return color(d.group);});
+        
 
         bar_enter.append("rect")
               .attr("y", function(d){
