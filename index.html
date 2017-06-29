@@ -136,7 +136,7 @@
       #tooltip {
         position: absolute;
         height: 20px;
-        width: 60px;
+        width: 65px;
         padding: 2px;
         background-color: white;
 /*        -webkit-border-radius: 2px;
@@ -198,7 +198,7 @@
       <div class= "button" id="apply_funnel_button">
         <input name="funnelButton" 
                      type="button" 
-                    value="Apply Funnel" />
+                    value="Apply Pattern" />
       </div>
       <div class= "button" id="action_button">
         <input name="actionButton" 
@@ -298,10 +298,15 @@
                              type="button" 
                             value="Remove Node" />
               </div>
+              <div class= "button" id="add_cons_link_button">
+                <input name="addConsLinkButton" 
+                             type="button" 
+                            value="Add Consecutive Links" />
+              </div>
               <div class= "button" id="create_funnel_button">
                 <input name="addLinkButton" 
                              type="button" 
-                            value="Create Funnel" />
+                            value="Create Non-Consecutive Funnel" />
               </div>
             </div>
 
@@ -441,11 +446,12 @@ d3.csv(csv_file, function(error, data) {
         alphabet[d.Action] = d.Character;
         alphabet_rev[d.Character] = d.Action
       })
-
-      alphabet['start'] = '0';
-      alphabet['exit'] = '1';
-      alphabet_rev['0'] = 'start';
-      alphabet_rev['1'] = 'exit';
+      var start_c = '0',
+          exit_c = '1';
+      alphabet['start'] = start_c;
+      alphabet['exit'] = exit_c;
+      alphabet_rev[start_c] = 'start';
+      alphabet_rev[exit_c] = 'exit';
 
       console.log('Alphabet: ', alphabet);
       console.log('data', data[2])
@@ -529,6 +535,9 @@ d3.csv(csv_file, function(error, data) {
       .on("click", apply_funnel)
     d3.select("#remove_node_button")
       .on("click", remove_action_node)
+    d3.select("#add_cons_link_button")
+      .on("click", add_link)
+
 
 
     var charts = [
@@ -762,7 +771,7 @@ d3.csv(csv_file, function(error, data) {
 
       function reduceAdd_concat(p, v) {
           
-          p.str = p.str + '0' + v.general_actions + '1';
+          p.str = p.str + start_c + v.general_actions + exit_c;
         
         return p;
 
@@ -948,7 +957,7 @@ d3.csv(csv_file, function(error, data) {
           previous_node_id = selected_pattern_node.id;
           add_action_node();
           current_node_id = selected_pattern_node.id;
-          pattern_data.links.push({"source": previous_node_id, "target": current_node_id, "value": 0.5, "consecutive": false});
+          pattern_data.links.push({"source": previous_node_id, "target": current_node_id, "value": 0.5, "consecutive": consecutive});
           draw_pattern_graph(pattern_data);
 
         }else{
@@ -1184,9 +1193,8 @@ d3.csv(csv_file, function(error, data) {
           .exit()
           .data(d =>d.actions)
        
-       var bar_enter = bar.enter().append('g');
-
-        //bar_enter.append("div").attr("class", "toolTip")
+       var bar_enter = bar.enter().append('g')
+                        .on("click", select_adj_node);
 
 
         bar_enter.append("rect")
@@ -1300,7 +1308,6 @@ d3.csv(csv_file, function(error, data) {
             .attr("d", "M0,-5L10,0L0,5")
             .attr("fill", "gray");
 
-    
 
     function add_action_node(){
       if (selected_action_node){
@@ -1315,7 +1322,7 @@ d3.csv(csv_file, function(error, data) {
           new_node.fy = 0;
         }
 
-        selected_pattern_node = new_node;
+        select_pattern_node(new_node);
         pattern_data.nodes.push(new_node);
         draw_pattern_graph(pattern_data);
       }
@@ -1335,13 +1342,16 @@ d3.csv(csv_file, function(error, data) {
 
         for(var i=0; i<links.length; i++){
           var l = links[i];
-          if (l.target == select_pattern_node){
+          if (l.source == selected_pattern_node){
             idx = i;
             break;
           }
         }
+        if (selected_pattern_node != nodes[0])
+          idx = idx-1;
 
-        links.splice(idx-1);
+
+        links.splice(idx);
 
         console.log('index of remove', idx);
         console.log('new nodes', pattern_data.nodes);
@@ -1355,36 +1365,25 @@ d3.csv(csv_file, function(error, data) {
     }
 
 
-    var pressed= false;
+    var pressed= false,
+        consecutive = false;
 
     function create_funnel(){
       toggle_button_color("#create_funnel_button");
+      consecutive = false;
       pressed = !pressed;
-      d3.select("#create_funnel_button").text(function(d){return pressed? 'Complete Funnel': 'Create Filter'});
-
-      if (!pressed){
-        create_funnel_regex()
-      }
-
-
-
-
-
-
-
-
+      d3.select("#create_funnel_button").text(function(d){return pressed? 'Complete Funnel': 'Create Non-Consecutive Filter'});
 
     }
 
-    function create_funnel_regex(){
-      var nodes = pattern_data.nodes,
-          regex = '.*';
+    function add_link(){
+      toggle_button_color("#add_cons_link_button");
+      consecutive = true;
+      pressed = !pressed;
+      d3.select("#add_cons_link_button").text(function(d){return pressed? 'Complete Funnel': 'Create Consecutive Filter'});
 
-      nodes.forEach(function(n){
-        regex = regex + alphabet[n.id]; + '.*';
-
-      })
     }
+
 
 
     function apply_funnel(){
@@ -1396,18 +1395,32 @@ d3.csv(csv_file, function(error, data) {
           parent = selected;
 
       nodes.forEach(function(n){
-        regex = regex + alphabet[n.id] + '.*';
+        var sep = consecutive? '': '.*',
+              c = alphabet[n.id];
+        if (c == exit_c)
+          c = '$';
+        else if (c == start_c)
+          c = '^';
+        regex = regex + c + sep;
         console.log('regex', regex);
-        chars.push(alphabet[n.id]); 
+        var c = alphabet[n.id];
+        if (c == exit_c){
+          c ='$';
+        }
+        chars.push(c); 
         var match = all.reduce(reduceAdd,reduceRemove, reduceInitial).value();
         if (match){
           var size = match.count,
-              filter = {};
+              filter = {},
+              funnel = {char: chars.slice(), consecutive:consecutive};
+
+
 
           selectedFilter.chart = selected_chart;
           selectedFilter.size = size;
           selectedFilter.type = 'regex';
-          selectedFilter.char = chars.slice();
+          selectedFilter.char = funnel;
+          //selectedFilter.char = chars.slice();
 
           console.log('creating filter:', selectedFilter);
 
@@ -3088,7 +3101,6 @@ d3.csv(csv_file, function(error, data) {
 
             });
 
-            console.log('horizontal data', data);
 
             data.sort(function (a, b) { return b.total - a.total; });
 
@@ -3354,32 +3366,54 @@ d3.csv(csv_file, function(error, data) {
 
       chars.pos.forEach( function(c){
         
-        if (c instanceof Array){
-          f = '';
+        // if (c instanceof Array){
+        //   f = '';
           
-          c.forEach(function(ch){
-            f = f + ch + '.*';
+        //   c.forEach(function(ch){
+        //     f = f + ch + '.*';
+        //   })
+        //   c = f;
+        // }
+        if (c instanceof Object){
+          f = '';
+
+          var sep = c.consecutive? '': '.*';
+
+
+          c.char.forEach(function(ch){
+
+            f = f + ch + sep;
           })
+
           c = f;
         }
-        
+
 
         s = s + '(?=.*' + c + ')';
       })
 
       if (chars.neg.length>0){
-      s = s + '(?!.*(';
+        s = s + '(?!.*(';
+        
         chars.neg.forEach( function(c){
           
-          if (c instanceof Array){
-            f = '(.*';
+          // if (c instanceof Array){
+          //   f = '(.*';
             
-            c.forEach(function(ch){
-              f = f + ch + '.*';
+          //   c.forEach(function(ch){
+          //     f = f + ch + '.*';
+          //   })
+          //   c = f +')';
+          // }
+          if (c instanceof Object){
+            f = '(.*';
+            var sep = c.consecutive? '': '.*';
+
+            c.char.forEach(function(ch){
+              f = f + ch + sep;
             })
             c = f +')';
           }
-          
 
           s = s + c + '|';
         })
