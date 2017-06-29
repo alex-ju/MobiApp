@@ -977,7 +977,7 @@ d3.csv(csv_file, function(error, data) {
         bar_len = d3.scaleLinear()
               .rangeRound([0, bar_length]),
         selected_adj_node,
-        adj_chart_data;
+        adj_chart_data = {nodes:[], links:[]};
               
 
                       
@@ -991,7 +991,6 @@ d3.csv(csv_file, function(error, data) {
           before_data ={type:'before', actions:[], y:0},
           node_data =[before_data, after_data],
           link_data =[],
-          adj_chart_data={nodes:node_data, links:link_data},
           x0 = 0,
           total= 0,
           spacing = 25;
@@ -1041,6 +1040,8 @@ d3.csv(csv_file, function(error, data) {
 
       })
 
+      adj_chart_data.nodes = node_data;
+      adj_chart_data.links = link_data;
 
       update_adj_chart(adj_chart_data);
       
@@ -1056,18 +1057,18 @@ d3.csv(csv_file, function(error, data) {
       selected_adj_node = d;
       d.selected = true;
 
+      console.log('Selected adjacent node', selected_adj_node);
+      update_adj_chart(adj_chart_data);
+
     }
 
 
     function update_adj_chart(chart_data){
 
      
-      var link_data = chart_data.links
-      node_data = chart_data.nodes
+      var link_data = chart_data.links,
+        node_data = chart_data.nodes;
       
-
-      
-      console.log('link data', link_data);
 
 
       bar_len.domain([0,100]);
@@ -1116,11 +1117,11 @@ d3.csv(csv_file, function(error, data) {
                     .enter().append("g")
                     .attr("class", "adjnodes")
 
-      var node_enter = adj_nodes.selectAll("circle")
+      var node = adj_nodes.selectAll("circle")
                         .remove()
                         .exit()
                         .data(d =>d.actions)
-                        .enter()
+      var node_enter =  node.enter()
                         .append('g')
                         .attr("transform", function(d){return "translate(" + d.x + "," + d.y + ")"})
                         .on("click", select_adj_node)
@@ -1135,11 +1136,16 @@ d3.csv(csv_file, function(error, data) {
             .style('fill', 'black')
             .text(function(d){return d.action})
 
+      var node_update = node_enter.merge(node);
+
+      node_update.selectAll('circle')
+                .attr('stroke', function(d){ return d.selected? "black": "none"})
+
       
 
 
          //drawing chart
-      var bar = adjacency_chart
+      var bars = adjacency_chart
           .selectAll(".adjbar")
               .remove()
               .exit()
@@ -1150,11 +1156,12 @@ d3.csv(csv_file, function(error, data) {
 
 
               
-     var bar_enter = bar.selectAll("rect")
+      var bar= bars.selectAll("rect")
           .remove()
           .exit()
           .data(d =>d.actions)
-          .enter();
+       
+       var bar_enter = bar.enter().append('g');
 
         
 
@@ -1169,6 +1176,11 @@ d3.csv(csv_file, function(error, data) {
                   return bar_len(d.x1) - bar_len(d.x0);
               })
               .attr("fill", function(d) {return color(d.group);});
+
+        var bar_update = bar_enter.merge(bar);
+
+        bar_update.selectAll('rect')
+                .attr('stroke', function(d){ return d.selected? "black": "none"})
 
 
 
@@ -1437,12 +1449,10 @@ d3.csv(csv_file, function(error, data) {
 
             //return strokeScale(d.value);
           })
+          .style("stroke-dasharray", ("3, 3"))
           .attr("marker-end", "url(#end)");
 
       pb_link = link_enter.merge(pb_link);
-
-      
-      
 
 
       pb_simulation
