@@ -306,7 +306,7 @@
               <div class= "button" id="create_funnel_button">
                 <input name="addLinkButton" 
                              type="button" 
-                            value="Create Non-Consecutive Funnel" />
+                            value="Add Non-Consecutive Links" />
               </div>
             </div>
 
@@ -619,7 +619,7 @@ d3.csv(csv_file, function(error, data) {
 
     var nl_simulation = d3.forceSimulation(nl_graph_data.nodes)
         // .force("link", d3.forceLink(nl_graph_data.links).distance(200))
-        .force("link", d3.forceLink().id(function(d) {return d.id;}).distance(80))
+        .force("link", d3.forceLink().id(function(d) {return d.id;}).distance(100))
         .force("charge", d3.forceManyBody())
         .force("center", d3.forceCenter(nl_width / 2, nl_height/2))
         //.alphaTarget(1)
@@ -1373,7 +1373,7 @@ d3.csv(csv_file, function(error, data) {
       toggle_button_color("#create_funnel_button");
       consecutive = false;
       pressed = !pressed;
-      d3.select("#create_funnel_button").text(function(d){return pressed? 'Complete Funnel': 'Create Non-Consecutive Filter'});
+      d3.select("#create_funnel_button").text(function(d){return pressed? 'Complete Pattern': 'Add Non-Consecutive Links'});
 
     }
 
@@ -1381,7 +1381,7 @@ d3.csv(csv_file, function(error, data) {
       toggle_button_color("#add_cons_link_button");
       consecutive = true;
       pressed = !pressed;
-      d3.select("#add_cons_link_button").text(function(d){return pressed? 'Complete Funnel': 'Create Consecutive Filter'});
+      d3.select("#add_cons_link_button").text(function(d){return pressed? 'Complete Pattern': 'Add Consecutive Links'});
 
     }
 
@@ -1404,10 +1404,6 @@ d3.csv(csv_file, function(error, data) {
           c = '^';
         regex = regex + c + sep;
         console.log('regex', regex);
-        var c = alphabet[n.id];
-        if (c == exit_c){
-          c ='$';
-        }
         chars.push(c); 
         var match = all.reduce(reduceAdd,reduceRemove, reduceInitial).value();
         if (match){
@@ -1645,12 +1641,22 @@ d3.csv(csv_file, function(error, data) {
     }
 
     function format_filter_text(d){
-      var values="";
+      var values=[];
       if (d.type=="range")
         values = d.extents;
-      else if (d.type =="contains")
-        values = alphabet_rev[d.char];
-      return d.chart.attr('id') + ": " + d.type +" -> [" + values + ']';
+      else if (d.type =="regex"){
+        if (d.char instanceof Object){
+          d.char.char.forEach(function(c){
+            values.push(alphabet_rev[c])
+          })
+        }else{
+          values.push(alphabet_rev[d.char]);
+        }
+
+
+        
+      }
+      return d.chart.attr('id') + ": " + d.type +" -> " +  values ;
     }
 
     
@@ -3366,15 +3372,7 @@ d3.csv(csv_file, function(error, data) {
       s = '^'
 
       chars.pos.forEach( function(c){
-        
-        // if (c instanceof Array){
-        //   f = '';
-          
-        //   c.forEach(function(ch){
-        //     f = f + ch + '.*';
-        //   })
-        //   c = f;
-        // }
+
         if (c instanceof Object){
           f = '';
 
@@ -3388,9 +3386,11 @@ d3.csv(csv_file, function(error, data) {
 
           c = f;
         }
+        if (c.charAt(0) !='^')
+          c = '.*' + c;
 
 
-        s = s + '(?=.*' + c + ')';
+        s = s + '(?=' + c + ')';
       })
 
       if (chars.neg.length>0){
@@ -3398,14 +3398,7 @@ d3.csv(csv_file, function(error, data) {
         
         chars.neg.forEach( function(c){
           
-          // if (c instanceof Array){
-          //   f = '(.*';
-            
-          //   c.forEach(function(ch){
-          //     f = f + ch + '.*';
-          //   })
-          //   c = f +')';
-          // }
+      
           if (c instanceof Object){
             f = '(.*';
             var sep = c.consecutive? '': '.*';
@@ -3500,12 +3493,8 @@ d3.csv(csv_file, function(error, data) {
           if (foundFilter){
               filter.chars.pos = old_filter.chars.pos.slice();
               filter.chars.neg = old_filter.chars.neg.slice();
-              //filter.chars.push(new_filter.char);
               
           }
-          // else{
-          //   filter.chars = [new_filter.char];
-          // }
           if (not_filter){
             filter.chars.neg.push(new_filter.char);
           }else{
@@ -3517,21 +3506,7 @@ d3.csv(csv_file, function(error, data) {
           console.log('CHARS', filter.chars);
         }
 
-        // else if(new_filter.type == 'regex') {
-        //   if (foundFilter){
-        //       filter.chars = old_filter.chars.slice()
-        //       filter.chars.push(new_filter.char);
-              
-        //   }
-        //   else{
-        //     filter.chars = [new_filter.char];
-        //   }
-        //   filter.regex = create_action_regex(filter.chars);
-        //   filter.char = new_filter.char;
-        //   filter.type = 'regex';
-        // }
 
-        //size = new_filter.size; 
         return [filters, filter];
     }
     function show_not_filter(){
@@ -3556,7 +3531,20 @@ d3.csv(csv_file, function(error, data) {
 
         //d = selected;
       if (d && selectedFilter.type) {
-        d_filters = d.data.filters;
+        var d_filters = d.data.filters,
+            d_all_filters = d.data.all_filters;
+
+        if(d_all_filters){
+          all_filters = d_all_filters.slice();
+        }else{
+          all_filters=[];
+        }
+        var filter_copy = JSON.parse(JSON.stringify(selectedFilter))
+        all_filters.push(filter_copy);
+        all_filters = all_filters.slice();
+
+
+        console.log('ALL THE FILTERS,', all_filters);
 
         new_filters = create_new_filter_set(d_filters, selectedFilter);
         filters =new_filters[0];
@@ -3584,6 +3572,7 @@ d3.csv(csv_file, function(error, data) {
 
         var segment_data = { 'name': name,
                      'value': 1,
+                     'all_filters': all_filters,
                      'filters': filters,
                      'size': size,
                      'prev_size': d.data.size
