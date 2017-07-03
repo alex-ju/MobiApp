@@ -898,18 +898,21 @@ d3.csv(csv_file, function(error, data) {
 
       return links;
     }
+    var action_string ='';
+    function concatenate_action_strings(){
+        action_string = all.reduce(reduceAdd_concat, reduceRemove_concat, reduceInitial_concat).value().str;  
+    }
 
     function update_node_link_data(){
       // var nl_nodes = [],
       //   nl_links = [];
-      var action_string;
+      //var action_string;
       
 
       var nodes =[],
           links = [];
 
-
-      action_string = all.reduce(reduceAdd_concat, reduceRemove_concat, reduceInitial_concat).value().str;    
+      // action_string = all.reduce(reduceAdd_concat, reduceRemove_concat, reduceInitial_concat).value().str;    
       //create nodes
       nodes.push({id:"start", action:"start", group:1, fx: nl_width/2, fy: 0});
       nodes.push({id:"exit", action: "exit", group:0, fx: nl_width/2, fy: nl_height});
@@ -1550,9 +1553,65 @@ d3.csv(csv_file, function(error, data) {
     }
     
 
+    //========================== Detailed View ==================================//
+    var patterns = {};
+    function remove_duplicates(str){
+      return str.replace(/[^\w\s]|(.)(?=\1)/g, "");
+    }
 
 
+    function find_patterns(str, patterns){
+      var re = /(.+?)\1+/g;
+      if(!patterns){
+        patterns = {};
+      }
 
+      while (m = re.exec(str)){
+        var patt = m[1],
+            reps = m[0].length/m[1].length;
+
+        if(patterns[patt]){
+          patterns[patt].push(reps);
+        }
+        else{
+          patterns[patt] = [reps];
+        }
+
+
+      } 
+      return patterns
+
+    }
+
+    function find_all_patterns(){
+
+      var p = all.reduce(reduceAdd, reduceRemove, reduceInitial).value()
+      console.log(p.patterns);
+
+
+      function reduceInitial() {
+        return {
+            patterns: {}
+        };
+      }
+
+      function reduceAdd(p, v) {
+          p.patterns = find_patterns(v.general_actions, p.patterns);
+        
+        return p;
+
+      }
+
+      function reduceRemove(p, v) {
+        
+        return p;
+
+      }
+
+
+    }
+
+    find_patterns("0ABCABCHEHEHEAFFAADDHEHEHE10ABCABCHEDDHEHEAAADDHEHEHE10ABCABCHEHEHEAAADGGDHEHEHE1")
 
 
     //=========================== Info Views ====================================//
@@ -2879,6 +2938,8 @@ d3.csv(csv_file, function(error, data) {
         console.log("Selected node: ", selected);
 
         show_node_view(selected);
+        concatenate_action_strings();
+        find_all_patterns();
 
         if (selected.data.value == 1) {
           update_info_view("segment_view");
@@ -3541,7 +3602,6 @@ d3.csv(csv_file, function(error, data) {
         }
         var filter_copy = JSON.parse(JSON.stringify(selectedFilter))
         all_filters.push(filter_copy);
-        all_filters = all_filters.slice();
 
 
         console.log('ALL THE FILTERS,', all_filters);
