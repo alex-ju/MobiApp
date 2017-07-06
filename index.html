@@ -1706,7 +1706,7 @@ d3.csv(csv_file, function(error, data) {
 
     function get_filter_info(selected){
       var d = selected.data,
-          filter_info = d.filter_type,
+          filter_info = d.operation,
           chart = filter_info.chart;
 
       update_selected_chart(chart);
@@ -2756,6 +2756,16 @@ d3.csv(csv_file, function(error, data) {
         });
     }
 
+    function create_nodes(d){
+      var selection = d3.select(this);
+      if (d.value==1){
+        selection.append("path")
+              .attr("class", "segment")
+      }else{
+        selection.append("path")
+            .attr("class", "operation")
+      }
+    }
 
 
     function update(source) {
@@ -2779,19 +2789,49 @@ d3.csv(csv_file, function(error, data) {
           .attr("class", "node")
           .attr("transform", function(d) { return "translate(" + source.x0 + "," + source.y0 + ")"; })
           //.on("dblclick", hide_children)
+          .on("click", select_node)
           .on("dblclick", filter_partition);
 
-      
+          
+      nodeEnter.append('g')
+              .attr("class", function(d) {return d.value==1 || d.value==-1? "segment": "operation"})
+      //nodeEnter.each(create_nodes)
+      nodeEnter.selectAll(".segment").append("path")
+        //.attr('class', 'node')
+        //.each( format_nodes)
+        //.on("click", select_node)
+        //.on("mouseover", show_node_view)
+        // .on("mouseover", function(d){ 
+        //       if (d.value != 1)
+        //         select_node(d);
+        //     });
 
-      nodeEnter.append("path")
-            .attr('class', 'node')
-            //.each( format_nodes)
-            .on("click", select_node)
-            //.on("mouseover", show_node_view)
-            // .on("mouseover", function(d){ 
-            //       if (d.value != 1)
-            //         select_node(d);
-            //     });
+      var operation_nodes = nodeEnter.selectAll(".operation")
+                                .attr("transform", function(d) { return "translate(" + -oLength/2 + "," + -oWidth/2 + ")"; });
+
+      var bar =  operation_nodes.selectAll("rect")
+                .remove()
+                .exit()
+                .data(d => d.data.node_data)
+       
+       var bar_enter = bar.enter().append('g')
+
+
+
+        bar_enter.append("rect")
+              .attr("x", function(d){
+                  return d.x0;
+              })
+              .attr("width", function(d){
+                  return d.x1-d.x0;
+              })
+              .attr("height", function(d){
+                  return oWidth;
+              })
+              .attr("fill", function(d) {return d.hightlighted? "lightblue": "white";})
+              .attr("stroke", "black");
+
+        var bar_update = bar_enter.merge(bar);
 
       nodeEnter.append("text")
         .attr("dy", ".15em")
@@ -2879,12 +2919,13 @@ d3.csv(csv_file, function(error, data) {
 
     function diagonal(s, d) {
 
+      var t = s.data? (s.data.translate_x | 0): 0;
 
-        return "M" + s.x + "," + s.y
-             + "C" + s.x + "," + (s.y + d.y) / 2
-             + " " + d.x + "," +  (s.y + d.y) / 2
-             + " " + d.x + "," + d.y;
-      }
+      return "M" + s.x + "," + s.y
+           + "C" + s.x + "," + (s.y + d.y) / 2
+           + " " + (d.x + t) + "," +  (s.y + d.y) / 2
+           + " " + (d.x + t) + "," + d.y;
+    }
 
 
 
@@ -3318,7 +3359,11 @@ d3.csv(csv_file, function(error, data) {
             dims;
 
         chart_id = selected_chart.attr('id');
+        range = selected_chart.data()[0].range()
+        update_oScale(range);
 
+        var node_data,
+            t_ranges =[];
 
         name = 'NEW Partition!';
         partition_data = { 'name': name,
@@ -3328,6 +3373,8 @@ d3.csv(csv_file, function(error, data) {
                      'chart': selected_chart
 
                    };
+
+
         partition_node = add_child_node(d, partition_data);
 
         
@@ -3357,6 +3404,8 @@ d3.csv(csv_file, function(error, data) {
 
         partition_data.partitions = [];
         partition_data.fullSize = d_size;
+
+
         
         for (var i = 0; i < groups.length; i++) {
           g = groups[i];
@@ -3369,6 +3418,11 @@ d3.csv(csv_file, function(error, data) {
           extents = [low_bound, high_bound];
           size = g.value;
           
+
+          var translate_x = oScale(low_bound + ((high_bound-low_bound)/2)) - (oLength)/2;
+          console.log(translate_x)
+
+          t_ranges.push(extents);
           var partition = {};
           partition.range = extents;
           partition.size = size;
@@ -3391,14 +3445,16 @@ d3.csv(csv_file, function(error, data) {
           segment_data = { 'name': name,
                      'value': 1,
                      'filters': filters,
-                     'size': size
+                     'size': size,
+                     'translate_x': translate_x
                    };
 
           segment_node = add_child_node(partition_node, segment_data);
 
         }
 
-   
+        partition_data.node_data = create_range_partition_data(t_ranges, range);
+
         update(d);
         
       } else {
@@ -3589,7 +3645,48 @@ d3.csv(csv_file, function(error, data) {
         return [filters, filter];
     }
 
-    var oScale = d3.scaleLinear().range([0,50])
+    var oLength = 50,
+        oWidth = 10,
+        oRange = [0,oLength],
+        oScale;
+
+    function update_oScale(range){
+
+      if(typeof range[0] == "number")
+        oScale = d3.scaleLinear().range(oRange)
+      else
+        oScale = d3.scaleTime().range(oRange)
+
+      oScale.domain(range);
+
+    }
+
+    function create_range_partition_data(thresholds, range){
+      var node_data = [];
+
+      // if(typeof range[0] == "number")
+      //   oScale = d3.scaleLinear().range(oRange)
+      // else
+      //   oScale = d3.scaleTime().range(oRange)
+
+      // oScale.domain(range);
+
+      update_oScale(range);
+
+
+      thresholds.forEach(function(t){
+        node_data.push({
+          x0: oScale(t[0]),
+          x1: oScale(t[1]),
+          highlighted: false
+        })
+
+      })
+
+      return node_data
+
+
+    }
 
     function create_range_filter_data(filter){
       var value = filter.not? true: false,
@@ -3597,7 +3694,14 @@ d3.csv(csv_file, function(error, data) {
           extents = filter.extents,
           node_data = [];
 
-      oScale.domain(range)
+      // if(typeof range[0] == "number")
+      //   oScale = d3.scaleLinear().range(oRange)
+      // else
+      //   oScale = d3.scaleTime().range(oRange)
+
+      // oScale.domain(range);
+
+      update_oScale(range);
 
       if (range[0] != extents[0])
         node_data.push({
@@ -3626,6 +3730,8 @@ d3.csv(csv_file, function(error, data) {
 
       return node_data
     }
+
+
 
     function show_not_filter(){
 
@@ -3662,7 +3768,7 @@ d3.csv(csv_file, function(error, data) {
         filter_copy.chart = selectedFilter.chart;
         all_filters.push(filter_copy);
 
-        node_data = create_range_filter_data(filter_copy)
+        node_data = create_range_filter_data(selectedFilter)
 
 
         console.log('ALL THE FILTERS,', all_filters);
@@ -3688,8 +3794,8 @@ d3.csv(csv_file, function(error, data) {
         name = 'NEW Filter!';
         filter_data = { 'name': name,
                      'value': 0,
-                     //'filter_type': filter
-                     'filter_type': filter_copy,
+                     //'operation': filter
+                     'operation': filter_copy,
                      'node_data': node_data
 
                    };
