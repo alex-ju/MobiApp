@@ -200,10 +200,10 @@
                      type="button" 
                     value="Apply Pattern" />
       </div>
-      <div class= "button" id="action_button">
-        <input name="actionButton" 
+      <div class= "button" id="demo2_button">
+        <input name="demo2Button" 
                      type="button" 
-                    value="Contains actions" />
+                    value="Print Sequences" />
       </div>
       <div class= "button" id="demo_button">
         <input name="demoButton" 
@@ -277,12 +277,9 @@
         </div>
 
         <div class ="charts" id="action_transition">
-          <div class ="chart" id="node_link"></div>
-          <div class="chart" id="adjacency_chart">
-            <div id="tooltip" class="hidden">
-              <p><span id="value">100</span></p>
-            </div>
-          </div>
+          
+
+
           <div  class="chart" id="pattern_builder">
             <div  class="chart" id="pb_graph">
             </div>
@@ -311,7 +308,16 @@
             </div>
 
           </div>
+
+          <div class ="chart" id="node_link"></div>
+          <div class="chart" id="adjacency_chart">
+            <div id="tooltip" class="hidden">
+              <p><span id="value">100</span></p>
+            </div>
+          </div>
           
+
+
         </div>
 
         
@@ -517,16 +523,14 @@ d3.csv(csv_file, function(error, data) {
       .on("click", toggle_segments);
     d3.select("#path_button")
       .on("click", show_path_only);
-    d3.select("#action_button")
-      .on("click", contains_action);
+    
     d3.select("#addPartition_button")
       .on("click", add_partition_bar);
     d3.select("#removePartition_button")
       .on("click", remove_partition_bar);
     d3.select("#applyPartition_button")
       .on("click", create_partition);
-    d3.select("#demo_button")
-      .on("click", show_not_filter);
+    
     d3.select("#add_node_button")
       .on("click", add_action_node);
     d3.select("#create_funnel_button")
@@ -538,6 +542,10 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#add_cons_link_button")
       .on("click", add_link)
 
+    d3.select("#demo2_button")
+      .on("click", print_sequences);
+    d3.select("#demo_button")
+      .on("click", show_not_filter);
 
 
     var charts = [
@@ -898,21 +906,21 @@ d3.csv(csv_file, function(error, data) {
 
       return links;
     }
-    var action_string ='';
-    function concatenate_action_strings(){
-        action_string = all.reduce(reduceAdd_concat, reduceRemove_concat, reduceInitial_concat).value().str;  
-    }
+    // var action_string ='';
+    // function concatenate_action_strings(){
+    //     action_string = all.reduce(reduceAdd_concat, reduceRemove_concat, reduceInitial_concat).value().str;  
+    // }
 
     function update_node_link_data(){
       // var nl_nodes = [],
       //   nl_links = [];
-      //var action_string;
+      var action_string;
       
 
       var nodes =[],
           links = [];
 
-      // action_string = all.reduce(reduceAdd_concat, reduceRemove_concat, reduceInitial_concat).value().str;    
+       action_string = all.reduce(reduceAdd_concat, reduceRemove_concat, reduceInitial_concat).value().str;    
       //create nodes
       nodes.push({id:"start", action:"start", group:1, fx: nl_width/2, fy: 0});
       nodes.push({id:"exit", action: "exit", group:0, fx: nl_width/2, fy: nl_height});
@@ -1565,7 +1573,7 @@ d3.csv(csv_file, function(error, data) {
       if(!patterns){
         patterns = {};
       }
-
+      str = remove_duplicates(str);
       while (m = re.exec(str)){
         var patt = m[1],
             reps = m[0].length/m[1].length;
@@ -1585,9 +1593,13 @@ d3.csv(csv_file, function(error, data) {
 
     function find_all_patterns(){
 
-      var p = all.reduce(reduceAdd, reduceRemove, reduceInitial).value()
-      console.log(p.patterns);
+      var p = all.reduce(reduceAdd, reduceRemove, reduceInitial).value().patterns
+      var patts = Object.keys(p).map(function(key){
+        return {key:key, value: p[key]};
+      })
+      patts.sort(function(p1, p2){ return p2.value.length - p1.value.length;})
 
+      return patts
 
       function reduceInitial() {
         return {
@@ -1613,6 +1625,14 @@ d3.csv(csv_file, function(error, data) {
 
     find_patterns("0ABCABCHEHEHEAFFAADDHEHEHE10ABCABCHEDDHEHEAAADDHEHEHE10ABCABCHEHEHEAAADGGDHEHEHE1")
 
+    function print_sequences(){
+      var dimData = action_strings.top(Infinity)
+      dimData.forEach(function(x){
+        var seq = x.general_actions;
+        console.log('[ full sequence:', seq)
+        console.log(' transitionized:' + remove_duplicates(seq) + ']')
+      })
+    }
 
     //=========================== Info Views ====================================//
 
@@ -2938,7 +2958,7 @@ d3.csv(csv_file, function(error, data) {
         console.log("Selected node: ", selected);
 
         show_node_view(selected);
-        concatenate_action_strings();
+        //concatenate_action_strings();
         find_all_patterns();
 
         if (selected.data.value == 1) {
