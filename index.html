@@ -2286,6 +2286,8 @@ d3.csv(csv_file, function(error, data) {
                        selectedFilter.chart = selected_chart;
                        selectedFilter.div = div.attr('id');
                        selectedFilter.extents = extents;
+                       selectedFilter.current_range = selected_chart.data()[0].current_range();
+                       selectedFilter.range = selected_chart.data()[0].range();
                        selectedFilter.type = 'range';
                        
                        leftover_count = reduce_leftover_count(x_domain_max, group.all());
@@ -2538,6 +2540,8 @@ d3.csv(csv_file, function(error, data) {
         selectedFilter.chart = selected_chart;
         selectedFilter.div = selectedDiv;
         selectedFilter.extents = extents;
+        selectedFilter.current_range = selected_chart.data()[0].current_range();
+        selectedFilter.range = selected_chart.data()[0].range();
         selectedFilter.type = 'range';
         selectedFilter.size = all.reduceCount().value();
 
@@ -2781,7 +2785,7 @@ d3.csv(csv_file, function(error, data) {
 
       nodeEnter.append("path")
             .attr('class', 'node')
-            .each( format_nodes)
+            //.each( format_nodes)
             .on("click", select_node)
             //.on("mouseover", show_node_view)
             // .on("mouseover", function(d){ 
@@ -3409,6 +3413,7 @@ d3.csv(csv_file, function(error, data) {
     }
 
 
+
     function update_extents(old_extents, new_extents, not){
 
       var not = not? true: false,
@@ -3496,12 +3501,8 @@ d3.csv(csv_file, function(error, data) {
 
 
 
-    function create_new_filter_set(old_set, new_filter, not) {
-      var not_filter = false;
-      if (not)
-        not_filter = true;
-
-
+    function create_new_filter_set(old_set, new_filter) {
+    
       var filters,
           foundFilter=false,
           chart_div = new_filter.div;
@@ -3530,36 +3531,38 @@ d3.csv(csv_file, function(error, data) {
         var filter = {};
         
         filter.div = chart_div;
-        filter.not = not_filter;
+        filter.not = new_filter.not;
         filter.chart = new_filter.chart;
         filters.push(filter);
         //}
 
-        console.log('new filter chart', new_filter.chart)
-        console.log('data', new_filter.chart.data()[0].dim_name())
-        console.log('data', new_filter.chart.data()[0].range())
-        console.log('data', new_filter.chart.data()[0].current_range())
-
         if (new_filter.type == 'range') {
+
+          
+          filter.type = 'range';
+
           if (foundFilter){
 
-            filter.extents = update_extents(old_filter.extents, new_filter.extents, not_filter);
+            filter.extents = update_extents(old_filter.extents, new_filter.extents, new_filter.not);
           }
           else {
             filter.extents ={},
             filter.extents.neg =[],
             filter.extents.pos = null;
 
-            if(not_filter)
+            if(new_filter.not){
               filter.extents.neg.push(new_filter.extents);
-            else
+              //transform_neg_extents_to_pos(new_filter.extents, filter.range);
+            } else{
               filter.extents.pos = new_filter.extents;
+            }
 
 
             //filter.extents = new_filter.extents;
             
           }
-          filter.type = 'range';
+
+          
           
         } else if(new_filter.type == 'regex') {
           filter.chars ={};
@@ -3571,7 +3574,7 @@ d3.csv(csv_file, function(error, data) {
               filter.chars.neg = old_filter.chars.neg.slice();
               
           }
-          if (not_filter){
+          if (new_filter.not){
             filter.chars.neg.push(new_filter.char);
           }else{
             filter.chars.pos.push(new_filter.char)
@@ -3584,6 +3587,44 @@ d3.csv(csv_file, function(error, data) {
 
 
         return [filters, filter];
+    }
+
+    var oScale = d3.scaleLinear().range([0,50])
+
+    function create_range_filter_data(filter){
+      var value = filter.not? true: false,
+          range = filter.range,
+          extents = filter.extents,
+          node_data = [];
+
+      oScale.domain(range)
+
+      if (range[0] != extents[0])
+        node_data.push({
+          x0: oScale(range[0]),
+          x1: oScale(extents[0]),
+          highlighted: value
+
+        });
+
+      node_data.push({
+        x0: oScale(extents[0]),
+        x1: oScale(extents[1]),
+        hightlighted: !value
+
+      })
+
+      if (range[1] != extents[1])
+        node_data.push({
+          x0: oScale(extents[1]),
+          x1: oScale(range[1]),
+          highlighted: value
+
+        });
+
+      console.log('node_data', node_data)
+
+      return node_data
     }
 
     function show_not_filter(){
@@ -3618,7 +3659,10 @@ d3.csv(csv_file, function(error, data) {
           all_filters=[];
         }
         var filter_copy = JSON.parse(JSON.stringify(selectedFilter))
+        filter_copy.chart = selectedFilter.chart;
         all_filters.push(filter_copy);
+
+        node_data = create_range_filter_data(filter_copy)
 
 
         console.log('ALL THE FILTERS,', all_filters);
@@ -3631,7 +3675,11 @@ d3.csv(csv_file, function(error, data) {
         prev_size = d.data.size;
         size = selectedFilter.size;
 
-        not_filters = create_new_filter_set(d_filters, selectedFilter, true);
+        selectedFilter.not = true;
+        var filter_copy_not = JSON.parse(JSON.stringify(selectedFilter))
+        filter_copy_not.chart = selectedFilter.chart;
+
+        not_filters = create_new_filter_set(d_filters, selectedFilter);
 
 
 
@@ -3640,7 +3688,9 @@ d3.csv(csv_file, function(error, data) {
         name = 'NEW Filter!';
         filter_data = { 'name': name,
                      'value': 0,
-                     'filter_type': filter
+                     //'filter_type': filter
+                     'filter_type': filter_copy,
+                     'node_data': node_data
 
                    };
 
