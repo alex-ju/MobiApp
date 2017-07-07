@@ -1401,12 +1401,16 @@ d3.csv(csv_file, function(error, data) {
     function apply_funnel(){
 
       var nodes = pattern_data.nodes,
+          links = pattern_data.links,
           regex = '.*',
           chars= [],
           filters = [],
           parent = selected;
 
-      nodes.forEach(function(n){
+      console.log('nodes', nodes)
+      console.log('links',links)
+
+      nodes.forEach(function(n, i){
         var sep = consecutive? '': '.*',
               c = alphabet[n.id];
         if (c == exit_c)
@@ -1414,6 +1418,7 @@ d3.csv(csv_file, function(error, data) {
         else if (c == start_c)
           c = '^';
         regex = regex + c + sep;
+        console.log(i)
         console.log('regex', regex);
         chars.push(c); 
         var match = all.reduce(reduceAdd,reduceRemove, reduceInitial).value();
@@ -1426,7 +1431,7 @@ d3.csv(csv_file, function(error, data) {
 
           selectedFilter.chart = selected_chart;
           selectedFilter.size = size;
-          selectedFilter.type = 'regex';
+          selectedFilter.type = 'contains';
           selectedFilter.char = funnel;
           //selectedFilter.char = chars.slice();
 
@@ -2756,16 +2761,6 @@ d3.csv(csv_file, function(error, data) {
         });
     }
 
-    function create_nodes(d){
-      var selection = d3.select(this);
-      if (d.value==1){
-        selection.append("path")
-              .attr("class", "segment")
-      }else{
-        selection.append("path")
-            .attr("class", "operation")
-      }
-    }
 
 
     function update(source) {
@@ -2809,29 +2804,40 @@ d3.csv(csv_file, function(error, data) {
       var operation_nodes = nodeEnter.selectAll(".operation")
                                 .attr("transform", function(d) { return "translate(" + -oLength/2 + "," + -oWidth/2 + ")"; });
 
-      var bar =  operation_nodes.selectAll("rect")
+      operation_nodes.append('g')
+                .attr("class", function(d) {return d.data.operation.type})
+
+      var range_nodes = operation_nodes.selectAll(".range")
+
+      var bar =  range_nodes.selectAll("rect")
                 .remove()
                 .exit()
                 .data(d => d.data.node_data)
        
-       var bar_enter = bar.enter().append('g')
+      var bar_enter = bar.enter().append('g')
 
 
 
-        bar_enter.append("rect")
-              .attr("x", function(d){
-                  return d.x0;
-              })
-              .attr("width", function(d){
-                  return d.x1-d.x0;
-              })
-              .attr("height", function(d){
-                  return oWidth;
-              })
-              .attr("fill", function(d) {return d.hightlighted? "lightblue": "white";})
-              .attr("stroke", "black");
+      bar_enter.append("rect")
+            .attr("x", function(d){
+                return d.x0;
+            })
+            .attr("width", function(d){
+                return d.x1-d.x0;
+            })
+            .attr("height", oWidth)
+            .attr("fill", function(d) {return d.hightlighted? "lightblue": "white";})
+            .attr("stroke", "black");
 
-        var bar_update = bar_enter.merge(bar);
+      var bar_update = bar_enter.merge(bar);
+
+      var contains_nodes = operation_nodes.selectAll(".contains")
+
+      contains_nodes.append('rect')
+          .attr("width", oLength)
+          .attr("height", oWidth)
+          .attr("stroke", "black")
+
 
       nodeEnter.append("text")
         .attr("dy", ".15em")
@@ -3062,7 +3068,7 @@ d3.csv(csv_file, function(error, data) {
                 else
                   dim.filterExact(null);
 
-              } else if (type == 'regex'){
+              } else if (type == 'contains'){
 
                 dim = action_strings;
 
@@ -3306,7 +3312,7 @@ d3.csv(csv_file, function(error, data) {
                     selectedFilter.chart = d3.select("#contains_action_chart");
                     selectedFilter.char = d.char;
                     selectedFilter.size = d.abs;
-                    selectedFilter.type = 'regex'; 
+                    selectedFilter.type = 'contains'; 
 
 
                   })
@@ -3363,15 +3369,18 @@ d3.csv(csv_file, function(error, data) {
         update_oScale(range);
 
         var node_data,
-            t_ranges =[];
+            t_ranges =[],
+            operation = {
+              'type': 'range',
+              'thresholds': thresholds.slice(),
+              'div': chart_id,
+              'chart': selected_chart
+            };
 
         name = 'NEW Partition!';
         partition_data = { 'name': name,
                      'value': 2,
-                     'thresholds': thresholds.slice(),
-                     'div': chart_id,
-                     'chart': selected_chart
-
+                     'operation': operation
                    };
 
 
@@ -3620,7 +3629,7 @@ d3.csv(csv_file, function(error, data) {
 
           
           
-        } else if(new_filter.type == 'regex') {
+        } else if(new_filter.type == 'contains') {
           filter.chars ={};
           filter.chars.pos =[],
           filter.chars.neg =[];
@@ -3637,7 +3646,7 @@ d3.csv(csv_file, function(error, data) {
           }
           filter.regex = create_action_regex(filter.chars);
           filter.char = new_filter.char;
-          filter.type = 'regex';
+          filter.type = 'contains';
           console.log('CHARS', filter.chars);
         }
 
@@ -3664,13 +3673,6 @@ d3.csv(csv_file, function(error, data) {
     function create_range_partition_data(thresholds, range){
       var node_data = [];
 
-      // if(typeof range[0] == "number")
-      //   oScale = d3.scaleLinear().range(oRange)
-      // else
-      //   oScale = d3.scaleTime().range(oRange)
-
-      // oScale.domain(range);
-
       update_oScale(range);
 
 
@@ -3693,13 +3695,6 @@ d3.csv(csv_file, function(error, data) {
           range = filter.range,
           extents = filter.extents,
           node_data = [];
-
-      // if(typeof range[0] == "number")
-      //   oScale = d3.scaleLinear().range(oRange)
-      // else
-      //   oScale = d3.scaleTime().range(oRange)
-
-      // oScale.domain(range);
 
       update_oScale(range);
 
@@ -3757,7 +3752,8 @@ d3.csv(csv_file, function(error, data) {
         //d = selected;
       if (d && selectedFilter.type) {
         var d_filters = d.data.filters,
-            d_all_filters = d.data.all_filters;
+            d_all_filters = d.data.all_filters,
+            node_data=[];
 
         if(d_all_filters){
           all_filters = d_all_filters.slice();
@@ -3768,10 +3764,12 @@ d3.csv(csv_file, function(error, data) {
         filter_copy.chart = selectedFilter.chart;
         all_filters.push(filter_copy);
 
-        node_data = create_range_filter_data(selectedFilter)
+        if(selectedFilter.type =='range')
+          node_data = create_range_filter_data(selectedFilter)
 
 
         console.log('ALL THE FILTERS,', all_filters);
+        console.log('new_filter', filter_copy)
 
         new_filters = create_new_filter_set(d_filters, selectedFilter);
         filters =new_filters[0];
