@@ -1931,7 +1931,7 @@ d3.csv(csv_file, function(error, data) {
 
     function get_partition_info(selected){
 
-      var d = selected.data,
+      var d = selected.data.operation,
           partitions = d.partitions,
           chart = d.chart;
 
@@ -1957,7 +1957,7 @@ d3.csv(csv_file, function(error, data) {
     }
     
     function update_partition_text(view){
-      update_text(view, format_partition_text);
+      //update_text(view, format_partition_text);
     }
 
     // -------- Segment View ------------- //
@@ -2957,8 +2957,15 @@ d3.csv(csv_file, function(error, data) {
       var operation_nodes = nodeEnter.selectAll(".operation")
                                 .attr("transform", function(d) { return "translate(" + -oLength/2 + "," + -oWidth/2 + ")"; });
 
+
       operation_nodes.append('g')
                 .attr("class", function(d) {return d.data.operation.type})
+
+      operation_nodes.append('rect')
+          .attr("width", oLength)
+          .attr("height", oWidth)
+          .attr("fill", 'none')
+          .attr("stroke", "gray")
 
       var range_nodes = operation_nodes.selectAll(".range")
 
@@ -2993,8 +3000,8 @@ d3.csv(csv_file, function(error, data) {
                 return d.x1-d.x0;
             })
             .attr("height", oWidth)
-            .attr("fill", function(d) {return d.hightlighted? "lightblue": "white";})
-            .attr("stroke", "black");
+            .attr("fill", function(d) {return d.hightlighted? "steelblue": "white";})
+            .attr("stroke", "#ccc");
 
       var bar_update = bar_enter.merge(bar);
 
@@ -3004,7 +3011,7 @@ d3.csv(csv_file, function(error, data) {
       contains_nodes.append('rect')
           .attr("width", oLength)
           .attr("height", oWidth)
-          .attr("stroke", "black")
+          
           .attr("fill", function(d){return d.data.operation.not? "black": "white"})
 
       var circles = contains_nodes.append("g")
@@ -3056,8 +3063,11 @@ d3.csv(csv_file, function(error, data) {
           .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
 
-      nodeUpdate.select('path')
-            .style("stroke", function(d) { return d.selected ? "black" : n.stroke;})
+      nodeUpdate.selectAll('path')
+            .style("stroke", function(d) { return d.selected ? "black" : 'lightgray';})
+
+      nodeUpdate.selectAll('rect')
+            .style("stroke", function(d) { return d.selected ? "black" : 'gray';})
       //nodeUpdate.select("path").each(format_nodes)
 
 
