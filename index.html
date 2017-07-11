@@ -256,27 +256,33 @@
     <div class="charts" style="display:none;" id="attributes">
 
       <div class="charts" id="chart_box">
-        <div class="chart" id="len_chart"> 
-          <div class="title"> Number of Actions </div>
+        <div class="title"> Range Attributes </div>
+        <div class= "charts" id= "count">
+          <div class="title"> Count Related </div>
+          <div class="chart" id="len_chart"> 
+            <div class="title"> Number of Actions </div>
+          </div>
         </div>
-        <div class="chart" id="duration_chart"> 
-          <div class="title"> Duration chart </div>
-        </div>
-        <div class="chart" id="hour_chart"> 
-            <div class="title"> Start hour chart </div>
-        </div>
-        <div class="chart" id="date_chart"> 
-            <div class="title"> Start Date </div>
+        <div class = "charts" id ="Time">
+          <div class="title"> Time Related</div>
+          <div class="chart" id="duration_chart"> 
+            <div class="title"> Duration chart </div>
+          </div>
+          <div class="chart" id="hour_chart"> 
+              <div class="title"> Start hour chart </div>
+          </div>
+          <div class="chart" id="date_chart"> 
+              <div class="title"> Start Date </div>
+          </div>
         </div>
       </div>
 
       <div class= "charts" id= "list_box">
-        <div class= "chart" id="contains_action_chart">
-            <div class="title"> Number of Sequences that Contains Action </div>
-          </div>
-        </div>
+        
+      </div>
 
-        <div class ="charts" id="action_transition">
+      <div class ="charts" id="action_transition">
+        <div class="title"> Contains Attributes </div>
           
 
 
@@ -312,6 +318,9 @@
               </div>
             </div>
 
+          </div>
+          <div class= "chart" id="contains_action_chart">
+            <div class="title"> Number of Sequences that Contains Action </div>
           </div>
 
           <div class ="chart" id="node_link"></div>
@@ -569,7 +578,7 @@ d3.csv(csv_file, function(error, data) {
           barChart()
           .dimension(duration)
           .dim_name('Duration (hours)')
-          .category('count')
+          .category('time')
           .group(durations)
           .x(d3.scaleLinear()
           .domain([0, 30 ])
@@ -2951,8 +2960,19 @@ d3.csv(csv_file, function(error, data) {
       nodeEnter.append('g')
               .attr("class", function(d) {return d.value==1 || d.value==-1? "segment": "operation"})
       //nodeEnter.each(create_nodes)
-      nodeEnter.selectAll(".segment").append("path")
+      var segment_nodes = nodeEnter.selectAll(".segment")
+
+
+      segment_nodes.append("path")
                .each(format_nodes)
+
+      segment_nodes.append("text")
+        .attr("dy", ".15em")
+        .attr("y", function(d) { return d.children ? -0 : 0; })
+        .style("font-size", "10px")
+        .style("text-anchor", "middle")
+        .text(function(d) { return d.data.size? d3.format(",")(d.data.size): ''; });
+      
 
       var operation_nodes = nodeEnter.selectAll(".operation")
                                 .attr("transform", function(d) { return "translate(" + -oLength/2 + "," + -oWidth/2 + ")"; });
@@ -2970,7 +2990,7 @@ d3.csv(csv_file, function(error, data) {
       var range_nodes = operation_nodes.selectAll(".range")
 
       range_nodes.append("path")
-              .attr("transform", function(d) { return "translate(" + (oLength +oWidth/2 +1) + "," + oWidth/2 + ")"; })
+              .attr("transform", function(d) { return "translate(" + (-oWidth/2 -1) + "," + oWidth/2 + ")"; })
               .attr('d', function(d){ 
 
                     var category = d.data.operation.category;
@@ -3042,16 +3062,16 @@ d3.csv(csv_file, function(error, data) {
           .attr('fill', function(d){ return d.many? 'black': 'none'})
 
 
-      nodeEnter.append("text")
-        .attr("dy", ".15em")
-        .attr("y", function(d) { return d.children ? -0 : 0; })
-        .style("font-size", "10px")
-        .style("text-anchor", "middle")
-        .text(function(d) { 
-          if (d.data.value == 1)
-            return d.data.size;
-          else
-            return ''; });
+      // nodeEnter.append("text")
+      //   .attr("dy", ".15em")
+      //   .attr("y", function(d) { return d.children ? -0 : 0; })
+      //   .style("font-size", "10px")
+      //   .style("text-anchor", "middle")
+      //   .text(function(d) { 
+      //     if (d.data.value == 1)
+      //       return d.data.size;
+      //     else
+      //       return ''; });
       
 
       // Transition nodes to their new position.
@@ -3068,7 +3088,8 @@ d3.csv(csv_file, function(error, data) {
 
       nodeUpdate.selectAll('rect')
             .style("stroke", function(d) { return d.selected ? "black" : 'gray';})
-      //nodeUpdate.select("path").each(format_nodes)
+            .style("stroke-width", function(d){return d.selected? "2px": "1px";})
+
 
 
       // Transition exiting nodes to the parent's new position.
@@ -3367,27 +3388,7 @@ d3.csv(csv_file, function(error, data) {
     var char;
 
 
-    function reduceInitial() {
-      return {
-          count: 0
-      };
-    }
-
-    function reduceAdd(p, v) {
-      if (v.general_actions.includes(char))
-        p.count = p.count + 1;
-      
-      return p;
-
-    }
-
-    function reduceRemove(p, v) {
-      if (v.general_actions.includes(char))
-        p.count = p.count - 1;
-      
-      return p;
-
-    }
+    
 
    
 
@@ -3420,6 +3421,29 @@ d3.csv(csv_file, function(error, data) {
       all_matches.sort(function(a,b) {return b.abs - a.abs;});
       
       update_horizontal_chart(all_matches);
+
+
+      function reduceInitial() {
+        return {
+            count: 0
+        };
+      }
+
+      function reduceAdd(p, v) {
+        if (v.general_actions.includes(char))
+          p.count = p.count + 1;
+        
+        return p;
+
+      }
+
+      function reduceRemove(p, v) {
+        if (v.general_actions.includes(char))
+          p.count = p.count - 1;
+        
+        return p;
+
+      }
     }
    
       var margin_hc = {top: 20, right: 20, bottom: 30, left: 100},
@@ -3487,10 +3511,14 @@ d3.csv(csv_file, function(error, data) {
                 .selectAll("g")
                     .remove()
                     .exit()
-                    //.data(d3.stack().keys(keys)(data))
                     .data(data)
                     .enter().append("g")
                     .attr("transform", function (d) { return "translate(0," + y_hc(d.action) + ")"; })
+
+            var node = bar.append('circle')
+                    .attr("transform", function (d) { return "translate("+ (-30) +"," + y_hc.bandwidth()/2 + ")"; })
+                    .attr("r", node_radius)
+                    .attr("fill", function(d){ return colors[d.action]})
 
 
                     
@@ -3595,12 +3623,15 @@ d3.csv(csv_file, function(error, data) {
         update_oScale(range);
 
         var node_data,
-            t_ranges =[],
+            threshold_ranges =[],
+            results = [],
             operation = {
               'type': 'range',
+              'category': selected_chart.data()[0].category(),
               'thresholds': thresholds.slice(),
               'div': chart_id,
-              'chart': selected_chart
+              'chart': selected_chart,
+              'results': results
             };
 
         name = 'NEW Partition!';
@@ -3637,10 +3668,17 @@ d3.csv(csv_file, function(error, data) {
 
         low_bound = 0;
 
-        partition_data.partitions = [];
+        // partition_data.partitions = [];
+        
         partition_data.fullSize = d_size;
 
+        var filter = { 
+              chart: selected_chart,
+              div: chart_id,
+              type: 'range'
 
+
+          }
         
         for (var i = 0; i < groups.length; i++) {
           g = groups[i];
@@ -3656,31 +3694,30 @@ d3.csv(csv_file, function(error, data) {
 
           var translate_x = oScale(low_bound) + ((oScale(high_bound)-oScale(low_bound))/2) - (oLength)/2;
 
-          console.log(translate_x)
-
-          t_ranges.push(extents);
-          var partition = {};
-          partition.range = extents;
-          partition.size = size;
-          partition.percent = size/d_size;
-          partition_data.partitions.push(partition);
+          threshold_ranges.push(extents);
+          // var partition = {};
+          // partition.range = extents;
+          // partition.size = size;
+          // partition.percent = size/d_size;
+          // partition_data.partitions.push(partition);
 
 
-          var filter = {};
-          filter.chart = selected_chart;
-          filter.div = chart_id;
           filter.extents = extents;
-          filter.type = 'range';
-          //filters.push(filter);
+          filter.size = size;
 
-          new_filters = create_new_filter_set(d_filters, filter);
-          filters =new_filters[0];
-          //filter = new_filters[1];
+          var filter_data = get_filter_data_for_segment(d, filter),
+              filter_copy = filter_data.filter,
+              filters = filter_data.agg_filters,
+              all_filters = filter_data.all_filters;
+          
+
+          results.push(filter_copy);
 
           name = 'NEW SEGMENT!'
           segment_data = { 'name': name,
                      'value': 1,
                      'filters': filters,
+                     'all_filters': all_filters,
                      'size': size,
                      'translate_x': translate_x
                    };
@@ -3689,7 +3726,7 @@ d3.csv(csv_file, function(error, data) {
 
         }
 
-        partition_data.node_data = create_range_partition_data(t_ranges, range);
+        partition_data.node_data = create_range_partition_data(threshold_ranges, range);
 
         update(d);
         
@@ -3736,61 +3773,7 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    // function create_action_regex(chars){
-    //   s = '^'
-
-    //   chars.pos.forEach( function(c){
-
-    //     if (c instanceof Object){
-    //       f = '';
-
-    //       var sep = c.consecutive? '': '.*';
-
-
-    //       c.char.forEach(function(ch){
-
-    //         f = f + ch + sep;
-    //       })
-
-    //       c = f;
-    //     }
-    //     if (c.charAt(0) !='^')
-    //       c = '.*' + c;
-
-
-    //     s = s + '(?=' + c + ')';
-    //   })
-
-    //   if (chars.neg.length>0){
-    //     s = s + '(?!.*(';
-        
-    //     chars.neg.forEach( function(c){
-          
-      
-    //       if (c instanceof Object){
-    //         f = '(.*';
-    //         var sep = c.consecutive? '': '.*';
-
-    //         c.char.forEach(function(ch){
-    //           f = f + ch + sep;
-    //         })
-    //         c = f +')';
-    //       }
-
-    //       s = s + c + '|';
-    //     })
-    //     s = s.slice(0,-1);
-    //     s = s + '))';
-    //   }
-
-    //   s = s + '.*$';
-
-    //   console.log('action regex created: ', s);
-
-    //   return s;
-
-    // }
-
+   
     function create_action_regex(regexes){
       s = '^'
 
@@ -3819,101 +3802,7 @@ d3.csv(csv_file, function(error, data) {
 
 
 
-    function create_new_filter_set(old_set, new_filter) {
-    
-      var filters,
-          foundFilter=false,
-          chart_div = new_filter.div;
 
-       if (old_set)
-          filters = old_set.slice();
-        else
-          filters = [];
-
-        
-
-        for( var f = 0; f < filters.length; f++){
-          fil = filters[f];
-          if (fil.div == chart_div){
-            old_filter = fil;
-            foundFilter = true;
-            break;
-          }
-        }
-
-        if (foundFilter){
-          filters.splice(f, 1);
-        }
-
-        //if (!foundFilter){
-        var filter = {};
-        
-        filter.div = chart_div;
-        filter.not = new_filter.not? true: false;
-        filter.chart = new_filter.chart;
-        filters.push(filter);
-        //}
-
-        if (new_filter.type == 'range') {
-
-          
-          filter.type = 'range';
-
-          if (foundFilter){
-
-            filter.extents = update_extents(old_filter.extents, new_filter.extents, new_filter.not);
-          }
-          else {
-            filter.extents ={},
-            filter.extents.neg =[],
-            filter.extents.pos = null;
-
-            if(new_filter.not){
-              filter.extents.neg.push(new_filter.extents);
-              //transform_neg_extents_to_pos(new_filter.extents, filter.range);
-            } else{
-              filter.extents.pos = new_filter.extents;
-            }
-
-
-            //filter.extents = new_filter.extents;
-            
-          }
-
-          
-          
-        } else if(new_filter.type == 'contains') {
-          filter.regexes ={};
-          filter.regexes.pos =[],
-          filter.regexes.neg =[],
-          filter.chars ={
-            pos: [],
-            neg: []
-          };
-
-          if (foundFilter){
-              filter.regexes.pos = old_filter.regexes.pos.slice();
-              filter.regexes.neg = old_filter.regexes.neg.slice();
-              filter.chars.pos = old_filter.chars.pos.slice();
-              filter.chars.neg = old_filter.chars.neg.slice();
-              
-          }
-          if (new_filter.not){
-            filter.chars.neg.push(new_filter.char);
-            filter.regexes.neg.push(new_filter.regex);
-          }else{
-            filter.chars.pos.push(new_filter.char);
-            filter.regexes.pos.push(new_filter.regex);
-          }
-          filter.regex = create_action_regex(filter.regexes);
-          filter.char = new_filter.char;
-          filter.type = 'contains';
-          console.log('REGEXES', filter.regexes);
-        }
-
-
-        return [filters, filter];
-    }
 
     var oLength = 50,
         oWidth = 10,
@@ -4049,64 +3938,187 @@ d3.csv(csv_file, function(error, data) {
       }
     }
 
+
+    function create_agg_filter_set(old_set, new_filter) {
+    
+      var old_filter,
+          foundFilter=false,
+          chart_div = new_filter.div,
+          filters = old_set? old_set.slice(): [];
+
+
+        for( var i = 0; i < filters.length; i++){
+          var f = filters[i];
+          if (f.div == chart_div){
+            old_filter = f;
+            foundFilter = true;
+            break;
+          }
+        }
+
+        if (foundFilter){
+          filters.splice(f, 1);
+        }
+
+        var filter = {};
+        
+        filter.div = chart_div;
+        filter.not = new_filter.not? true: false;
+        filter.chart = new_filter.chart;
+        filters.push(filter);
+        
+
+        if (new_filter.type == 'range') {
+
+          
+          filter.type = 'range';
+
+          if (foundFilter){
+
+            filter.extents = update_extents(old_filter.extents, new_filter.extents, new_filter.not);
+          }
+          else {
+            filter.extents ={},
+            filter.extents.neg =[],
+            filter.extents.pos = null;
+
+            if(new_filter.not){
+              filter.extents.neg.push(new_filter.extents);
+            } else{
+              filter.extents.pos = new_filter.extents;
+            }
+            
+          }
+
+          
+          
+        } else if(new_filter.type == 'contains') {
+          filter.regexes ={};
+          filter.regexes.pos =[],
+          filter.regexes.neg =[],
+          filter.chars ={
+            pos: [],
+            neg: []
+          };
+
+          if (foundFilter){
+              filter.regexes.pos = old_filter.regexes.pos.slice();
+              filter.regexes.neg = old_filter.regexes.neg.slice();
+              filter.chars.pos = old_filter.chars.pos.slice();
+              filter.chars.neg = old_filter.chars.neg.slice();
+              
+          }
+          if (new_filter.not){
+            filter.chars.neg.push(new_filter.char);
+            filter.regexes.neg.push(new_filter.regex);
+          }else{
+            filter.chars.pos.push(new_filter.char);
+            filter.regexes.pos.push(new_filter.regex);
+          }
+          filter.regex = create_action_regex(filter.regexes);
+          filter.char = new_filter.char;
+          filter.type = 'contains';
+          console.log('REGEXES', filter.regexes);
+        }
+
+
+        return filters
+    }
+
+
+    function add_filter_to_set(old_set, new_filter_copy){
+      var filters = old_set? old_set.slice(): []
+          //filter_copy = copy_filter(new_filter)
+
+      filters.push(new_filter_copy)
+
+      return filters
+    }
+
+
+    function copy_filter(filter){
+      var filter_copy = JSON.parse(JSON.stringify(filter))
+
+      filter_copy.not = filter.not | false;
+      filter_copy.chart = filter.chart; 
+
+      return filter_copy
+    }
+
+    function get_filter_data_for_segment(selected_segment, new_filter){
+      var d = selected_segment.data,
+          filter_copy = copy_filter(new_filter);
+
+      filter_copy.results = { in_size: d.size, out_size: filter_copy.size}
+
+      var all_filters = add_filter_to_set(d.all_filters, filter_copy)
+          agg_filters = create_agg_filter_set(d.filters, filter_copy)
+
+
+
+      return { filter: filter_copy,
+              agg_filters: agg_filters,
+              all_filters: all_filters}
+    }
+
     function create_filter(parent_segment) {
 
       var d = parent_segment || selected;
 
-
-      // if (selected && selectedFilter.type) {
-
-        //d = selected;
       if (d && selectedFilter.type) {
-        var d_filters = d.data.filters,
-            d_all_filters = d.data.all_filters,
-            node_data=[];
+        // var d_filters = d.data.filters,
+        //     d_all_filters = d.data.all_filters,
+        var node_data=[],
+            translate_x = 0;
+            
 
-        if(d_all_filters){
-          all_filters = d_all_filters.slice();
-        }else{
-          all_filters=[];
-        }
         
-        selectedFilter.not = false;
-        var filter_copy = JSON.parse(JSON.stringify(selectedFilter))
-        filter_copy.chart = selectedFilter.chart;
-        all_filters.push(filter_copy);
 
-        if(selectedFilter.type =='range')
+        if(selectedFilter.type =='range'){
           node_data = create_range_filter_data(selectedFilter)
+          for(var i=0; i <node_data.length;i++){
+            var nd = node_data[i];
+            if (nd.hightlighted){
+              translate_x = nd.x0 + (nd.x1-nd.x0)/2 - oLength/2
+            }
+          }
+        }
         else if(selectedFilter.type == 'contains'){
           node_data = create_contains_filter_data(selectedFilter)
           node_data = selectedFilter.pattern
         }
 
 
-        console.log('ALL THE FILTERS,', all_filters);
-        console.log('new_filter', filter_copy)
+        // var filter_copy = copy_filter(selectedFilter), 
+        //     all_filters = add_filter_to_set(d_all_filters, filter_copy),
+        //     filters = create_agg_filter_set(d_filters, selectedFilter);
+
+        var filter_data = get_filter_data_for_segment(d, selectedFilter),
+            filter_copy = filter_data.filter, 
+            all_filters = filter_data.all_filters,
+            filters = filter_data.agg_filters;
 
         
-        new_filters = create_new_filter_set(d_filters, selectedFilter);
-        filters =new_filters[0];
-        filter = new_filters[1];
-
+        console.log('Filter Data', filter_data)
 
         prev_size = d.data.size;
         size = selectedFilter.size;
 
+
         selectedFilter.not = true;
-        var filter_copy_not = JSON.parse(JSON.stringify(selectedFilter))
-        filter_copy_not.chart = selectedFilter.chart;
+        var filter_data_not = get_filter_data_for_segment(d, selectedFilter),
+            filter_copy_not = filter_data.filter, 
+            all_filters_not = filter_data.all_filters,
+            not_filters = filter_data.agg_filters;
+        // var filter_copy_not = copy_filter(selectedFilter)
 
-        not_filters = create_new_filter_set(d_filters, selectedFilter);
+        // not_filters = create_agg_filter_set(d_filters, selectedFilter);
 
 
-
-        
 
         name = 'NEW Filter!';
         filter_data = { 'name': name,
                      'value': 0,
-                     //'operation': filter
                      'operation': filter_copy,
                      'node_data': node_data
 
@@ -4120,7 +4132,8 @@ d3.csv(csv_file, function(error, data) {
                      'all_filters': all_filters,
                      'filters': filters,
                      'size': size,
-                     'prev_size': d.data.size
+                     'prev_size': d.data.size,
+                     'translate_x': translate_x
                    };
 
         var segment_node = add_child_node(filter_node, segment_data);
@@ -4128,7 +4141,7 @@ d3.csv(csv_file, function(error, data) {
 
         var not_segment_data = { 'name': name,
                      'value': 1,
-                     'filters': not_filters[0],
+                     'filters': not_filters,
                      'size': prev_size - size,
                      'prev_size': prev_size
                    };
