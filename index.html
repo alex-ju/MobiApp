@@ -215,28 +215,7 @@
   <div class="charts" id="right_panel">
     
     <div class="charts" id="info_box">
-      <div class="info" style="display:none;" id="create_partition_view">
-        <div class="title"> Create Partition View </div> 
-          <div class= "button" id="addPartition_button">
-              <input name="addPartitionButton" 
-                           type="button" 
-                          value="Add Partition" />
-          </div>
-        <div class= "button"  id="removePartition_button">
-          <input name="removePartitionButton" 
-                       type="button" 
-                      value="Remove Partition" />
-        </div>
-        <div class= "button" id="applyPartition_button">
-          <input name="applyPartitionButton" 
-                       type="button" 
-                      value="Apply Partition" />
-        </div>
-        
-        <div class= "button" id="input_partition_value">
-            <input type="text" id="partition_value">
-        </div>
-      </div>  
+
 
       <div class="info" style="display:none;" id="segment_view">
         <div class="title"> Segment View </div>
@@ -257,8 +236,34 @@
 
       <div class="charts" id="chart_box">
         <div class="title"> Range Attributes </div>
+
         <div class= "charts" id= "count">
           <div class="title"> Count Related </div>
+          <div class="builder" id="partition_builder">
+            <div class="title"> Create Partition View </div> 
+            <div  class="builder" id="create_partition_view"></div>
+            <div class="button_box">
+              <div class= "button" id="addPartition_button">
+                  <input name="addPartitionButton" 
+                               type="button" 
+                              value="Add Partition" />
+              </div>
+              <div class= "button"  id="removePartition_button">
+                <input name="removePartitionButton" 
+                             type="button" 
+                            value="Remove Partition" />
+              </div>
+              <div class= "button" id="applyPartition_button">
+                <input name="applyPartitionButton" 
+                             type="button" 
+                            value="Apply Partition" />
+              </div>
+              
+              <div class= "button" id="input_partition_value">
+                  <input type="text" id="partition_value">
+              </div>
+            </div>
+          </div>  
           <div class="chart" id="len_chart"> 
             <div class="title"> Number of Actions </div>
           </div>
@@ -622,6 +627,8 @@ d3.csv(csv_file, function(error, data) {
         action_hierarchy.general_actions = ['addToCart', 'removeFromCart', 'purchase', 'search', 'pageview']
     current_level = action_hierarchy.general_actions;
 
+    var total_size = all.reduceCount().value(),
+        original_size = total_size;
                  
     renderAll();
 
@@ -1786,7 +1793,6 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    find_patterns("0ABCABCHEHEHEAFFAADDHEHEHE10ABCABCHEDDHEHEAAADDHEHEHE10ABCABCHEHEHEAAADGGDHEHEHE1")
 
     function print_sequences(){
       var dimData = action_strings.top(Infinity)
@@ -1860,11 +1866,54 @@ d3.csv(csv_file, function(error, data) {
     var fv_svg = d3.select("#filter_view")
                     .append("svg")
                     .attr("width", nv_width + nv_margin.left + nv_margin.right)
-                    .attr("height", nv_height + nv_margin.top + nv_margin.bottom),
+                    .attr("height", nv_height + nv_margin.top + nv_margin.bottom)
                     //.attr("transform", "translate(" + pv_margin.left + "," + pv_margin.top + ")");
                     
-    filter_view = fv_svg.append("g")
+    var filter_view = fv_svg.append("g")
                       .attr("transform", "translate(" + nv_margin.left + "," + nv_margin.top + ")")
+
+
+    var operation_view = filter_view.append('g')
+                    .attr('class', '.operation_view')
+
+    var results_view = filter_view.append('g')
+                    .attr("class", ".results_view")
+                    .attr("transform", "translate(" + nv_width/2 + "," + 0 + ")")
+
+    var operation_data = [],
+        results_data =[],
+        info_data = {
+          operation_data: operation_data,
+          results_data: results_data
+          }
+    var infoScale = d3.scaleLinear().range([0,100]).domain([0, original_size])
+
+    var size_colors = ['black', 'lightgray', '#e8eaef']
+
+    function get_results_data(o){
+      var result = o.results,
+          max_size = original_size,
+          result_data =[],
+          size_data = [result.out_size, result.in_size, max_size],
+          x0 = 0;
+
+      size_data.forEach(function(s,i){
+        x1 = infoScale(s)
+        result_data.push({
+          x0:x0,
+          x1: x1,
+          color: size_colors[i]
+        })
+        x0 = x1;
+      })
+
+      result.total_size = max_size
+      result.node_data = result_data;
+
+      console.log(result)
+
+      return result
+    }
 
 
     function get_filter_info(selected){
@@ -1872,13 +1921,169 @@ d3.csv(csv_file, function(error, data) {
           filter_info = d.operation,
           chart = filter_info.chart;
 
+      
+
       update_selected_chart(chart);
 
-      text_object = [];
-      update_filter_text(filter_view);
-      text_object.push(filter_info);
-      update_filter_text(filter_view);
+      info_data.operation_data= [d]
+
+      result_data = get_results_data(filter_info)
       
+      info_data.results_data = [result_data]
+
+      update_node_info_view(info_data)
+
+      // text_object = [];
+      // update_filter_text(filter_view);
+      // text_object.push(filter_info);
+      // update_filter_text(filter_view);
+      
+
+    }
+
+    function update_node_info_view(data){
+
+      console.log(data)
+
+      rData = data.results_data
+      var result = results_view.selectAll(".result")
+          .remove()
+          .exit()
+          .data(rData);
+
+      // Enter any new nodes at the parent's previous position.
+      var resultEnter = result.enter().append("g")
+          .attr("class", "operation")
+          .attr("transform", function(d, i) { return "translate(" + 0 + "," + (i*oWidth + 2) + ")"; })
+
+
+
+      resultEnter.append('rect')
+          .attr("width", 100)
+          .attr("height", oWidth)
+          .attr("fill", 'none')
+          //.attr("stroke", "gray")
+
+      var bar =  resultEnter.selectAll(".size_partition")
+                .remove()
+                .exit()
+                .data(d => d.node_data)
+                .attr('class', 'size_partition')
+       
+      var bar_enter = bar.enter().append('g')
+
+      
+
+      bar_enter.append("rect")
+            .attr("x", function(d){
+                return d.x0;
+            })
+            .attr("width", function(d){
+                return d.x1-d.x0;
+            })
+            .attr("height", oWidth)
+            .attr("fill", function(d) {return d.color;})
+
+
+      
+      //------------------------OPERATION SIDE ---------------
+      oData = data.operation_data
+      var operation = operation_view.selectAll(".operation")
+          .remove()
+          .exit()
+          .data(oData);
+
+      // Enter any new nodes at the parent's previous position.
+      var operationEnter = operation.enter().append("g")
+          .attr("class", "operation")
+          .attr("transform", function(d, i) { return "translate(" + 0 + "," + (i*oWidth + 2) + ")"; })
+
+      var operation_nodes = operationEnter.append('g')
+                          .attr("class", function(d) {return d.operation.type})
+
+      operation_nodes.append('rect')
+          .attr("width", oLength)
+          .attr("height", oWidth)
+          .attr("fill", 'none')
+          .attr("stroke", "black")
+
+      //range nodes
+
+      var range_nodes = operationEnter.selectAll(".range")
+
+      range_nodes.append("path")
+              .attr("transform", function(d) { return "translate(" + (-oWidth/2 -1) + "," + oWidth/2 + ")"; })
+              .attr('d', function(d){ 
+
+                    var category = d.operation.category;
+                    if (category == 'time')
+                      return clock_symbol(d);
+                    else if (category == 'count')
+                      return hash_symbol(d);
+
+                  })
+              .attr('fill', 'white')
+              .attr('stroke', '#5c616b')
+
+      var bar =  range_nodes.selectAll("rect")
+                .remove()
+                .exit()
+                .data(d => d.node_data)
+       
+      var bar_enter = bar.enter().append('g')
+
+      
+
+      bar_enter.append("rect")
+            .attr("x", function(d){
+                return d.x0;
+            })
+            .attr("width", function(d){
+                return d.x1-d.x0;
+            })
+            .attr("height", oWidth)
+            .attr("fill", function(d) {return d.hightlighted? "steelblue": "white";})
+            .attr("stroke", "black");
+
+      var bar_update = bar_enter.merge(bar);
+
+
+      // contains nodes
+
+      var contains_nodes = operationEnter.selectAll(".contains")
+
+
+      contains_nodes.append('rect')
+          .attr("width", oLength)
+          .attr("height", oWidth)
+          
+          .attr("fill", function(d){return d.operation.not? "black": "white"})
+
+      var circles = contains_nodes.append("g")
+                    .attr("transform", function(d) { return "translate(" + oRadius + "," + oWidth/2 + ")"; });
+
+      var circle = circles.selectAll("circle")
+                    .remove()
+                    .exit()
+                    .data(d => d.node_data)
+
+      var circle_enter =  circle.enter().append('g')           
+      //var radius = (oWidth/2)-1;
+
+      circle_enter.append('circle')
+          .attr('r', oRadius)
+          //.attr('cx', function(d,i){return i*oRadius*2})
+          .attr('cx', function(d){return d.x})
+          .attr('fill', function(d){
+            console.log(d);
+            return colors[d.action]? colors[d.action] : "none";
+            //return d.group? color(d.group): "none"
+          })
+
+      circle_enter.append('circle')
+          .attr('r', 1)
+          .attr('cx', function(d){return d.x})
+          .attr('fill', function(d){ return d.many? 'black': 'none'})
 
     }
 
@@ -3708,7 +3913,7 @@ d3.csv(csv_file, function(error, data) {
           var filter_data = get_filter_data_for_segment(d, filter),
               filter_copy = filter_data.filter,
               filters = filter_data.agg_filters,
-              all_filters = filter_data.all_filters;
+              operations = filter_data.operations;
           
 
           results.push(filter_copy);
@@ -3717,7 +3922,7 @@ d3.csv(csv_file, function(error, data) {
           segment_data = { 'name': name,
                      'value': 1,
                      'filters': filters,
-                     'all_filters': all_filters,
+                     'operations': operations,
                      'size': size,
                      'translate_x': translate_x
                    };
@@ -4051,14 +4256,14 @@ d3.csv(csv_file, function(error, data) {
 
       filter_copy.results = { in_size: d.size, out_size: filter_copy.size}
 
-      var all_filters = add_filter_to_set(d.all_filters, filter_copy)
+      var operations = add_filter_to_set(d.operations, filter_copy)
           agg_filters = create_agg_filter_set(d.filters, filter_copy)
 
 
 
       return { filter: filter_copy,
               agg_filters: agg_filters,
-              all_filters: all_filters}
+              operations: operations}
     }
 
     function create_filter(parent_segment) {
@@ -4067,7 +4272,7 @@ d3.csv(csv_file, function(error, data) {
 
       if (d && selectedFilter.type) {
         // var d_filters = d.data.filters,
-        //     d_all_filters = d.data.all_filters,
+        //     d_operations = d.data.operations,
         var node_data=[],
             translate_x = 0;
             
@@ -4090,12 +4295,12 @@ d3.csv(csv_file, function(error, data) {
 
 
         // var filter_copy = copy_filter(selectedFilter), 
-        //     all_filters = add_filter_to_set(d_all_filters, filter_copy),
+        //     operations = add_filter_to_set(d_operations, filter_copy),
         //     filters = create_agg_filter_set(d_filters, selectedFilter);
 
         var filter_data = get_filter_data_for_segment(d, selectedFilter),
             filter_copy = filter_data.filter, 
-            all_filters = filter_data.all_filters,
+            operations = filter_data.operations,
             filters = filter_data.agg_filters;
 
         
@@ -4108,12 +4313,13 @@ d3.csv(csv_file, function(error, data) {
         selectedFilter.not = true;
         var filter_data_not = get_filter_data_for_segment(d, selectedFilter),
             filter_copy_not = filter_data.filter, 
-            all_filters_not = filter_data.all_filters,
+            operations_not = filter_data.operations,
             not_filters = filter_data.agg_filters;
         // var filter_copy_not = copy_filter(selectedFilter)
 
         // not_filters = create_agg_filter_set(d_filters, selectedFilter);
 
+        selectedFilter.not = false;
 
 
         name = 'NEW Filter!';
@@ -4129,7 +4335,7 @@ d3.csv(csv_file, function(error, data) {
 
         var segment_data = { 'name': name,
                      'value': 1,
-                     'all_filters': all_filters,
+                     'operations': operations,
                      'filters': filters,
                      'size': size,
                      'prev_size': d.data.size,
