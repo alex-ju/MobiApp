@@ -1831,7 +1831,7 @@ d3.csv(csv_file, function(error, data) {
         update_info_view("filter_view")
         get_filter_info(selected);
       }else if(d.value == 2){
-        update_info_view("partition_view")
+        update_info_view("filter_view")
         get_partition_info(selected);
       }
 
@@ -1882,19 +1882,25 @@ d3.csv(csv_file, function(error, data) {
     var filter_view = fv_svg.append("g")
                       .attr("transform", "translate(" + nv_margin.left + "," + nv_margin.top + ")")
 
+    var operation_result_view  = filter_view.append("g")
+                                .attr('class', "operation_result_view")
 
-    var operation_view = filter_view.append('g')
-                    .attr('class', '.operation_view')
+    var partition_results_view = filter_view.append('g')
+                    .attr('class', 'partition_results_view')
 
-    var results_view = filter_view.append('g')
-                    .attr("class", ".results_view")
+    var operation_view = operation_result_view.append('g')
+                    .attr('class', 'operation_view')
+
+    var results_view = operation_result_view.append('g')
+                    .attr("class", "results_view")
                     .attr("transform", "translate(" + (infoLength+ seperation)  + "," + 0 + ")")
 
     var operation_data = [],
         results_data =[],
         info_data = {
           operation_data: operation_data,
-          results_data: results_data
+          results_data: results_data,
+          partition_data: []
           }
     
     //var size_colors = ['black', 'lightgray', 'white']
@@ -1923,7 +1929,6 @@ d3.csv(csv_file, function(error, data) {
       result.total_size = max_size
       result.node_data = result_data;
 
-      console.log('result', result)
 
       return result
     }
@@ -1934,7 +1939,6 @@ d3.csv(csv_file, function(error, data) {
 
       if (o.type == 'range'){
         infoScale = update_scale(o.range, infoLength)
-        console.log('infoscale', infoScale)
         operation_data = create_range_filter_data(o, infoScale)
       } else if (o.type == 'contains'){
         operation_data = create_contains_filter_data(o, infoLength)
@@ -1944,26 +1948,40 @@ d3.csv(csv_file, function(error, data) {
       return operation
     }
 
+    function update_node_info_data(operations){
+      var operation_data = [],
+          results_data = []
+
+      if(operations){
+
+        operations.forEach(function(o){
+          var o_data = get_operation_data(o)
+          operation_data.push(o_data)
+
+          var r_data = get_results_data(o)
+          results_data.push(r_data)
+
+        })
+
+      }
+
+      info_data.operation_data= operation_data
+      info_data.results_data = results_data
+
+      console.log('info data for segment', info_data)
+
+      return info_data
+    }
+
 
     function get_filter_info(selected){
       var d = selected.data,
           operation = d.operation,
           chart = operation.chart;
 
-      
-
       update_selected_chart(chart);
-
-      operation_data = get_operation_data(operation);
-      console.log('op data', operation_data)
-      console.log('node data ', d)
-
-      //info_data.operation_data= [d]
-      info_data.operation_data= [operation_data];
-
-      result_data = get_results_data(operation)
-      
-      info_data.results_data = [result_data]
+      info_data.partition_data = [] 
+      info_data = update_node_info_data([operation])
 
       update_node_info_view(info_data)
 
@@ -1975,11 +1993,84 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    function update_node_info_view(data){
+    function update_node_info_view(data, sep){
 
       console.log('NODE INFO VIEW DATA', data)
+      var sep = sep |1;
 
-      rData = data.results_data
+      //Results View
+
+      if (data.partition_data.length>0){
+        var op_result_view = filter_view.select('.operation_result_view')
+                             .attr("transform", "translate(" + 0 + "," + oWidth*3 + ")")
+      }
+
+      var pData = data.partition_data
+
+      var presult = partition_results_view.selectAll(".presult")
+        .remove()
+        .exit()
+        .data(pData);
+
+      // Enter any new nodes at the parent's previous position.
+      var presultEnter = presult.enter().append("g")
+          .attr("class", "presult")
+          .attr("transform", function(d, i) { return "translate(" + (i*(infoLength+ seperation))  + "," + 0 + ")"; })
+
+      presultEnter.append('rect')
+          .attr("width", infoLength)
+          .attr("height", oWidth)
+          .attr("fill", 'none')
+          .attr("stroke", "black")
+
+      //range nodes
+
+      // var range_nodes = operationEnter.selectAll(".range")
+
+      // range_nodes.append("path")
+      //         .attr("transform", function(d) { return "translate(" + (-oWidth/2 -1) + "," + oWidth/2 + ")"; })
+      //         .attr('d', function(d){ 
+
+      //               var category = d.category;
+      //               if (category == 'time')
+      //                 return clock_symbol(d);
+      //               else if (category == 'count')
+      //                 return hash_symbol(d);
+
+      //             })
+      //         .attr('fill', 'white')
+      //         .attr('stroke', '#5c616b')
+
+      var bar =  presultEnter.selectAll("rect")
+                .remove()
+                .exit()
+                .data(d => d.node_data)
+       
+      var bar_enter = bar.enter().append('g')
+
+      
+
+      bar_enter.append("rect")
+            .attr("x", function(d){
+                return d.x0;
+            })
+            .attr("width", function(d){
+                return (d.x1-d.x0);
+            })
+            .attr("height", oWidth)
+            .attr("fill", function(d) {return d.hightlighted? "steelblue": "white";})
+            .attr("stroke", "black");
+
+      var bar_update = bar_enter.merge(bar);
+
+
+
+      
+
+      //Results data
+
+      var rData = data.results_data
+
       var result = results_view.selectAll(".result")
           .remove()
           .exit()
@@ -1988,7 +2079,7 @@ d3.csv(csv_file, function(error, data) {
       // Enter any new nodes at the parent's previous position.
       var resultEnter = result.enter().append("g")
           .attr("class", "result")
-          .attr("transform", function(d, i) { return "translate(" + 0 + "," + (i*(oWidth + 1))  + ")"; })
+          .attr("transform", function(d, i) { return "translate(" + 0 + "," + (i*(oWidth + sep))  + ")"; })
 
 
 
@@ -2032,7 +2123,7 @@ d3.csv(csv_file, function(error, data) {
       // Enter any new nodes at the parent's previous position.
       var operationEnter = operation.enter().append("g")
           .attr("class", "operation")
-          .attr("transform", function(d, i) { return "translate(" + 0 + "," + (i*(oWidth + 1)) + ")"; })
+          .attr("transform", function(d, i) { return "translate(" + 0 + "," + (i*(oWidth + sep)) + ")"; })
 
       var operation_nodes = operationEnter.append('g')
                           .attr("class", function(d) {return d.type})
@@ -2174,26 +2265,64 @@ d3.csv(csv_file, function(error, data) {
           .style("text-anchor", "left")
           .style('fill', 'black')
           .text('Partitions: ')
-
     partition_list = pv_partitions.append('g')
           .attr("transform", "translate(" + 5 + "," + 0 + ")");               
 
     function get_partition_info(selected){
 
-      var d = selected.data.operation,
-          partitions = d.partitions,
-          chart = d.chart;
+      var d = selected.data
+          operation = d.operation,
+          range = operation.current_range,
+          chart = operation.chart,
+          operations = operation.results,
+          threshold_ranges = operation.threshold_ranges,
+          sep = 5;
 
       update_selected_chart(chart);
+
+      info_data = update_node_info_data(operations)
+
+
+      infoScale = update_scale(range, infoLength) 
+      partition_data = create_range_partition_data(threshold_ranges, infoScale);
+      o_data = copy_filter(operation)
+      o_data.node_data = partition_data
+
+
+      var result_ranges =[],
+          x0 = 0,
+          x1 = 0;
+
+      operations.forEach(function(o){
+        x1 = x0 + o.size
+        result_ranges.push([x0,x1])
+        x0 = x1;  
+      })
+
+      var domain_range = [0, x1]
+
+      infoScale = update_scale(domain_range, infoLength)
+      result_data = create_range_partition_data(result_ranges, infoScale);
+      r_data = copy_filter(operation)
+      r_data.node_data = result_data
+
+      info_data.partition_data = [o_data, r_data]
+
+      console.log('info partition data', partition_data)
+      console.log('result partition data', result_data)
+
+      update_node_info_view(info_data, sep)
       
-      d3.selectAll('.gtitle').text('Chart used in partition: ' + chart.attr('id'));
+
+
+      // d3.selectAll('.gtitle').text('Chart used in partition: ' + chart.attr('id'));
 
 
       
-      text_object = [];
-      update_partition_text(partition_list);
-      text_object = partitions;
-      update_partition_text(partition_list);
+      // text_object = [];
+      // update_partition_text(partition_list);
+      // text_object = partitions;
+      // update_partition_text(partition_list);
       
 
     }
@@ -2251,23 +2380,8 @@ d3.csv(csv_file, function(error, data) {
           operation_data = [],
           results_data = []
 
-      if(operations){
-
-        operations.forEach(function(o){
-          var o_data = get_operation_data(o)
-          operation_data.push(o_data)
-
-          var r_data = get_results_data(o)
-          results_data.push(r_data)
-
-        })
-
-        info_data.operation_data= operation_data
-        info_data.results_data = results_data
-
-        console.log('info data for segment', info_data)
-
-      }
+      info_data.partition_data = []
+      info_data = update_node_info_data(operations)
       update_node_info_view(info_data)
       // var size = d3.format(",")(d.size),
       //     rel = d3.format(".1%")(d.size/total_size),
@@ -2598,17 +2712,19 @@ d3.csv(csv_file, function(error, data) {
       idx = idx+1;
       grp = groups[idx];
     }
-    x_min = grp.key;
+    x_min = grp.key|0;
+
+
 
     var idx = n-1;
         grp = groups[idx];
 
-    while (grp.value == 0 && idx >= 0){
+    while (idx > 0 && grp.value==0){
       // x_max = grp.key;
       idx = idx - 1;
       grp = groups[idx]; 
     }
-    x_max = grp.key;
+    x_max = grp.key|0;
 
 
     return [x_min, x_max];
@@ -3557,6 +3673,7 @@ d3.csv(csv_file, function(error, data) {
 
 
                 if (extents){
+                  console.log('extents to filter', extents)
 
                   dim.filterFunction(function(d){
                     var inRange = true;
@@ -3881,6 +3998,7 @@ d3.csv(csv_file, function(error, data) {
 
         chart_id = selected_chart.attr('id');
         range = selected_chart.data()[0].range()
+        current_range =selected_chart.data()[0].current_range()
         update_oScale(range);
 
         var node_data,
@@ -3888,11 +4006,14 @@ d3.csv(csv_file, function(error, data) {
             results = [],
             operation = {
               'type': 'range',
+              'action': 'partition',
               'category': selected_chart.data()[0].category(),
               'thresholds': thresholds.slice(),
               'div': chart_id,
               'chart': selected_chart,
-              'results': results
+              'results': results,
+              'range': range,
+              'current_range': current_range
             };
 
         name = 'NEW Partition!';
@@ -3922,7 +4043,8 @@ d3.csv(csv_file, function(error, data) {
         partition.div = chart_id;
         //partition.groups = groups;
 
-        max_key = dims[dims.length-1].key;
+        //max_key = dims[dims.length-1].key;
+        max_key = current_range[1]
 
         d_filters = d.data.filters;
         d_size = d.data.size;
@@ -3936,7 +4058,9 @@ d3.csv(csv_file, function(error, data) {
         var filter = { 
               chart: selected_chart,
               div: chart_id,
-              type: 'range'
+              type: 'range',
+              range: range
+              //range: current_range
 
 
           }
@@ -3986,8 +4110,10 @@ d3.csv(csv_file, function(error, data) {
           segment_node = add_child_node(partition_node, segment_data);
 
         }
-
-        partition_data.node_data = create_range_partition_data(threshold_ranges, range);
+        
+        partition_data.operation.threshold_ranges = threshold_ranges
+        oScale = update_scale(current_range, oLength)
+        partition_data.node_data = create_range_partition_data(threshold_ranges, oScale);
 
         update(d);
         
@@ -4149,8 +4275,6 @@ d3.csv(csv_file, function(error, data) {
 
       scale.clamp(true);
 
-      console.log('range filter for extents:', extents)
-
       if (range[0] != extents[0])
         node_data.push({
           x0: scale(range[0]),
@@ -4179,16 +4303,16 @@ d3.csv(csv_file, function(error, data) {
       return node_data
     }
 
-    function create_range_partition_data(thresholds, range){
+    function create_range_partition_data(thresholds, scale){
       var node_data = [];
 
-      update_oScale(range);
-
+      //update_oScale(range);
+      scale.clamp(true);
 
       thresholds.forEach(function(t){
         node_data.push({
-          x0: oScale(t[0]),
-          x1: oScale(t[1]),
+          x0: scale(t[0]),
+          x1: scale(t[1]),
           highlighted: false
         })
 
@@ -4316,7 +4440,16 @@ d3.csv(csv_file, function(error, data) {
       var filter_copy = JSON.parse(JSON.stringify(filter))
 
       filter_copy.not = filter.not | false;
-      filter_copy.chart = filter.chart; 
+      filter_copy.chart = filter.chart;
+
+      if (filter.extents)
+        filter_copy.extents = filter.extents.slice()
+
+      if(filter.range)
+        filter_copy.range = filter.range.slice()
+
+      if(filter.current_range)
+        filter_copy.current_range = filter.current_range.slice()
 
       return filter_copy
     }
@@ -4389,7 +4522,7 @@ d3.csv(csv_file, function(error, data) {
             not_filters = filter_data.agg_filters;
 
         selectedFilter.not = false;
-
+        filter_copy.action = 'filter';
 
         name = 'NEW Filter!';
         filter_data = { 'name': name,
