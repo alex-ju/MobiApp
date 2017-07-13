@@ -1939,11 +1939,13 @@ d3.csv(csv_file, function(error, data) {
     var size_colors = ['#333333', '#CCCCCC','#E6E6E6']
     //'#e8eaef'
 
-    function get_results_data(o){
+    function get_results_data(o, show_text){
       var result = o.results,
           max_size = original_size,
+          out_size = result.out_size,
+          in_size = result.in_size,
           result_data =[],
-          size_data = [result.out_size, result.in_size, max_size],
+          size_data = [out_size, in_size, max_size],
           x0 = 0;
       
 
@@ -1959,6 +1961,18 @@ d3.csv(csv_file, function(error, data) {
 
       result.total_size = max_size
       result.node_data = result_data;
+
+      var size = d3.format(",")(out_size),
+          rel = d3.format(".1%")(out_size/in_size),
+          abs = d3.format(".1%")(out_size/max_size),
+          show = show_text
+
+      console.log('SHOW TEXT VALUE', show)
+
+      var labels = {text: ["# of seqs:", "% of previous:", "% of total:"], show:show},
+          values = {text: [size, rel, abs], show:show}
+      
+      result.text_data = [labels, values]
 
 
       return result
@@ -1979,17 +1993,25 @@ d3.csv(csv_file, function(error, data) {
       return operation
     }
 
-    function update_node_info_data(operations){
+    function update_node_info_data(operations, show_all_text){
       var operation_data = [],
-          results_data = []
+          results_data = [],
+          show = show_all_text
+
+      console.log('show_all_text', show_all_text)
 
       if(operations){
+        var n = operations.length;
 
-        operations.forEach(function(o){
+
+        operations.forEach(function(o,i){
+          if ((i == (n-1)) && !show_all_text)
+            show_all_text = true;
+          
           var o_data = get_operation_data(o)
           operation_data.push(o_data)
 
-          var r_data = get_results_data(o)
+          var r_data = get_results_data(o, show_all_text)
           results_data.push(r_data)
 
         })
@@ -2008,11 +2030,12 @@ d3.csv(csv_file, function(error, data) {
     function get_filter_info(selected){
       var d = selected.data,
           operation = d.operation,
-          chart = operation.chart;
+          chart = operation.chart,
+          show_all_text = true;
 
       update_selected_chart(chart);
       info_data.partition_data = [] 
-      info_data = update_node_info_data([operation])
+      info_data = update_node_info_data([operation], show_all_text)
 
       update_node_info_view(info_data)
 
@@ -2071,6 +2094,8 @@ d3.csv(csv_file, function(error, data) {
       //             })
       //         .attr('fill', 'white')
       //         .attr('stroke', '#5c616b')
+
+
 
       var bar =  presultEnter.selectAll("rect")
                 .remove()
@@ -2143,6 +2168,38 @@ d3.csv(csv_file, function(error, data) {
             .attr("fill", function(d) {return d.color;})
 
 
+      var rTexts = resultEnter.append('g')
+                      .attr("transform", "translate(" + 5 + "," + -2 + ")")
+                      .attr("class", "result_text")
+
+      var rText = rTexts.selectAll(".rText")
+                    .remove()
+                    .exit()
+                    .data(d => d.text_data)
+                    .attr("class", "rText")
+                    
+
+
+
+      var rTextEnter = rText.enter().append('g')
+                        .attr("transform", function(d, i) { return "translate(" + (i*infoLength*0.6) + "," + 0 + ")"; })
+                        .attr('class', function(d){return d.show?'show_text': 'no_text'})
+
+      var show_texts = resultEnter.selectAll(".show_text")
+
+      var text = show_texts.selectAll(".text")
+                    .remove()
+                    .exit()
+                    .data(d => d.text)
+                    .attr('class', 'text')
+
+      text.enter()
+        .append('text')
+        .attr("dy", function(d,i){ return i+3 +"em";})
+        .style("font-size", "8px")
+        .style("text-anchor", "left")
+        .style('fill', 'black')
+        .text(function(d) {return d;})
       
       //------------------------OPERATION SIDE ---------------
       oData = data.operation_data
@@ -2203,7 +2260,12 @@ d3.csv(csv_file, function(error, data) {
             .attr("fill", function(d) {return d.hightlighted? "steelblue": "white";})
             .attr("stroke", "black");
 
+      
+      range_nodes.append('text')
+
+
       var bar_update = bar_enter.merge(bar);
+
 
 
       // contains nodes
@@ -2306,12 +2368,13 @@ d3.csv(csv_file, function(error, data) {
           range = operation.current_range,
           chart = operation.chart,
           operations = operation.results,
+          show_all_text = true,
           threshold_ranges = operation.threshold_ranges,
-          sep = 5;
+          sep = 40;
 
       update_selected_chart(chart);
 
-      info_data = update_node_info_data(operations)
+      info_data = update_node_info_data(operations, show_all_text)
 
 
       infoScale = update_scale(range, infoRange) 
@@ -2409,10 +2472,11 @@ d3.csv(csv_file, function(error, data) {
           filters = d.filters,
           operations = d.operations,
           operation_data = [],
-          results_data = []
+          results_data = [],
+          show_all_text = false
 
       info_data.partition_data = []
-      info_data = update_node_info_data(operations)
+      info_data = update_node_info_data(operations, show_all_text )
       update_node_info_view(info_data)
       // var size = d3.format(",")(d.size),
       //     rel = d3.format(".1%")(d.size/total_size),
@@ -2760,8 +2824,6 @@ d3.csv(csv_file, function(error, data) {
       grp2 = groups[idx]; 
     }
     var max = grp2? grp2.key: groups[0].key;
-
-    console.log('current_range', [min, max])
     return [min, max];
   }
 
