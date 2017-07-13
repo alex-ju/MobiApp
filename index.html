@@ -167,7 +167,75 @@
 
 
 <div class= "wrapper" id="wrapper">
-  <div class= "graph" id= "tree"></div>
+  <div class= 'button_box'>
+    <div class= "graph" id= "tree"></div>
+    <div class="charts" id="builder_box">
+      <div class="builder" style="display:none;" id="partition_builder">
+        <div class="title"> Create Partition View </div> 
+        <div  class="builder_svg" id="create_partition_view"></div>
+        <div class="button_box">
+          <div class= "button" id="addPartition_button">
+              <input name="addPartitionButton" 
+                           type="button" 
+                          value="Add Partition" />
+          </div>
+          <div class= "button"  id="removePartition_button">
+            <input name="removePartitionButton" 
+                         type="button" 
+                        value="Remove Partition" />
+          </div>
+          <div class= "button" id="applyPartition_button">
+            <input name="applyPartitionButton" 
+                         type="button" 
+                        value="Apply Partition" />
+          </div>
+          
+          <div class= "button" id="input_partition_value">
+              <input type="text" id="partition_value">
+          </div>
+        </div>
+      </div>
+
+      <div  class="builder" style="display:none;" id="pattern_builder">
+        <div  class="builder_svg" id="pb_graph">
+        </div>
+        <div class="button_box" id="pb_buttons">
+          <div class= "button" id="add_node_button">
+            <input name="addNodeButton" 
+                         type="button" 
+                        value="Add Action Node" 
+                         />
+          </div>
+          <div class= "button" id="remove_node_button">
+            <input name="removeNodeButton" 
+                         type="button" 
+                        value="Remove Node" />
+          </div>
+          <div class= "button" id="add_cons_link_button">
+            <input name="addConsLinkButton" 
+                         type="button" 
+                        value="Add Consecutive Links" />
+          </div>
+          <div class= "button" id="create_funnel_button">
+            <input name="addLinkButton" 
+                         type="button" 
+                        value="Add Non-Consecutive Links" />
+          </div>
+          <div class= "button" id="toggle_many_button">
+            <input name="manyButton" 
+                         type="button" 
+                        value="Toggle one or many" />
+          </div>
+          <div class= "button" id="apply_funnel_button">
+            <input name="funnelButton" 
+                         type="button" 
+                        value="Apply Pattern" />
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
   <div class= "button_box" id="buttons">
       <div class= "button" id="filter_button">
         <input name="filterButton" 
@@ -193,13 +261,14 @@
       <div class= "button" id="partition_button">
         <input name="groupButton" 
                      type="button" 
-                    value="Add Partition" />
+                    value="Create Range Operation" />
       </div>
-      <div class= "button" id="apply_funnel_button">
-        <input name="funnelButton" 
+      <div class= "button" id="contains_button">
+        <input name="groupButton" 
                      type="button" 
-                    value="Apply Pattern" />
+                    value="Create Contains Operation" />
       </div>
+      
       <div class= "button" id="demo2_button">
         <input name="demo2Button" 
                      type="button" 
@@ -239,31 +308,7 @@
 
         <div class= "charts" id= "count">
           <div class="title"> Count Related </div>
-          <div class="builder" id="partition_builder">
-            <div class="title"> Create Partition View </div> 
-            <div  class="builder" id="create_partition_view"></div>
-            <div class="button_box">
-              <div class= "button" id="addPartition_button">
-                  <input name="addPartitionButton" 
-                               type="button" 
-                              value="Add Partition" />
-              </div>
-              <div class= "button"  id="removePartition_button">
-                <input name="removePartitionButton" 
-                             type="button" 
-                            value="Remove Partition" />
-              </div>
-              <div class= "button" id="applyPartition_button">
-                <input name="applyPartitionButton" 
-                             type="button" 
-                            value="Apply Partition" />
-              </div>
-              
-              <div class= "button" id="input_partition_value">
-                  <input type="text" id="partition_value">
-              </div>
-            </div>
-          </div>  
+            
           <div class="chart" id="len_chart"> 
             <div class="title"> Number of Actions </div>
           </div>
@@ -291,39 +336,7 @@
           
 
 
-          <div  class="chart" id="pattern_builder">
-            <div  class="chart" id="pb_graph">
-            </div>
-            <div class="button_box" id="pb_buttons">
-              <div class= "button" id="add_node_button">
-                <input name="addNodeButton" 
-                             type="button" 
-                            value="Add Action Node" 
-                             />
-              </div>
-              <div class= "button" id="remove_node_button">
-                <input name="removeNodeButton" 
-                             type="button" 
-                            value="Remove Node" />
-              </div>
-              <div class= "button" id="add_cons_link_button">
-                <input name="addConsLinkButton" 
-                             type="button" 
-                            value="Add Consecutive Links" />
-              </div>
-              <div class= "button" id="create_funnel_button">
-                <input name="addLinkButton" 
-                             type="button" 
-                            value="Add Non-Consecutive Links" />
-              </div>
-              <div class= "button" id="toggle_many_button">
-                <input name="manyButton" 
-                             type="button" 
-                            value="Toggle one or many" />
-              </div>
-            </div>
-
-          </div>
+ 
           <div class= "chart" id="contains_action_chart">
             <div class="title"> Number of Sequences that Contains Action </div>
           </div>
@@ -536,6 +549,8 @@ d3.csv(csv_file, function(error, data) {
       .on("click", create_filter);
     d3.select("#partition_button")
       .on("click", show_partition_view);
+    d3.select("#contains_button")
+      .on("click", show_contains_builder);
     d3.select("#remove_button")
       .on("click", remove_filter);
     d3.select("#segment_button")
@@ -1802,6 +1817,19 @@ d3.csv(csv_file, function(error, data) {
         console.log(' transitionized:' + remove_duplicates(seq) + ']')
       })
     }
+    //=========================== Builder Views ====================================//
+    var active_builder_view = null,
+        active_view = null;
+    function update_builder_view(view_id){
+      view_id = view_id || null;
+      active_builder_view = view_id;
+      d3.selectAll(".builder")
+        .style('display', function(d) {
+          var id = d3.select(this).attr('id');
+          if (id != active_builder_view)
+            return 'none';
+        });
+    }
 
     //=========================== Info Views ====================================//
 
@@ -1869,9 +1897,12 @@ d3.csv(csv_file, function(error, data) {
         infoRange = [0,infoLength]
         infoScale = d3.scaleLinear().range(infoRange)
 
+    var rLength = infoLength,
+        rRange = [1, rLength]
+
     var rScale = d3.scaleLinear()
                   .domain([0, original_size])
-                  .range([0,infoLength])
+                  .range(rRange)
 
     var fv_svg = d3.select("#filter_view")
                     .append("svg")
@@ -1938,7 +1969,7 @@ d3.csv(csv_file, function(error, data) {
           operation_data;
 
       if (o.type == 'range'){
-        infoScale = update_scale(o.range, infoLength)
+        infoScale = update_scale(o.range, infoRange)
         operation_data = create_range_filter_data(o, infoScale)
       } else if (o.type == 'contains'){
         operation_data = create_contains_filter_data(o, infoLength)
@@ -2283,7 +2314,7 @@ d3.csv(csv_file, function(error, data) {
       info_data = update_node_info_data(operations)
 
 
-      infoScale = update_scale(range, infoLength) 
+      infoScale = update_scale(range, infoRange) 
       partition_data = create_range_partition_data(threshold_ranges, infoScale);
       o_data = copy_filter(operation)
       o_data.node_data = partition_data
@@ -2301,7 +2332,7 @@ d3.csv(csv_file, function(error, data) {
 
       var domain_range = [0, x1]
 
-      infoScale = update_scale(domain_range, infoLength)
+      infoScale = update_scale(domain_range, infoRange)
       result_data = create_range_partition_data(result_ranges, infoScale);
       r_data = copy_filter(operation)
       r_data.node_data = result_data
@@ -2450,8 +2481,14 @@ d3.csv(csv_file, function(error, data) {
 
     function show_partition_view() {
       //d3.select("#create_partition_view").style("display", "block");
-      update_info_view("create_partition_view");
+      //update_info_view("create_partition_view");
+      update_builder_view("partition_builder");
       update_partition_view();
+    }
+
+    function show_contains_builder(){
+      update_builder_view("pattern_builder");
+
     }
 
     function set_partition_value(value){
@@ -2588,8 +2625,7 @@ d3.csv(csv_file, function(error, data) {
     function update_partition_view(){
 
      //render selected chart
-     console.log('in update partition view, selected chart: ', selected_chart.node());
-     console.log('in update partition view, selected chart: ', selected_chart.data());
+     
 
      if (selected_chart.data()[0]){
 
@@ -2633,7 +2669,7 @@ d3.csv(csv_file, function(error, data) {
       selected_chart = div;
       selected_chart.style("background-color", "lightyellow" );
 
-      if (active_view == 'create_partition_view')
+      if (active_builder_view == 'partition_builder')
         update_partition_view();
 
     }
@@ -2702,7 +2738,6 @@ d3.csv(csv_file, function(error, data) {
     }
 
   function get_current_range(groups){
-
     var idx = 0,
         n = groups.length,
         grp = groups[idx];
@@ -2712,22 +2747,22 @@ d3.csv(csv_file, function(error, data) {
       idx = idx+1;
       grp = groups[idx];
     }
-    x_min = grp.key|0;
+    var min = grp? grp.key : groups[0].key;
 
 
 
     var idx = n-1;
-        grp = groups[idx];
+        grp2 = groups[idx];
 
-    while (idx > 0 && grp.value==0){
+    while (idx > 0 && grp2.value==0){
       // x_max = grp.key;
       idx = idx - 1;
-      grp = groups[idx]; 
+      grp2 = groups[idx]; 
     }
-    x_max = grp.key|0;
+    var max = grp2? grp2.key: groups[0].key;
 
-
-    return [x_min, x_max];
+    console.log('current_range', [min, max])
+    return [min, max];
   }
 
 
@@ -3427,7 +3462,6 @@ d3.csv(csv_file, function(error, data) {
           //.attr('cx', function(d,i){return i*oRadius*2})
           .attr('cx', function(d){return d.x})
           .attr('fill', function(d){
-            console.log(d);
             return colors[d.action]? colors[d.action] : "none";
             //return d.group? color(d.group): "none"
           })
@@ -4001,6 +4035,9 @@ d3.csv(csv_file, function(error, data) {
         current_range =selected_chart.data()[0].current_range()
         update_oScale(range);
 
+        var info_range = range, //range used for info view
+            node_range = current_range //range used for workflow view
+
         var node_data,
             threshold_ranges =[],
             results = [],
@@ -4059,8 +4096,7 @@ d3.csv(csv_file, function(error, data) {
               chart: selected_chart,
               div: chart_id,
               type: 'range',
-              range: range
-              //range: current_range
+              range: info_range
 
 
           }
@@ -4076,6 +4112,7 @@ d3.csv(csv_file, function(error, data) {
           extents = [low_bound, high_bound];
           size = g.value;
           
+          oScale = update_scale(node_range, oRange)
 
           var translate_x = oScale(low_bound) + ((oScale(high_bound)-oScale(low_bound))/2) - (oLength)/2;
 
@@ -4112,7 +4149,7 @@ d3.csv(csv_file, function(error, data) {
         }
         
         partition_data.operation.threshold_ranges = threshold_ranges
-        oScale = update_scale(current_range, oLength)
+        oScale = update_scale(node_range, oRange)
         partition_data.node_data = create_range_partition_data(threshold_ranges, oScale);
 
         update(d);
@@ -4208,14 +4245,14 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    function update_scale(domain_range, max_length){
+    function update_scale(domain_range, range){
 
       if(typeof domain_range[0] == "number")
         scale = d3.scaleLinear()
       else
         scale = d3.scaleTime()
 
-      scale.range([0, max_length])
+      scale.range(range)
       scale.domain(domain_range);
 
       return scale
@@ -4484,7 +4521,7 @@ d3.csv(csv_file, function(error, data) {
         
 
         if(selectedFilter.type =='range'){
-          oScale = update_scale(selectedFilter.range, oLength)
+          oScale = update_scale(selectedFilter.range, oRange)
           node_data = create_range_filter_data(selectedFilter, oScale)
           for(var i=0; i <node_data.length;i++){
             var nd = node_data[i];
@@ -4508,6 +4545,7 @@ d3.csv(csv_file, function(error, data) {
             operations = filter_data.operations,
             filters = filter_data.agg_filters;
 
+        console.log('selected filter div', selectedFilter.div)
         
         console.log('Filter Data', filter_data)
 
