@@ -197,8 +197,8 @@
       </div>
 
       <div  class="builder" style="display:none;" id="pattern_builder">
-        <div  class="builder_svg" id="pb_graph">
-        </div>
+        <div  class="builder_svg" id="pb_graph"></div>
+        <div class="builder_svg" id ="action_list"> </div>
         <div class="button_box" id="pb_buttons">
           <div class= "button" id="add_node_button">
             <input name="addNodeButton" 
@@ -230,6 +230,11 @@
             <input name="containsNotButton" 
                          type="button" 
                         value="NOT" />
+          </div>
+          <div class= "button" id="clear_pb_button">
+            <input name="clearButton" 
+                         type="button" 
+                        value="Clear All" />
           </div>
           <div class= "button" id="apply_funnel_button">
             <input name="funnelButton" 
@@ -560,8 +565,7 @@ d3.csv(csv_file, function(error, data) {
       .on("click", remove_filter);
     d3.select("#segment_button")
       .on("click", toggle_segments);
-    d3.select("#contains_not_button")
-      .on("click", create_not_filter)
+    
     d3.select("#path_button")
       .on("click", show_path_only);
     
@@ -584,6 +588,10 @@ d3.csv(csv_file, function(error, data) {
       .on("click", add_link)
     d3.select("#toggle_many_button")
       .on("click", toggle_one_or_many)
+    d3.select("#contains_not_button")
+      .on("click", create_not_filter)
+    d3.select("#clear_pb_button")
+      .on("click", clear_contains_builder)
 
     d3.select("#demo2_button")
       .on("click", print_sequences);
@@ -1043,6 +1051,7 @@ d3.csv(csv_file, function(error, data) {
       }
       selected_action_node = d;
       d.selected = true;
+
       if (pressed){
         
         if(pattern_data.nodes.length>0){
@@ -1057,13 +1066,10 @@ d3.csv(csv_file, function(error, data) {
           add_action_node();
         }
 
-
-
-
       }
 
 
-
+      update_action_list()
       update_adjacency_chart_data(links);
       console.log("Selected action node: ", selected_action_node);
 
@@ -1118,11 +1124,11 @@ d3.csv(csv_file, function(error, data) {
 
       links.forEach(function(l){
 
-        if (l.source == selected_action_node){
+        if (l.source.id == selected_action_node.id){
           //after_links.push(l);
           after_data.actions.push({action: l.target.action, group: l.target.group, count:l.count, percent: l.percent});
 
-        }else if (l.target == selected_action_node){
+        }else if (l.target.id == selected_action_node.id){
           //before_links.push(l);
           before_data.actions.push({action: l.source.action, group: l.source.group, count:l.count, percent: l.into_target_percent});
         }
@@ -1369,9 +1375,9 @@ d3.csv(csv_file, function(error, data) {
       d.selected = true;
       
 
-      var links = pattern_data.links,
-          before_links =[],
-          after_links = [];
+      // var links = pattern_data.links,
+      //     before_links =[],
+      //     after_links = [];
 
 
       
@@ -1382,10 +1388,71 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+    var node_radius = 8;
+
+    // ====================== Action List ============== //
+
+    var al_data = []
+
+    var al_svg = d3.select("#action_list").append('svg')
+                  .attr('width', 100)
+
+
+
+
+    var al_actions = al_svg.append('g')
+                      .attr("transform", "translate(" + 50 + "," + ((node_radius*2)+2) + ")")
+    
+    update_action_list_data()
+
+    function update_action_list_data(){
+      var data = current_level.map(function (action) { return { action: action, id: action}; });
+      al_data = data;
+    }
+
+    function update_action_list(){
+
+      // var data = current_level.map(function (action) { return { action: action, id: action}; });
+      var data = al_data;
+
+      var action = al_actions.selectAll('.action')
+                          .remove()
+                          .exit()
+                          .data(data)
+                          
+      var action_enter = action.enter().append('g')
+                          .attr('class', 'action')
+                          .attr("transform", function(d, i){return "translate(" + 0 + "," + (node_radius*3)*i + ")" })
+                          .on("click", select_action_node)
+
+      action_enter.append('circle')
+            .attr('r', node_radius)
+            .attr('fill', function(d){return colors[d.action];})
+
+      action_enter.append('text')
+          .style('fill', 'black')
+          .style("font-size", "10px")
+          .style("text-anchor", "middle")
+          .attr('dy', 
+            node_radius/2 
+            //node_radius
+            )
+          .text(function(d) {return d.action;})
+
+      var action_update = action_enter.merge(action)
+
+      action_update.selectAll('circle')
+          .attr('stroke', function(d){ return d.selected? 'black': 'none'})
+
+
+    }
+
+
+
 
 
     // ========================== Pattern Builder ============================== //
-    var node_radius = 8;
+    
     var pb_margin = {top: 20, right:20, bottom: 20, left: 20},
         pb_svg = d3.select("#pb_graph").append("svg")
                     .attr("width", 200)
@@ -1504,6 +1571,16 @@ d3.csv(csv_file, function(error, data) {
     function create_not_filter(){
       pattern_data.not =("not" in pattern_data)? !pattern_data.not : true;
          
+      draw_pattern_graph(pattern_data)
+    }
+
+    function clear_contains_builder(){
+      pattern_data = {
+          nodes: [],
+          links: [],
+          not: false
+      }
+
       draw_pattern_graph(pattern_data)
     }
 
@@ -1968,13 +2045,14 @@ d3.csv(csv_file, function(error, data) {
       nv_height = 200 - nv_margin.top - nv_margin.bottom;
 
     
+
+
     function show_builder(d){
       console.log('SHOWING BUILDER ')
       if (d.type == 'contains'){
         update_builder_view("pattern_builder");
-
-        pattern_data = {nodes:[], links:[]}
-        draw_pattern_graph(pattern_data)
+        
+        clear_contains_builder()
         pattern_data = d.pattern_data
         draw_pattern_graph(pattern_data)
       }if (d.type == 'range'){
@@ -2694,6 +2772,7 @@ d3.csv(csv_file, function(error, data) {
 
     function show_contains_builder(){
       update_builder_view("pattern_builder");
+      update_action_list()
 
     }
 
@@ -2860,8 +2939,6 @@ d3.csv(csv_file, function(error, data) {
 
         }
 
-     } else {
-      alert('Choose another chart to partition!');
      }
 
     }
