@@ -226,6 +226,11 @@
                          type="button" 
                         value="Toggle one or many" />
           </div>
+          <div class= "button" id="contains_not_button">
+            <input name="containsNotButton" 
+                         type="button" 
+                        value="NOT" />
+          </div>
           <div class= "button" id="apply_funnel_button">
             <input name="funnelButton" 
                          type="button" 
@@ -555,6 +560,8 @@ d3.csv(csv_file, function(error, data) {
       .on("click", remove_filter);
     d3.select("#segment_button")
       .on("click", toggle_segments);
+    d3.select("#contains_not_button")
+      .on("click", create_not_filter)
     d3.select("#path_button")
       .on("click", show_path_only);
     
@@ -1386,8 +1393,16 @@ d3.csv(csv_file, function(error, data) {
         pb_width = +pb_svg.attr("width")- pb_margin.right - pb_margin.left,
         pb_height = +pb_svg.attr("height")- pb_margin.top - pb_margin.bottom;
 
+    var pb_background = pb_svg.append("rect")
+                          .attr('class', 'background')
+                          .attr('width', "100%")
+                          .attr('height', '100%')
+                          .attr('fill', 'white')
+
     var pb_graph = pb_svg.append("g")
                     .attr("transform", "translate(" + pb_margin.left + "," + pb_margin.top + ")"),
+
+
         // pb_link = pb_graph.append("g")
         //               .attr("class", "links"),
         // pb_node = pb_graph.append("g");
@@ -1486,6 +1501,12 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+    function create_not_filter(){
+      pattern_data.not =("not" in pattern_data)? !pattern_data.not : true;
+         
+      draw_pattern_graph(pattern_data)
+    }
+
 
     var pressed= false,
         consecutive = false;
@@ -1538,6 +1559,7 @@ d3.csv(csv_file, function(error, data) {
 
       var nodes = pattern_data.nodes,
           links = pattern_data.links,
+          not = ("not" in pattern_data)? pattern_data.not: false;
           regex = '',
           chars= [],
           pattern =[],
@@ -1575,8 +1597,10 @@ d3.csv(csv_file, function(error, data) {
             group: n.group,
             many: many
         }
-        if( (n.id != 'start') && (n.id != 'exit'))
+        if( (n.id != 'start') && (n.id != 'exit')){
           pattern.push(pattern_node)
+          chars.push(pattern_node.char); 
+        }
 
         c = many? c+'+' : c;
         sep = links[i]? (links[i].consecutive? '': '.*'): (c=='$'? '':'.*')
@@ -1584,7 +1608,7 @@ d3.csv(csv_file, function(error, data) {
           pattern.push(any_node);
         regex = regex + c + sep;
         console.log('regex', regex);
-        chars.push(pattern_node.char); 
+        
 
         
         //Create the filter
@@ -1622,15 +1646,19 @@ d3.csv(csv_file, function(error, data) {
               filter = {},
               //funnel = {char: chars.slice(), consecutive:consecutive};
               funnel = chars.slice();
-          pattern_data_copy = {nodes: nodes_copy, links:links.slice()};
+
+          if (not)
+            size = total_size - size;
+
 
           selectedFilter.chart = selected_chart;
           selectedFilter.size = size;
           selectedFilter.type = 'contains';
           selectedFilter.char = funnel;
           selectedFilter.regex = regex;
+          selectedFilter.not = not;
           selectedFilter.pattern = pattern;
-          selectedFilter.pattern_data = {nodes: nodes_copy.slice(), links:links_copy.slice()};
+          selectedFilter.pattern_data = {nodes: nodes_copy.slice(), links:links_copy.slice(), not:not};
 
           console.log('pattern created', pattern);
           console.log('creating filter:', selectedFilter);
@@ -1668,10 +1696,20 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-
+    var contains_not_color = '#54575b'
 
 
     function draw_pattern_graph(node_link_data){
+      
+      if (!("not" in node_link_data))
+        node_link_data.not = false
+
+      var not = node_link_data.not,
+          highlight_color = not? 'white': 'black';
+          background_color = not? contains_not_color: 'white';
+
+      var background = pb_svg.select('.background')
+                        .attr('fill', background_color)
 
       pb_node = pb_node.data(node_link_data.nodes, function(d) {return d.id;});
 
@@ -1699,10 +1737,11 @@ d3.csv(csv_file, function(error, data) {
       
       node_enter.append('circle')
           .attr('class', 'many')
-          
+      
 
       node_enter.append('text')
-          .style('fill', 'black')
+          .attr('class', 'pb_text')
+          //.style('fill', highlight_color)
           .style("font-size", "10px")
           .style("text-anchor", "start")
           .attr('dy', 
@@ -1721,11 +1760,14 @@ d3.csv(csv_file, function(error, data) {
       //     .attr('stroke', function(d) { return d.selected? 'black' : 'none' })
 
       pb_node.selectAll('.pattern_node')
-          .attr('stroke', function(d) { return d.selected? 'black' : 'none' })
+          .attr('stroke', function(d) { return d.selected? highlight_color : 'none' })
 
       pb_node.selectAll('.many')
           .attr('r', 3)
           .attr('fill', function(d){ return d.many? 'black': 'none'})
+
+      pb_node.selectAll('.pb_text')
+          .style('fill', highlight_color)
       
 
       //var strokeScale = d3.scaleLinear().domain([0,100]).range([1,5]);
@@ -1894,6 +1936,7 @@ d3.csv(csv_file, function(error, data) {
         get_segment_info(selected);
       }else if(d.value == 0){
         get_filter_info(selected);
+        show_builder(d.operation);
       }else if(d.value == 2){
         get_partition_info(selected);
       }
@@ -1925,6 +1968,19 @@ d3.csv(csv_file, function(error, data) {
       nv_height = 200 - nv_margin.top - nv_margin.bottom;
 
     
+    function show_builder(d){
+      console.log('SHOWING BUILDER ')
+      if (d.type == 'contains'){
+        update_builder_view("pattern_builder");
+
+        pattern_data = {nodes:[], links:[]}
+        draw_pattern_graph(pattern_data)
+        pattern_data = d.pattern_data
+        draw_pattern_graph(pattern_data)
+      }if (d.type == 'range'){
+        update_builder_view("partition_builder");
+      }
+    }
 
     //----------- Filter View -------------- //
     var infoLength = 100,
@@ -2051,11 +2107,7 @@ d3.csv(csv_file, function(error, data) {
         operation_data = create_contains_filter_data(o, infoLength)
         label_text = ['Contains: ']
         value_text = format_contains_text(o.char)
-        pattern_data = {nodes:[], links:[]}
-        draw_pattern_graph(pattern_data)
-        pattern_data = o.pattern_data
-        console.log(pattern_data)
-        draw_pattern_graph(pattern_data)
+        
 
       }
       var labels = {text: label_text, show:show_all_text},
@@ -2260,15 +2312,18 @@ d3.csv(csv_file, function(error, data) {
       var operationEnter = operation.enter().append("g")
           .attr("class", "operation")
           .attr("transform", function(d, i) { return "translate(" + 0 + "," + (i*(oWidth + sep)) + ")"; })
+          .on("click", show_builder)
 
       var operation_nodes = operationEnter.append('g')
                           .attr("class", function(d) {return d.type})
+                          
 
       operation_nodes.append('rect')
           .attr("width", infoLength)
           .attr("height", oWidth)
           .attr("fill", 'none')
           .attr("stroke", "black")
+          
 
 
       operationEnter.append('g')
@@ -2364,7 +2419,7 @@ d3.csv(csv_file, function(error, data) {
           .attr("width", infoLength)
           .attr("height", oWidth)
           
-          .attr("fill", function(d){return d.not? "black": "white"})
+          .attr("fill", function(d){return d.not? contains_not_color: "white"})
 
       var circles = contains_nodes.append("g")
                     .attr("transform", function(d) { return "translate(" + oRadius + "," + oWidth/2 + ")"; });
@@ -3593,7 +3648,7 @@ d3.csv(csv_file, function(error, data) {
           .attr("width", oLength)
           .attr("height", oWidth)
           
-          .attr("fill", function(d){return d.data.operation.not? "black": "white"})
+          .attr("fill", function(d){return d.data.operation.not? contains_not_color: "white"})
 
       var circles = contains_nodes.append("g")
                     .attr("transform", function(d) { return "translate(" + oRadius + "," + oWidth/2 + ")"; });
@@ -4702,13 +4757,7 @@ d3.csv(csv_file, function(error, data) {
         size = selectedFilter.size;
 
 
-        selectedFilter.not = true;
-        var filter_data_not = get_filter_data_for_segment(d, selectedFilter),
-            filter_copy_not = filter_data.filter, 
-            operations_not = filter_data.operations,
-            not_filters = filter_data.agg_filters;
-
-        selectedFilter.not = false;
+       
         filter_copy.action = 'filter';
 
         name = 'NEW Filter!';
@@ -4733,15 +4782,23 @@ d3.csv(csv_file, function(error, data) {
 
         var segment_node = add_child_node(filter_node, segment_data);
 
+        //NOT FILTER
+        // selectedFilter.not = true;
+        // var filter_data_not = get_filter_data_for_segment(d, selectedFilter),
+        //     filter_copy_not = filter_data.filter, 
+        //     operations_not = filter_data.operations,
+        //     not_filters = filter_data.agg_filters;
 
-        var not_segment_data = { 'name': name,
-                     'value': 1,
-                     'filters': not_filters,
-                     'size': prev_size - size,
-                     'prev_size': prev_size
-                   };
+        // selectedFilter.not = false;
 
-        var not_segment_node = add_child_node(filter_node, not_segment_data, true);
+        // var not_segment_data = { 'name': name,
+        //              'value': 1,
+        //              'filters': not_filters,
+        //              'size': prev_size - size,
+        //              'prev_size': prev_size
+        //            };
+
+        // var not_segment_node = add_child_node(filter_node, not_segment_data, true);
 
         selectedExtents = null;
         selectedChar = null;
