@@ -751,11 +751,16 @@ d3.csv(csv_file, function(error, data) {
       node_enter.append('text')
           .style('fill', 'black')
           .style("font-size", "10px")
-          .style("text-anchor", "middle")
+          .style("text-anchor", "start")
           .attr('dy', 
-            //node_radius
-            node_radius/2 
+            //node_radius/2 
+            node_radius
             )
+          // .style("text-anchor", "middle")
+          // .attr('dy', 
+          //   //node_radius
+          //   node_radius/2 
+          //   )
           .text(function(d) {return d.action;})
 
 
@@ -1419,8 +1424,7 @@ d3.csv(csv_file, function(error, data) {
       if (selected_action_node){
         new_node = {
           action: selected_action_node.action,
-          id: selected_action_node.id,
-          group: selected_action_node.group
+          id: selected_action_node.id
         }
         if (pattern_data.nodes.length == 0){
           new_node.fx = pb_width/2;
@@ -1507,6 +1511,29 @@ d3.csv(csv_file, function(error, data) {
         group: null
     }
 
+    function copy_node(node){
+      //var node_copy = JSON.parse(JSON.stringify(node))
+      var node_copy = {}
+      node_copy.action = node.action
+      node_copy.id = node.action 
+      node_copy.fx = node.x;
+      node_copy.fy = node.y;
+      //node_copy.selected = false;
+
+      return node_copy
+    }
+
+    function copy_link(link){
+      var link_copy = {
+          'source': link.source.id,
+          'target': link.target.id,
+          'value': 0.5,
+          'consecutive': link.consecutive
+      }
+      return link_copy
+
+    }
+
     function apply_funnel(){
 
       var nodes = pattern_data.nodes,
@@ -1515,10 +1542,17 @@ d3.csv(csv_file, function(error, data) {
           chars= [],
           pattern =[],
           filters = [],
-          parent = selected;
+          parent = selected,
+          nodes_copy = [],
+          links_copy = []
+          
 
       console.log('nodes', nodes)
       console.log('links',links)
+
+      links.forEach(function(l){
+        links_copy.push(copy_link(l))
+      })
 
       if (nodes[0].action != 'start'){
         regex = '.*';
@@ -1526,6 +1560,7 @@ d3.csv(csv_file, function(error, data) {
       }
 
       nodes.forEach(function(n, i){
+        nodes_copy.push(copy_node(n))
         var sep,
             c = alphabet[n.id],
             many = n.many | false;
@@ -1549,7 +1584,7 @@ d3.csv(csv_file, function(error, data) {
           pattern.push(any_node);
         regex = regex + c + sep;
         console.log('regex', regex);
-        chars.push(c); 
+        chars.push(pattern_node.char); 
 
         
         //Create the filter
@@ -1585,9 +1620,9 @@ d3.csv(csv_file, function(error, data) {
         if (match){
           var size = match.count,
               filter = {},
-              funnel = {char: chars.slice(), consecutive:consecutive};
-
-
+              //funnel = {char: chars.slice(), consecutive:consecutive};
+              funnel = chars.slice();
+          pattern_data_copy = {nodes: nodes_copy, links:links.slice()};
 
           selectedFilter.chart = selected_chart;
           selectedFilter.size = size;
@@ -1595,6 +1630,7 @@ d3.csv(csv_file, function(error, data) {
           selectedFilter.char = funnel;
           selectedFilter.regex = regex;
           selectedFilter.pattern = pattern;
+          selectedFilter.pattern_data = {nodes: nodes_copy.slice(), links:links_copy.slice()};
 
           console.log('pattern created', pattern);
           console.log('creating filter:', selectedFilter);
@@ -1851,15 +1887,14 @@ d3.csv(csv_file, function(error, data) {
 
     function show_node_view(selected){
       var d = selected.data;
+      update_info_view("filter_view");
       if (d.value == 1){
         // update_info_view("segment_view");
-        update_info_view("filter_view");
+        
         get_segment_info(selected);
       }else if(d.value == 0){
-        update_info_view("filter_view")
         get_filter_info(selected);
       }else if(d.value == 2){
-        update_info_view("filter_view")
         get_partition_info(selected);
       }
 
@@ -1893,7 +1928,7 @@ d3.csv(csv_file, function(error, data) {
 
     //----------- Filter View -------------- //
     var infoLength = 100,
-        seperation = 15,
+        seperation = 20,
         infoRange = [0,infoLength]
         infoScale = d3.scaleLinear().range(infoRange)
 
@@ -1978,16 +2013,56 @@ d3.csv(csv_file, function(error, data) {
       return result
     }
 
-    function get_operation_data(o){
+    function format_range_text(range){
+      console.log('formatting range: ', range)
+      return '[' + d3.format(",.1f")(range[0]) + ', ' + d3.format(",.1f")(range[1]) +']';
+    }
+
+    function format_contains_text(char){
+      var actions = [];
+
+      if (typeof(char)=='string')
+        char = [char]
+
+      
+      char.forEach(function(c){
+        var a = alphabet_rev[c]
+        actions.push(a)
+      })
+    
+      return actions;
+    }
+
+    function get_operation_data(o, show_all_text){
       var operation = copy_filter(o),
-          operation_data;
+          operation_data,
+          label_text =[],
+          value_text =[];
 
       if (o.type == 'range'){
         infoScale = update_scale(o.range, infoRange)
         operation_data = create_range_filter_data(o, infoScale)
+        label_text =['Domain range: ', 'Filtered range: ']
+        var domain_range = format_range_text(o.range),
+            filtered_range = format_range_text(o.extents)
+        value_text= [domain_range, filtered_range]
+
       } else if (o.type == 'contains'){
         operation_data = create_contains_filter_data(o, infoLength)
+        label_text = ['Contains: ']
+        value_text = format_contains_text(o.char)
+        pattern_data = {nodes:[], links:[]}
+        draw_pattern_graph(pattern_data)
+        pattern_data = o.pattern_data
+        console.log(pattern_data)
+        draw_pattern_graph(pattern_data)
+
       }
+      var labels = {text: label_text, show:show_all_text},
+          values = {text: value_text, show:show_all_text}
+      
+      operation.text_data = [labels, values]
+
       operation.node_data = operation_data;
 
       return operation
@@ -2007,8 +2082,8 @@ d3.csv(csv_file, function(error, data) {
         operations.forEach(function(o,i){
           if ((i == (n-1)) && !show_all_text)
             show_all_text = true;
-          
-          var o_data = get_operation_data(o)
+
+          var o_data = get_operation_data(o, show_all_text)
           operation_data.push(o_data)
 
           var r_data = get_results_data(o, show_all_text)
@@ -2051,6 +2126,7 @@ d3.csv(csv_file, function(error, data) {
 
       console.log('NODE INFO VIEW DATA', data)
       var sep = sep |1;
+
 
       //Results View
 
@@ -2168,38 +2244,10 @@ d3.csv(csv_file, function(error, data) {
             .attr("fill", function(d) {return d.color;})
 
 
-      var rTexts = resultEnter.append('g')
-                      .attr("transform", "translate(" + 5 + "," + -2 + ")")
-                      .attr("class", "result_text")
-
-      var rText = rTexts.selectAll(".rText")
-                    .remove()
-                    .exit()
-                    .data(d => d.text_data)
-                    .attr("class", "rText")
-                    
+      resultEnter.append('g')
+        .attr("class", "info_text")
 
 
-
-      var rTextEnter = rText.enter().append('g')
-                        .attr("transform", function(d, i) { return "translate(" + (i*infoLength*0.6) + "," + 0 + ")"; })
-                        .attr('class', function(d){return d.show?'show_text': 'no_text'})
-
-      var show_texts = resultEnter.selectAll(".show_text")
-
-      var text = show_texts.selectAll(".text")
-                    .remove()
-                    .exit()
-                    .data(d => d.text)
-                    .attr('class', 'text')
-
-      text.enter()
-        .append('text')
-        .attr("dy", function(d,i){ return i+3 +"em";})
-        .style("font-size", "8px")
-        .style("text-anchor", "left")
-        .style('fill', 'black')
-        .text(function(d) {return d;})
       
       //------------------------OPERATION SIDE ---------------
       oData = data.operation_data
@@ -2221,6 +2269,45 @@ d3.csv(csv_file, function(error, data) {
           .attr("height", oWidth)
           .attr("fill", 'none')
           .attr("stroke", "black")
+
+
+      operationEnter.append('g')
+          .attr("class", "info_text")
+
+
+      //Format Text
+
+      var info_text = operation_result_view.selectAll('.info_text')
+                        .attr("transform", "translate(" + 1 + "," + -2 + ")")
+
+      var iText = info_text.selectAll(".iText")
+                    .remove()
+                    .exit()
+                    .data(d => d.text_data)
+                    .attr("class", "iText")
+                    
+
+
+
+      var iTextEnter = iText.enter().append('g')
+                        .attr("transform", function(d, i) { return "translate(" + (i*infoLength*0.55) + "," + 0 + ")"; })
+                        .attr('class', function(d){return d.show?'show_text': 'no_text'})
+
+      var show_texts = operation_result_view.selectAll(".show_text")
+
+      var text = show_texts.selectAll(".text")
+                    .remove()
+                    .exit()
+                    .data(d => d.text)
+                    .attr('class', 'text')
+
+      text.enter()
+        .append('text')
+        .attr("dy", function(d,i){ return i+3 +"em";})
+        .style("font-size", "8px")
+        .style("text-anchor", "left")
+        .style('fill', 'black')
+        .text(function(d) {return d;})
 
       //range nodes
 
@@ -4573,7 +4660,7 @@ d3.csv(csv_file, function(error, data) {
 
       var d = parent_segment || selected;
 
-      if (d && selectedFilter.type) {
+      if (d && selectedFilter.type && d.data.value==1) {
         // var d_filters = d.data.filters,
         //     d_operations = d.data.operations,
         var node_data=[],
@@ -4667,6 +4754,8 @@ d3.csv(csv_file, function(error, data) {
       } else {
         if (!selected)
           alert('Segment was not selected!');
+        else if (d.value != 1)
+          alert('Can only filter segments!')
         else
           alert('Please choose range to filter!');
 
