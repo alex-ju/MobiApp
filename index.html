@@ -201,8 +201,13 @@
         <div class="button_box">
          
           
-          <div class= "button" id="input_filter_value1">
+          <div class= "button" id="input_filter_value">
               <input type="text" id="partition_value">
+          </div>
+          <div class= "button" id="range_not_button">
+            <input name="rangeNotButton" 
+                         type="button" 
+                        value="NOT" />
           </div>
           <div class= "button" id="applyFilter_button">
             <input name="applyFilterButton" 
@@ -263,12 +268,6 @@
     </div>
   </div>
   <div class= "button_box" id="buttons">
-      <div class= "button" id="filter_button">
-        <input name="filterButton" 
-                     type="button" 
-                    value="Add Filter" 
-                     />
-      </div>
       <div class= "button" id="remove_button">
         <input name="removeButton" 
                      type="button" 
@@ -569,8 +568,7 @@ d3.csv(csv_file, function(error, data) {
     start_chart.dims = starts.all();
     duration_chart.dims = durations.all();
     
-    d3.select("#filter_button")
-      .on("click", create_filter);
+
     d3.select("#build_filter_button")
       .on("click", show_filter_builder)
     d3.select("#partition_button")
@@ -591,6 +589,11 @@ d3.csv(csv_file, function(error, data) {
       .on("click", remove_partition_bar);
     d3.select("#applyPartition_button")
       .on("click", create_partition);
+
+    d3.select("#applyFilter_button")
+      .on("click", create_range_filter);
+    d3.select("#range_not_button")
+      .on("click", create_not_range_filter)
     
     d3.select("#add_node_button")
       .on("click", add_action_node);
@@ -2071,7 +2074,8 @@ d3.csv(csv_file, function(error, data) {
         pattern_data = d.pattern_data
         draw_pattern_graph(pattern_data)
       }if (d.type == 'range'){
-        update_builder_view("partition_builder");
+        update_builder_view("filter_builder");
+        update_filter_data(d.extents)
       }
     }
 
@@ -2193,12 +2197,22 @@ d3.csv(csv_file, function(error, data) {
         operation_data = create_range_filter_data(o, infoScale)
         label_text =['Domain range: ', 'Filtered range: ']
         var domain_range = format_range_text(o.range),
-            filtered_range = format_range_text(o.extents)
-        value_text= [domain_range, filtered_range]
+            filtered_range = format_range_text(o.extents),
+            value_text = [domain_range]
+        if(o.not){
+          //filtered_range = '~' + filtered_range
+          var pos_ranges = convert_neg_to_pos_ranges(o.range, o.extents)
+          pos_ranges.forEach(function(r){
+            value_text.push(format_range_text(r))
+          })
+        }else{
+          value_text.push(filtered_range)
+        }
 
       } else if (o.type == 'contains'){
         operation_data = create_contains_filter_data(o, infoLength)
-        label_text = ['Contains: ']
+
+        label_text = o.not? ['Does not Contain: ']: ['Contains: ']
         value_text = format_contains_text(o.char)
         
 
@@ -2392,7 +2406,7 @@ d3.csv(csv_file, function(error, data) {
                 return (d.x1-d.x0);
             })
             .attr("height", oWidth)
-            .attr("fill", function(d) {return d.hightlighted? "steelblue": "white";})
+            .attr("fill", function(d) {return d.highlighted? "steelblue": "white";})
             .attr("stroke", "black");
 
       var bar_update = bar_enter.merge(bar);
@@ -2549,7 +2563,7 @@ d3.csv(csv_file, function(error, data) {
                 return (d.x1-d.x0);
             })
             .attr("height", oWidth)
-            .attr("fill", function(d) {return d.hightlighted? "steelblue": "white";})
+            .attr("fill", function(d) {return d.highlighted? "steelblue": "white";})
             .attr("stroke", "black");
 
       
@@ -2621,6 +2635,39 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+    function create_range_filter(){
+
+      if (partitions){
+        console.log('partitions', partitions)
+        var value1 = partitions[2].value,
+            value2 = partitions[1].value,
+            not = partitions[1].colored? false: true;
+
+
+
+        selectedFilter.extents = [value1, value2];
+        selectedFilter.not = not;
+        selectedFilter.chart = selected_chart;
+        selectedFilter.div = selectedDiv;
+        selectedFilter.current_range = selected_chart.data()[0].current_range();
+        selectedFilter.range = selected_chart.data()[0].range();
+        selectedFilter.category = selected_chart.data()[0].category();
+        selectedFilter.type = 'range';
+
+        create_filter()
+
+      }
+    }
+
+    function create_not_range_filter(){
+
+      partitions.forEach(function(p){
+        p.colored = !p.colored
+      })
+
+      update_filter_view()
+    }
+
     // ------------ Filter Builder ------------------- //
 
     var pv_margin = {top: 20, right:20, bottom: 20, left: 20},
@@ -2642,30 +2689,31 @@ d3.csv(csv_file, function(error, data) {
      var fb_svg = d3.select("#build_filter_view")
                     .append("svg")
                     .attr("width", pv_width + pv_margin.left + pv_margin.right)
-                    .attr("height", pv_height + pv_margin.top + pv_margin.bottom)
+                    .attr("height", pv_height + pv_margin.top + pv_margin.bottom),
                     //.attr("transform", "translate(" + pv_margin.left + "," + pv_margin.top + ")");
                     
         filter_view = fb_svg.append("g")
-                      .attr("transform", "translate(" + pv_margin.left + "," + pv_margin.top + ")");
+                      .attr("transform", "translate(" + pv_margin.left + "," + pv_margin.top + ")"),
 
         filter_range = filter_view.append("g")
                       .attr("transform", "translate(" + 0 + "," + pv_height*0.35 + ")")
-                      .attr("class", "range_bar");
+                      .attr("class", "range_bar"),
+        ranges = filter_range.append('g')
+                      .attr("transform", "translate(" + 0 + "," + -rangeHeight + ")");
 
     var partitions = []
 
-    function update_filter_data(){
+    function update_filter_data(extents){
       partitions = []
       update_builder_range()
 
       if (builder_range){
-        var  filter_value1 = 18,
-            filter_value2 = 6
+        var extents = extents? extents: [builder_range.invert(pv_width/3), builder_range.invert(pv_width*2/3)],
             max_value = builder_range.domain()[1];
   
         partitions.push( {value: max_value , colored: false, x: builder_range(max_value), hide:true})
-        partitions.push( {value: filter_value1, colored: true, x:builder_range(filter_value1)})
-        partitions.push( {value: filter_value2, colored: false, x:builder_range(filter_value2)})
+        partitions.push( {value: extents[1], colored: true, x:builder_range(extents[1])})
+        partitions.push( {value: extents[0], colored: false, x:builder_range(extents[0])})
   
       
       }
@@ -2683,8 +2731,7 @@ d3.csv(csv_file, function(error, data) {
       
       data = partitions
 
-      var ranges = filter_range.append('g')
-                      .attr("transform", "translate(" + 0 + "," + -rangeHeight + ")");
+      
 
       var range = ranges.selectAll('.range')
                     .remove()
@@ -2953,6 +3000,8 @@ d3.csv(csv_file, function(error, data) {
 
       if (active_builder_view == 'partition_builder')
         update_partition_view();
+      else if (active_builder_view =='filter_builder')
+        update_filter_data();
 
     }
 
@@ -3405,6 +3454,7 @@ d3.csv(csv_file, function(error, data) {
         selectedFilter.category = category;
         selectedFilter.size = all.reduceCount().value();
 
+        update_filter_data(extents)
 
 
 
@@ -3712,7 +3762,7 @@ d3.csv(csv_file, function(error, data) {
                 return d.x1-d.x0;
             })
             .attr("height", oWidth)
-            .attr("fill", function(d) {return d.hightlighted? "steelblue": "white";})
+            .attr("fill", function(d) {return d.highlighted? "steelblue": "white";})
             .attr("stroke", "#ccc");
 
       var bar_update = bar_enter.merge(bar);
@@ -4547,6 +4597,22 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+    function convert_neg_to_pos_ranges(full_range, filtered_range){
+
+      var ranges = []
+
+      if (full_range[0] != filtered_range[0])
+        ranges.push([full_range[0], filtered_range[0]])
+
+      if (full_range[1] != filtered_range[1])
+        ranges.push([filtered_range[1], full_range[1]])
+
+      if (ranges.length == 0)
+        ranges.push(full_range)
+
+      return ranges
+    }
+
 
 
     function create_contains_filter_data(filter, max_length){
@@ -4611,7 +4677,7 @@ d3.csv(csv_file, function(error, data) {
       node_data.push({
         x0: scale(extents[0]),
         x1: scale(extents[1]),
-        hightlighted: !value
+        highlighted: !value
 
       })
 
@@ -4813,7 +4879,7 @@ d3.csv(csv_file, function(error, data) {
           node_data = create_range_filter_data(selectedFilter, oScale)
           for(var i=0; i <node_data.length;i++){
             var nd = node_data[i];
-            if (nd.hightlighted){
+            if (nd.highlighted){
               translate_x = nd.x0 + (nd.x1-nd.x0)/2 - oLength/2
             }
           }
