@@ -259,6 +259,11 @@
                          type="button" 
                         value="NOT" />
           </div>
+          <div class= "button" id="toggle_range_button">
+            <input name="toggleRangeButton" 
+                         type="button" 
+                        value="Toggle current/full range" />
+          </div>
           <div class= "button" id="applyFilter_button">
             <input name="applyFilterButton" 
                          type="button" 
@@ -596,6 +601,8 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#applyPartition_button")
       .on("click", create_partition);
 
+    d3.select("#toggle_range_button")
+      .on("click", toggle_builder_range);
     d3.select("#applyFilter_button")
       .on("click", create_range_filter);
     d3.select("#range_not_button")
@@ -1479,7 +1486,7 @@ d3.csv(csv_file, function(error, data) {
     
     var pb_margin = {top: 20, right:20, bottom: 20, left: 20},
         pb_svg = d3.select("#pb_graph").append("svg")
-                    .attr("width", 200)
+                    .attr("width", 300)
                     .attr("height", 250),
         pb_width = +pb_svg.attr("width")- pb_margin.right - pb_margin.left,
         pb_height = +pb_svg.attr("height")- pb_margin.top - pb_margin.bottom;
@@ -1637,6 +1644,7 @@ d3.csv(csv_file, function(error, data) {
       //var node_copy = JSON.parse(JSON.stringify(node))
       var node_copy = {}
       node_copy.action = node.action
+      node_copy.value = node.value
       node_copy.id = node.action 
       node_copy.fx = node.x;
       node_copy.fy = node.y;
@@ -2071,14 +2079,12 @@ d3.csv(csv_file, function(error, data) {
     
 
 
-    function show_builder(selected){
-      console.log('SHOWING BUILDER ')
-      var d = selected.data
-      if (d.value != 1){
+    function show_builder(o){
+      console.log('SHOWING BUILDER of ', selected)
+   
+      if (o.value != 1){
 
-        var o = d.operation;
-
-        if (d.value == 0){
+        if (o.value == 0){
           if (o.type == 'contains'){
             update_builder_view("pattern_builder");
             
@@ -2087,7 +2093,7 @@ d3.csv(csv_file, function(error, data) {
             draw_pattern_graph(pattern_data)
           }if (o.type == 'range'){
             update_builder_view("filter_builder");
-            update_filter_data(o.extents)
+            update_filter_data(o)
 
           }
         } else {
@@ -2101,7 +2107,7 @@ d3.csv(csv_file, function(error, data) {
 
     //----------- Filter View -------------- //
     var infoLength = 100,
-        seperation = 20,
+        seperation = 40,
         infoRange = [0,infoLength]
         infoScale = d3.scaleLinear().range(infoRange)
 
@@ -2185,8 +2191,16 @@ d3.csv(csv_file, function(error, data) {
       return result
     }
 
+    function format_text(value){
+      if (typeof value =='number'){
+        return d3.format(",.1f")(value);
+      }else
+        return dateFormat(value);
+    }
+
     function format_range_text(range){
-      return '[' + d3.format(",.1f")(range[0]) + ', ' + d3.format(",.1f")(range[1]) +']';
+
+      return '[' + format_text(range[0]) + ', ' + format_text(range[1]) +']';
     }
 
     function format_contains_text(char){
@@ -2213,10 +2227,12 @@ d3.csv(csv_file, function(error, data) {
       if (o.type == 'range'){
         infoScale = update_scale(o.range, infoRange)
         operation_data = create_range_filter_data(o, infoScale)
-        label_text =['Domain range: ', 'Filtered range: ']
+        label_text =['Chart: ', 'Domain range: ', 'Filtered range: ']
+        var value_text = [o.div]
         var domain_range = format_range_text(o.range),
-            filtered_range = format_range_text(o.extents),
-            value_text = [domain_range]
+            filtered_range = format_range_text(o.extents)
+        
+        value_text.push(domain_range)
         if(o.not){
           //filtered_range = '~' + filtered_range
           var pos_ranges = convert_neg_to_pos_ranges(o.range, o.extents)
@@ -2361,6 +2377,7 @@ d3.csv(csv_file, function(error, data) {
       var sep = sep |1;
 
 
+
       //Results View
 
       if (data.partition_data.length>0){
@@ -2493,7 +2510,7 @@ d3.csv(csv_file, function(error, data) {
       var operationEnter = operation.enter().append("g")
           .attr("class", "operation")
           .attr("transform", function(d, i) { return "translate(" + 0 + "," + (i*(oWidth + sep)) + ")"; })
-          .on("click", show_builder)
+          .on("click", select_operation_node)
 
       var operation_nodes = operationEnter.append('g')
                           .attr("class", function(d) {return d.type})
@@ -2733,20 +2750,24 @@ d3.csv(csv_file, function(error, data) {
 
     var partitions = []
 
-    function update_filter_data(extents){
+    function update_filter_data(o){
       partitions = []
-      update_builder_range()
+      var domain_range = o? o.current_range: null;
+      update_builder_range(domain_range)
 
       active_range = selected_chart.data()[0].active_range()
+
       
 
       if (builder_range){
-        var extents = extents? extents: active_range,
-            max_value = builder_range.domain()[1];
+        var extents = o? o.extents: active_range
+
+        create_filter_data(builder_range, extents)
+        //     max_value = builder_range.domain()[1];
   
-        partitions.push( {value: max_value , colored: false, x: builder_range(max_value), hide:true})
-        partitions.push( {value: extents[1], colored: true, x:builder_range(extents[1])})
-        partitions.push( {value: extents[0], colored: false, x:builder_range(extents[0])})
+        // partitions.push( {value: max_value , colored: false, x: builder_range(max_value), hide:true})
+        // partitions.push( {value: extents[1], colored: true, x:builder_range(extents[1])})
+        // partitions.push( {value: extents[0], colored: false, x:builder_range(extents[0])})
   
       
       }
@@ -2755,12 +2776,46 @@ d3.csv(csv_file, function(error, data) {
       
 
     } 
+
+    function create_filter_data(scale, extents){
+      partitions = []
+      var max_value = scale.domain()[1];
+  
+        partitions.push( {value: max_value , colored: false, x: scale(max_value), hide:true})
+        partitions.push( {value: extents[1], colored: true, x:scale(extents[1])})
+        partitions.push( {value: extents[0], colored: false, x:scale(extents[0])})
+    }
     
 
 
     function update_filter_view(){
+      ranges.selectAll('.end')
+                .remove()
+                .exit()
+
+
       
-      
+      if (!fullRange){
+        console.log('NOT FULL RANGE, ADDING ENDS')
+        var end_len = 10
+
+        ranges.append('rect')
+              .attr('class', 'end')
+              .attr('x', -end_len)
+              .attr('width', end_len)
+              .attr('height', rangeHeight)
+              .attr('stroke', 'darkgray')
+              .attr('fill', 'darkgray')
+
+        ranges.append('rect')
+              .attr('class', 'end')
+              .attr('x', builder_range.range()[1])
+              .attr('width', end_len)
+              .attr('height', rangeHeight)
+              .attr('stroke', 'darkgray')
+              .attr('fill', 'darkgray')
+
+      }
       
       data = partitions
 
@@ -2923,11 +2978,12 @@ d3.csv(csv_file, function(error, data) {
         .style("text-anchor", "middle")
         .text(function(d) { 
             var value = builder_range.invert(d.x);
-            if (typeof value =='number'){
-              //return Math.floor(value);
-              return d3.format(",.1f")(value);
-            }else
-              return dateFormat(value);
+            return format_text(value)
+            // if (typeof value =='number'){
+            //   //return Math.floor(value);
+            //   return d3.format(",.1f")(value);
+            // }else
+            //   return dateFormat(value);
 
           })
 
@@ -2954,10 +3010,12 @@ d3.csv(csv_file, function(error, data) {
         d3.select(this).select("text")
             .text(function(d) {
               d.value = builder_range.invert(d.x)
-              if (typeof d.value =='number')
-                return Math.floor(d.value);
-              else
-                return dateFormat(d.value);})
+              return format_text(d.value)
+              // if (typeof d.value =='number')
+              //   return Math.floor(d.value);
+              // else
+              //   return dateFormat(d.value);
+            })
             .attr("x", function(d)  {return d.x = x_loc;});
 
          
@@ -2971,12 +3029,36 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+
+    function select_operation_node(o){
+      update_selected_chart(o.chart)
+      show_builder(o)
+    }
+
+    var fullRange = true;
+    function toggle_builder_range(){
+
+      fullRange = !fullRange
+
+      if (fullRange)
+        range = selected_chart.data()[0].range()
+      else
+        range = selected_chart.data()[0].current_range()
+
+      update_builder_range(range)
+      create_filter_data(builder_range, [partitions[2].value, partitions[1].value] )
+      update_filter_view()
+      
+
+
+    }
+
     function update_builder_range(domain_range){
       if (selected_chart && selected_chart.data()[0]){
 
        //selected_chart.call(selected_chart.data()[0]);
-       //var current_range = selected_chart.data()[0].current_range();
-       var current_range = domain_range? domain_range : selected_chart.data()[0].range();
+       //var current_range = domain_range? domain_range : selected_chart.data()[0].range();
+       var current_range = domain_range? domain_range : selected_chart.data()[0].current_range();
 
 
 
@@ -3002,6 +3084,7 @@ d3.csv(csv_file, function(error, data) {
       
 
       var current_range = selected_chart.data()[0].current_range();
+
 
       update_builder_range(current_range)
       var thresholds = thresholds? thresholds: [builder_range.invert(b_width/3), builder_range.invert(b_width*2/3)]
@@ -3163,6 +3246,20 @@ d3.csv(csv_file, function(error, data) {
     return [min, max];
   }
 
+  function add_one(range){
+    var range_max = range[1]
+    if (typeof(range_max) == 'number'){
+      range_max = range_max +1;
+    }else{
+      newDate = new Date(range_max)
+      newDate.setDate(newDate.getDate() + 1); 
+
+      range_max = newDate
+    }
+
+    return [range[0], range_max]
+  }
+
 
   function barChart() {
       if (!barChart.id) barChart.id = 0;
@@ -3206,13 +3303,14 @@ d3.csv(csv_file, function(error, data) {
           // Create the skeletal chart.
           if (g.empty()) {
             
+            
             chart_data[div.attr('id')].id = id;
             y.domain([0, group.top(1)[0].value]);
 
             x_domain_max = get_x_limit(group.all(), y);
             x_max = group.all()[group.all().length-1].key;
             x_min = group.all()[0].key;
-            range = [x_min,x_max];
+            range = add_one([x_min,x_max]);
       
             if (x_domain_max){
               x.domain([x.domain()[0], x_domain_max]);
@@ -3366,7 +3464,7 @@ d3.csv(csv_file, function(error, data) {
           var leftover_count = reduce_leftover_count(x_domain_max, group.all());
           
 
-          current_range = get_current_range(group.all());
+          current_range = add_one(get_current_range(group.all()));
 
 
           if (new_selection){
@@ -3529,7 +3627,7 @@ d3.csv(csv_file, function(error, data) {
         if (!d3.brushSelection(this)) {
           reset(id);
           selectedFilter = {};
-          active_range= null;
+          active_range= current_range;
           update_filter_data()
         }
 
@@ -3646,7 +3744,7 @@ d3.csv(csv_file, function(error, data) {
 
 
   var margin = {top: 20, right:20, bottom: 20, left: 20},
-      width = 300 - margin.right - margin.left,
+      width = 400 - margin.right - margin.left,
       height = 750 - margin.top - margin.bottom;
 
   var RECT_W_max = 100,
@@ -3984,7 +4082,7 @@ d3.csv(csv_file, function(error, data) {
           r = size/2,
           pad = r/4,
           len = r - pad,
-          sym_len = r*0.9,
+          sym_len = r,
           sym_y = (r-sym_len + pad);
           //sym_y = -(r + pad);
 
@@ -3998,7 +4096,7 @@ d3.csv(csv_file, function(error, data) {
 
       if (o.div.includes('hour'))
         return clock + 
-        'M' + -(r + pad + sym_len/2) + ',' + sym_u +
+        'M' + -(r + pad + sym_len/2) + ',' + sym_y +
         'l' + 0 + ',' + sym_len +
         'm0' + 0 + ',' + -sym_len/2 +
         'l' + sym_len/2 + ',' + 0 +
@@ -4108,7 +4206,7 @@ d3.csv(csv_file, function(error, data) {
         console.log("Selected node: ", selected);
 
         show_node_view(selected);
-        show_builder(selected);
+        
         //concatenate_action_strings();
         find_all_patterns();
 
@@ -4184,7 +4282,9 @@ d3.csv(csv_file, function(error, data) {
           update_horizontal_chart_data();
           update_action_transition_graph();
 
-        } 
+        } else {
+          show_builder(selected.data.operation);
+        }
 
 
         update(selected);
@@ -4486,6 +4586,7 @@ d3.csv(csv_file, function(error, data) {
             operation = {
               'type': 'range',
               'action': 'partition',
+              'value': 2,
               'category': selected_chart.data()[0].category(),
               'thresholds': thresholds.slice(),
               'div': chart_id,
@@ -5013,6 +5114,7 @@ d3.csv(csv_file, function(error, data) {
 
        
         filter_copy.action = 'filter';
+        filter_copy.value = 0;
 
         name = 'NEW Filter!';
         filter_data = { 'name': name,
