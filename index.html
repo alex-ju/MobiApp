@@ -404,6 +404,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 
 <script src="js/crossfilter.js"></script>
+<script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script>
 <!-- <script src="dist/rangebar.js"></script> -->
 
     
@@ -2799,26 +2800,7 @@ d3.csv(csv_file, function(error, data) {
                 .remove()
                 .exit()
           
-      
-      // if (!fullRange){
-
-      //   ranges.append('rect')
-      //         .attr('class', 'end')
-      //         .attr('x', -end_len)
-      //         .attr('width', end_len)
-      //         .attr('height', rangeHeight)
-      //         .attr('stroke', 'darkgray')
-      //         .attr('fill', 'darkgray')
-
-      //   ranges.append('rect')
-      //         .attr('class', 'end')
-      //         .attr('x', builder_range.range()[1])
-      //         .attr('width', end_len)
-      //         .attr('height', rangeHeight)
-      //         .attr('stroke', 'darkgray')
-      //         .attr('fill', 'darkgray')
-      // }
-
+    
 
       var end = ranges.selectAll('.end')
                 .remove()
@@ -2830,7 +2812,6 @@ d3.csv(csv_file, function(error, data) {
               .attr('x', function(d){return d;})
               .attr('width', end_len)
               .attr('height', rangeHeight)
-              .attr('stroke', 'darkgray')
               .attr('fill', 'darkgray')
         
       data = partitions
@@ -3085,6 +3066,7 @@ d3.csv(csv_file, function(error, data) {
 
     function get_range_ends_data(){
       check_range()
+      rangeEnds = [];
       var full_range = selected_chart.data()[0].range()
       var current_range = selected_chart.data()[0].current_range()
       if (!fullRange){
@@ -3105,8 +3087,6 @@ d3.csv(csv_file, function(error, data) {
           }
         }
 
-      }else{
-        rangeEnds= []
       }
     }
 
@@ -3127,22 +3107,6 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    // function check_range(){
-    //   var full_range = selected_chart.data()[0].range()
-    //   var current_range = selected_chart.data()[0].current_range()
-
-    //   if (typeof(full_range[0]) == 'number'){
-    //     if (full_range[0]==current_range[0] && full_range[1]==current_range[1]){
-    //       fullRange = true;
-    //     }
-
-    //   }else{
-    //     if (full_range[0].getTime()==current_range[0].getTime() && full_range[1].getTime()==current_range[1].getTime()){
-    //       fullRange = true;
-    //     }
-    //   }
-
-    // }
 
     function update_builder_range(domain_range){
       if (selected_chart && selected_chart.data()[0]){
@@ -3157,6 +3121,7 @@ d3.csv(csv_file, function(error, data) {
         if (current_range){
 
           builder_range = update_scale(current_range, b_range)
+
           
 
           range_axis = d3.axisBottom(builder_range)
@@ -3237,6 +3202,7 @@ d3.csv(csv_file, function(error, data) {
     function update_selected_chart(div) {
 
       fullRange = initialRange;
+
      
       if (selected_chart)
         selected_chart.style("background-color", "white" );
@@ -4888,6 +4854,7 @@ d3.csv(csv_file, function(error, data) {
       else
         scale = d3.scaleTime()
 
+      scale.clamp(true)
       scale.range(range)
       scale.domain(domain_range);
 
