@@ -2717,7 +2717,7 @@ d3.csv(csv_file, function(error, data) {
 
     // ------------ Filter Builder ------------------- //
 
-    var b_margin = {top: 20, right:20, bottom: 20, left: 20},
+    var b_margin = {top: 20, right:25, bottom: 20, left: 25},
       b_width = 400 - b_margin.right - b_margin.left,
       b_height = 200 - b_margin.top - b_margin.bottom,
       b_range= [0, b_width],
@@ -2789,34 +2789,50 @@ d3.csv(csv_file, function(error, data) {
 
 
     function update_filter_view(){
-      ranges.selectAll('.end')
+      
+
+
+
+      get_range_ends_data()
+
+      var end = ranges.selectAll('.end')
                 .remove()
                 .exit()
-
-
+          
       
-      if (!fullRange){
-        console.log('NOT FULL RANGE, ADDING ENDS')
-        var end_len = 10
+      // if (!fullRange){
 
-        ranges.append('rect')
+      //   ranges.append('rect')
+      //         .attr('class', 'end')
+      //         .attr('x', -end_len)
+      //         .attr('width', end_len)
+      //         .attr('height', rangeHeight)
+      //         .attr('stroke', 'darkgray')
+      //         .attr('fill', 'darkgray')
+
+      //   ranges.append('rect')
+      //         .attr('class', 'end')
+      //         .attr('x', builder_range.range()[1])
+      //         .attr('width', end_len)
+      //         .attr('height', rangeHeight)
+      //         .attr('stroke', 'darkgray')
+      //         .attr('fill', 'darkgray')
+      // }
+
+
+      var end = ranges.selectAll('.end')
+                .remove()
+                .exit()
+                .data(rangeEnds)
+
+      end.enter().append('rect')
               .attr('class', 'end')
-              .attr('x', -end_len)
+              .attr('x', function(d){return d;})
               .attr('width', end_len)
               .attr('height', rangeHeight)
               .attr('stroke', 'darkgray')
               .attr('fill', 'darkgray')
-
-        ranges.append('rect')
-              .attr('class', 'end')
-              .attr('x', builder_range.range()[1])
-              .attr('width', end_len)
-              .attr('height', rangeHeight)
-              .attr('stroke', 'darkgray')
-              .attr('fill', 'darkgray')
-
-      }
-      
+        
       data = partitions
 
 
@@ -3034,24 +3050,99 @@ d3.csv(csv_file, function(error, data) {
       update_selected_chart(o.chart)
       show_builder(o)
     }
+    var initialRange = false;
+    var fullRange = true,
+        rangeEnds = [],
+        end_len = 15;
 
-    var fullRange = true;
+
     function toggle_builder_range(){
 
       fullRange = !fullRange
+      var full_range = selected_chart.data()[0].range()
+      var current_range = selected_chart.data()[0].current_range()
 
-      if (fullRange)
-        range = selected_chart.data()[0].range()
-      else
-        range = selected_chart.data()[0].current_range()
+      if (full_range[0]==current_range[0] && full_range[1]==current_range[1]){
+        fullRange = true;
+      }
+      
+      if (fullRange){
+        range = full_range
+      }
+      else{
+        range = current_range
+
+      }
 
       update_builder_range(range)
+      get_range_ends_data()
       create_filter_data(builder_range, [partitions[2].value, partitions[1].value] )
       update_filter_view()
       
 
 
     }
+
+    function get_range_ends_data(){
+      check_range()
+      var full_range = selected_chart.data()[0].range()
+      var current_range = selected_chart.data()[0].current_range()
+      if (!fullRange){
+        if (typeof(full_range[0]) == 'number'){
+          if (full_range[0]!=current_range[0]){
+            rangeEnds.push(-end_len)
+          }
+          if(full_range[1]!=current_range[1]){
+            rangeEnds.push(builder_range.range()[1])
+          }
+
+        }else{
+          if (full_range[0].getTime()!=current_range[0].getTime()){
+            rangeEnds.push(-end_len)
+          }
+          if (full_range[1].getTime()!=current_range[1].getTime()){
+            rangeEnds.push(builder_range.range()[1])
+          }
+        }
+
+      }else{
+        rangeEnds= []
+      }
+    }
+
+   function check_range(){
+      var full_range = selected_chart.data()[0].range()
+      var current_range = selected_chart.data()[0].current_range()
+
+      if (typeof(full_range[0]) == 'number'){
+        if (full_range[0]==current_range[0] && full_range[1]==current_range[1]){
+          fullRange = true;
+        }
+
+      }else{
+        if (full_range[0].getTime()==current_range[0].getTime() && full_range[1].getTime()==current_range[1].getTime()){
+          fullRange = true;
+        }
+      }
+
+    }
+
+    // function check_range(){
+    //   var full_range = selected_chart.data()[0].range()
+    //   var current_range = selected_chart.data()[0].current_range()
+
+    //   if (typeof(full_range[0]) == 'number'){
+    //     if (full_range[0]==current_range[0] && full_range[1]==current_range[1]){
+    //       fullRange = true;
+    //     }
+
+    //   }else{
+    //     if (full_range[0].getTime()==current_range[0].getTime() && full_range[1].getTime()==current_range[1].getTime()){
+    //       fullRange = true;
+    //     }
+    //   }
+
+    // }
 
     function update_builder_range(domain_range){
       if (selected_chart && selected_chart.data()[0]){
@@ -3144,6 +3235,8 @@ d3.csv(csv_file, function(error, data) {
     //----------- end of partition view ----------//
 
     function update_selected_chart(div) {
+
+      fullRange = initialRange;
      
       if (selected_chart)
         selected_chart.style("background-color", "white" );
