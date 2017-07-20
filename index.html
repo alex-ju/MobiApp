@@ -405,7 +405,7 @@
 
 <script src="js/crossfilter.js"></script>
 <script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script>
-<!-- <script src="dist/rangebar.js"></script> -->
+
 
     
 <script>
@@ -733,10 +733,16 @@ d3.csv(csv_file, function(error, data) {
     var nl_simulation = d3.forceSimulation(nl_graph_data.nodes)
         // .force("link", d3.forceLink(nl_graph_data.links).distance(200))
         .force("link", d3.forceLink().id(function(d) {return d.id;}).distance(100))
-        .force("charge", d3.forceManyBody())
+        .force("charge", d3.forceManyBody().strength(-150).distanceMin(10).distanceMax(100))
         .force("center", d3.forceCenter(nl_width / 2, nl_height/2))
+        .force("collide", d3.forceCollide().radius(function(d){return node_radius}))
         //.alphaTarget(1)
         //.on("tick", ticked);
+
+    // var nl_simulation = cola.d3adaptor(d3)
+    //                     .size([nl_width, nl_height])
+    //                     .linkDistance(200)
+    //                     .avoidOverlaps(true)
 
 
 
@@ -769,6 +775,8 @@ d3.csv(csv_file, function(error, data) {
         
 
     function draw_node_link(node_link_data){
+
+
 
       var node_radius = 8;
 
@@ -823,7 +831,9 @@ d3.csv(csv_file, function(error, data) {
 
       //var strokeScale = d3.scaleLinear().domain([0,100]).range([1,5]);
 
-      nl_link = nl_link.data(node_link_data.links);
+      //nl_link = nl_link.data(node_link_data.links);
+      nl_link = nl_link.data(node_link_data.links, function(d){return d.id;});
+
       nl_link.exit().remove();
 
 
@@ -839,19 +849,60 @@ d3.csv(csv_file, function(error, data) {
       nl_link = link_enter.merge(nl_link);
 
       
+
+  //    node_link_data.links.forEach(function(l,i){
+  //     node_link_data.nodes.forEach(function(n){
+  //       l.id = i;
+  //       if (n.id == l.source) l.source = n;
+  //       if (n.id == l.target) l.target = n;
+
+  //     })
+
+  //   })
+
+
+  //    nl_simulation = cola.d3adaptor(d3)
+  //                     .size([nl_width, nl_height])
+  //                     .linkDistance(200)
+  //                     .avoidOverlaps(true)
+  //                     .nodes(node_link_data.nodes)
+  //                     .links(node_link_data.links)
+  //                     .on("tick", function() {
+  //   /* update nodes and links
+  //   */
+  //   nl_node.attr('transform', function(d) {
+  //     return "translate(" + d.x + "," + d.y + ")";
+  //   });
+  //   return nl_link.attr('x1', function(d) {
+  //     return d.source.x;
+  //   }).attr('y1', function(d) {
+  //     return d.source.y;
+  //   }).attr('x2', function(d) {
+  //     return d.target.x;
+  //   }).attr('y2', function(d) {
+  //     return d.target.y;
+  //   });
+  // });
+
+  //     nl_simulation.start(30,30,30)
+
       
 
+
+      //node_enter.call(nl_simulation.drag)
+      //nl_simulation.start(30, 30, 30)
 
       nl_simulation
           .nodes(node_link_data.nodes)
           .on("tick", ticked);
-
-
       nl_simulation.force("link")
           .links(node_link_data.links)
-
+      
       nl_simulation.alpha(1).restart();
-      //simulation.restart()
+
+
+
+     
 
       function ticked() {
         //link_enter
@@ -2813,6 +2864,7 @@ d3.csv(csv_file, function(error, data) {
               .attr('width', end_len)
               .attr('height', rangeHeight)
               .attr('fill', 'darkgray')
+              .on('click', toggle_builder_range)
         
       data = partitions
 
