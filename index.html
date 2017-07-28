@@ -198,11 +198,7 @@
       
 
       
-      <div class= "button" id="demo2_button">
-        <input name="demo2Button" 
-                     type="button" 
-                    value="Print Sequences" />
-      </div>
+      
       <div class= "button" id="demo_button">
         <input name="demoButton" 
                      type="button" 
@@ -403,9 +399,15 @@
           
 
 
-        </div>
+      </div>
 
-        
+      <div class="charts" id="sequences">
+        <div class= "button" id="demo2_button">
+          <input name="demo2Button" 
+                       type="button" 
+                      value="Print Sequences" />
+        </div>
+      </div>          
 
 
 
@@ -732,6 +734,7 @@ d3.csv(csv_file, function(error, data) {
         nl_node = nl_graph.append("g").selectAll(".node");
 
 
+    var strokeScale = d3.scaleLinear().domain([0,100]).range([1,5]).clamp(true);
 
 
     var color = d3.scaleOrdinal(d3.schemeCategory20),
@@ -774,9 +777,11 @@ d3.csv(csv_file, function(error, data) {
         return node})
       var edges = node_link_data.links.map(function(e){
 
-        if (e.percent >1)
-          e.value = d3.format('.0%')(e.percent/100); 
-        return {data:{source: e.source.id, target:e.target.id}}})
+        
+
+        //e.value = (e.percent >1)? d3.format('.0%')(e.percent/100): 1;
+        value = (e.percent >1)? e.percent: 1; 
+        return {data:{source: e.source.id, target:e.target.id, value: value}}})
 
       
       console.log('nodes', nodes)
@@ -865,10 +870,23 @@ d3.csv(csv_file, function(error, data) {
           d.css('width', 9)
           d.css('height', 9)
         }
+
+
+      })
+
+      cy.edges().forEach(function(e){
+        var data = e.data()
+
+        console.log(data.value)
+        console.log(strokeScale(data.value))
+
+        e.css('width', strokeScale(data.value))
       })
 
 
       cy.on('tap', 'node', function(e){
+
+
 
         var node = e.target;
         var neighborhood = node.neighborhood().add(node);
@@ -896,11 +914,11 @@ d3.csv(csv_file, function(error, data) {
         
         cy.nodes().forEach(function(d){
           var data = d.data();
-          console.log('node data', data)
-          console.log('position', d.position())
-          console.log('rendered', d.renderedPosition())
+          // console.log('node data', data)
+          // console.log('position', d.position())
+          // console.log('rendered', d.renderedPosition())
 
-          
+
 
         
         })
