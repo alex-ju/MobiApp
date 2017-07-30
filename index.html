@@ -401,11 +401,36 @@
 
       </div>
 
-      <div class="charts" id="sequences">
-        <div class= "button" id="demo2_button">
-          <input name="demo2Button" 
-                       type="button" 
-                      value="Print Sequences" />
+      <div class="charts" id="detailed_view">
+        <div class=button_box_h>
+          <div class= "button" id="print_sequences">
+            <input name="printSeqsButton" 
+                         type="button" 
+                        value="Print Sequences" />
+          </div>
+          <div class= "button" id="close_detailed_view">
+            <input name="closeViewButton" 
+                         type="button" 
+                        value="Close View" />
+          </div>
+        </div>
+        <div id="sequences" style=" display:none">
+           <div class=button_box_h>
+              <div class= "button" id="group_sequences">
+                <input name="groupSeqsButton" 
+                        id="group_button"
+                             type="button" 
+                            value="Group Sequences" />
+              </div>
+              <div class= "button" id="transitionize_sequences">
+                <input name="transitionizeSeqsButton" 
+                            id= "transitionize_button"
+                             type="button"
+                            value="Transitionize Sequences" />
+              </div>
+            </div>
+            <div id="sequences_text" style=" height: 200px; width: 500px;
+                margin-left: 20px; margin-top: 20px;overflow: scroll;"></div>
         </div>
       </div>          
 
@@ -551,6 +576,7 @@ d3.csv(csv_file, function(error, data) {
       alphabet_rev[exit_c] = 'exit';
 
       console.log('Alphabet: ', alphabet);
+      console.log(data[0])
 
 
       var seqs = crossfilter(data),
@@ -579,7 +605,12 @@ d3.csv(csv_file, function(error, data) {
           durations = duration.group(Math.floor);
 
           action_strings = seqs.dimension(function(d) {return d.general_actions});
+          action_strings2 = seqs.dimension(function(d) {return d.general_actions});
+          strings_grouped = action_strings2.group()
 
+
+          trans_strings = seqs.dimension(function(d) {return remove_duplicates(d.general_actions)});
+          trans_grouped = trans_strings.group()
 
     //console.log(lens.top(Number.POSITIVE_INFINITY).length);
 
@@ -649,8 +680,14 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#clear_pb_button")
       .on("click", clear_contains_builder)
 
-    d3.select("#demo2_button")
+    d3.select("#print_sequences")
       .on("click", print_sequences);
+    d3.select("#group_sequences")
+      .on("click", group_sequences);
+    d3.select("#transitionize_sequences")
+      .on("click", transitionize_sequences);
+    d3.select("#close_detailed_view")
+      .on("click", close_detailed_view);
     d3.select("#demo_button")
       .on("click", show_not_filter);
 
@@ -734,7 +771,7 @@ d3.csv(csv_file, function(error, data) {
         nl_node = nl_graph.append("g").selectAll(".node");
 
 
-    var strokeScale = d3.scaleLinear().domain([0,100]).range([1,5]).clamp(true);
+    var strokeScale = d3.scaleLinear().domain([0,100]).range([1,6]).clamp(true);
 
 
     var color = d3.scaleOrdinal(d3.schemeCategory20),
@@ -772,17 +809,31 @@ d3.csv(csv_file, function(error, data) {
         var node ={data:n}
         if (n.fx){
           n.size = 9;
+          n.end = true;
           node.position ={x:n.fx, y:n.fy}
+        }else{
+         // n.parent ='all_actions'
         }
         return node})
+
+      //f(nodes.length>0) nodes.push({data:{id:'all_actions', color: 'white'}})
       var edges = node_link_data.links.map(function(e){
 
         
 
         //e.value = (e.percent >1)? d3.format('.0%')(e.percent/100): 1;
         value = (e.percent >1)? e.percent: 1; 
-        return {data:{source: e.source.id, target:e.target.id, value: value}}})
+        return {data:{source: e.source.id, target:e.target.id, value: value}}
 
+        })
+
+      if (edges.length>0){
+        nodes.forEach(function(n){
+
+          edges.push({data:{source: 'start', target:n.data.id, value: 0, invisible:true}})
+          edges.push({data:{source: n.data.id, target:'exit', value: 0, invisible:true}})
+        })
+      }
       
       console.log('nodes', nodes)
       console.log('edges', edges)
@@ -827,10 +878,19 @@ d3.csv(csv_file, function(error, data) {
               'border-style': 'solid',
               'border-color': 'black'
             })
+          .selector('.invisible')
+            .css({
+              'opacity': 0
+            })
           .selector('.faded')
             .css({
               'opacity': 0.25,
-              'text-opacity': 0
+              'text-opacity': 0.25
+            })
+          .selector('#all_actions')
+            .css({
+              'background-color': 'white',
+              'line-color': 'white'
             }),
 
         elements: {
@@ -843,25 +903,11 @@ d3.csv(csv_file, function(error, data) {
           }
       });
 
-      cy.nodes('#start').lock();
-      cy.nodes('#exit').lock();
+      cy.nodes("#all_actions").css({'background-color': 'white',
+              'line-color': 'white'})
 
-
-      var box = {x1:0, x2:0, w:390, h:240}
-      var layout  =cy.layout({
-              name: 'cola'
-              
-
-            })
-
-
-
-      layout.run()
-
-      layout.on('layoutready', function(){
-        console.log('STOP')
-        resize()
-      })
+      // cy.nodes('#start').lock();
+      // cy.nodes('#exit').lock();
 
       cy.nodes().forEach(function(d){
         var data = d.data();
@@ -871,16 +917,54 @@ d3.csv(csv_file, function(error, data) {
           d.css('height', 9)
         }
 
+        if (!data.end){
+          d.addClass('actions')
+        }else{
+          d.addClass('end')
+        }
+
 
       })
+
+      cy.nodes('.actions').forEach(function(a){
+        console.log(a.data())
+      })
+
+
+      var box = {x1:0, x2:0, w:390, h:240}
+      var layout  =cy.layout({
+              name: 'cola',
+              flow: {"axis":"y", "left":"start", "right":"exit", "gap":225, "equality":"true"},
+              unconstrIter: 10,
+              userConstIter: 20,
+              edgeLength:175, 
+              fit: true
+                 
+              
+
+            })
+
+
+
+      layout.run()
+
+      layout.on('layoutstop', function(){
+        resize()
+      })
+
+      
 
       cy.edges().forEach(function(e){
         var data = e.data()
 
-        console.log(data.value)
-        console.log(strokeScale(data.value))
 
         e.css('width', strokeScale(data.value))
+
+        if (data.invisible){
+          e.addClass('invisible')
+        }else{
+          e.addClass('visible')
+        }
       })
 
 
@@ -894,7 +978,8 @@ d3.csv(csv_file, function(error, data) {
         select_action_node(node.data())
 
         cy.elements().removeClass('selected')
-        cy.elements().addClass('faded');
+        cy.nodes().addClass('faded');
+        cy.edges('.visible').addClass('faded')
         neighborhood.removeClass('faded');
         node.addClass('selected')
       });
@@ -905,23 +990,38 @@ d3.csv(csv_file, function(error, data) {
         }
       });
 
+
       function resize(){
-        cy.resize()
-        cy.fit()
-        //cy.zoomingEnabled(false);
+        
+        
         cy.nodes('#start').renderedPosition({x:180, y:20});
       cy.nodes('#exit').renderedPosition({x:180, y:230});
+
         
-        cy.nodes().forEach(function(d){
+      
+
+        cy.nodes('.actions').forEach(function(d){
           var data = d.data();
-          // console.log('node data', data)
-          // console.log('position', d.position())
-          // console.log('rendered', d.renderedPosition())
+
+          var pos = d.renderedPosition()
+          if (pos.x<0){
+            d.renderedPosition({x:0, y:pos.y})
+          }
+          if (pos.y<50){
+            d.renderedPosition({x:pos.x, y:50})
+          }
+          if (pos.y>205){
+            d.renderedPosition({x:pos.x, y:205})
+          }
 
 
 
         
         })
+
+        cy.resize()
+        // cy.fit()
+        cy.zoomingEnabled(false);
       }
       
       
@@ -992,7 +1092,7 @@ d3.csv(csv_file, function(error, data) {
     //   node_enter.append('circle')
     //       .attr("r", function(d){
     //         if(d.action == 'start' || d.action == 'exit')
-    //           return 3
+    //           return end_radius
     //         else
     //           return node_radius
     //       })
@@ -1249,7 +1349,7 @@ d3.csv(csv_file, function(error, data) {
 
        action_string = all.reduce(reduceAdd_concat, reduceRemove_concat, reduceInitial_concat).value().str;    
       //create nodes
-      nodes.push({id:"start", action:"start", group:1, fx: nl_width/2, fy: 20});
+      nodes.push({id:"start", action:"start", group:1, fx: nl_width/2, fy: 0});
       nodes.push({id:"exit", action: "exit", group:0, fx: nl_width/2, fy: nl_height});
 
       for ( var i =0; i < current_level.length; i++){
@@ -1511,7 +1611,7 @@ d3.csv(csv_file, function(error, data) {
           .attr("r", function(d){
             d = selected_action_node;
             if(d.action == 'start' || d.action == 'exit')
-              return 3
+              return end_radius
             else
               return node_radius
           })
@@ -1551,7 +1651,7 @@ d3.csv(csv_file, function(error, data) {
             //.attr("r",node_radius)
             .attr("r", function(d){
               if(d.action == 'start' || d.action == 'exit')
-                return 3
+                return end_radius
               else
                 return node_radius
             })
@@ -1624,7 +1724,8 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    var node_radius = 8;
+    var node_radius = 8,
+        end_radius = 4;
 
     // ====================== Action List ============== //
 
@@ -1632,6 +1733,7 @@ d3.csv(csv_file, function(error, data) {
 
     var al_svg = d3.select("#action_list").append('svg')
                   .attr('width', 100)
+                  .attr('height', 175)
 
 
 
@@ -1643,6 +1745,8 @@ d3.csv(csv_file, function(error, data) {
 
     function update_action_list_data(){
       var data = current_level.map(function (action) { return { action: action, id: action}; });
+      data.push({action:'start', id:'start'})
+      data.push({action:'exit', id:'exit'})
       al_data = data;
     }
 
@@ -1662,7 +1766,12 @@ d3.csv(csv_file, function(error, data) {
                           .on("click", select_action_node)
 
       action_enter.append('circle')
-            .attr('r', node_radius)
+            .attr("r", function(d){
+              if(d.action == 'start' || d.action == 'exit')
+                return end_radius
+              else
+                return node_radius
+            })
             .attr('fill', function(d){return colors[d.action];})
 
       action_enter.append('text')
@@ -1878,7 +1987,7 @@ d3.csv(csv_file, function(error, data) {
           chars= [],
           pattern =[],
           filters = [],
-          parent = selected,
+          parent = selected_segment,
           nodes_copy = [],
           links_copy = []
           
@@ -2041,7 +2150,7 @@ d3.csv(csv_file, function(error, data) {
           .attr("class", 'pattern_node')
           .attr("r", function(d){
             if(d.action == 'start' || d.action == 'exit')
-              return 3
+              return end_radius
             else
               return node_radius
           })
@@ -2201,14 +2310,54 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+    function close_detailed_view(){
+      $("#sequences").hide()
+    }
+
+    var transitionized = false,
+        grouped_seqs = false;
+
+    function transitionize_sequences(){
+      toggle_button_color('#transitionize_button')
+      transitionized = !transitionized
+      print_sequences()
+    }
+
+    function group_sequences(){
+      toggle_button_color('#group_button')
+      grouped_seqs = !grouped_seqs
+      print_sequences()
+
+    }
 
     function print_sequences(){
-      var dimData = action_strings.top(Infinity)
-      dimData.forEach(function(x){
-        var seq = x.general_actions;
-        console.log('[ full sequence:', seq)
-        console.log(' transitionized:' + remove_duplicates(seq) + ']')
-      })
+
+      if (grouped_seqs){
+        var grouped = transitionized? trans_grouped.top(Infinity): strings_grouped.top(Infinity)
+        //var grouped = trans_grouped.top(Infinity),
+            text ="  #  | sequence" + " <br/>" + "___________"+ " <br/>";
+
+        console.log(grouped)
+
+        grouped.forEach(function(g){
+          if(g.value != 0){
+            text += ' ' + g.value + "  |  " + g.key + " <br/>"
+          }
+        })
+      }else{
+        var dimData = action_strings.top(Infinity)
+        var text = "";
+        dimData.forEach(function(x){
+          var seq = transitionized? remove_duplicates(x.general_actions): x.general_actions;
+
+          text += seq + " <br/>";
+        })
+      }
+
+      $("#sequences").show()
+      $("#sequences_text").width(300).height(200)
+      $("#sequences_text").html(text)
+      $("#sequences_text").css("font-size", "12px");
     }
     //=========================== Builder Views ====================================//
     var active_builder_view = null,
@@ -4061,6 +4210,7 @@ d3.csv(csv_file, function(error, data) {
 
 
   var selected,
+      selected_segment,
       selected_chart,
       //current_range,
       selected_action_node;
@@ -4132,8 +4282,18 @@ d3.csv(csv_file, function(error, data) {
 
           
       nodeEnter.append('g')
-              .attr("class", function(d) {return d.value==1 || d.value==-1? "segment": "operation"})
+              .attr("class", function(d) {
+                if (d.value ==1) return "segment";
+                else if (d.value==-1) return "root";
+                else return "operation"; 
+                //return d.value==1 || d.value==-1? "segment": "operation"
+              })
       //nodeEnter.each(create_nodes)
+      var root_node = nodeEnter.selectAll(".root")
+
+      root_node.append("path")
+               .each(format_nodes)
+
       var segment_nodes = nodeEnter.selectAll(".segment")
 
 
@@ -4455,31 +4615,9 @@ d3.csv(csv_file, function(error, data) {
 
     }
     var dim;
-    function select_node(d){
-       if(!selected){
-           selected = d;
-           d.selected = true;
-        } 
-        else {
-           selected.selected = false;
-           update(selected);
-           selected = d;
-           d.selected = true;
-           
-        }
-        console.log("Selected node: ", selected);
+    function apply_filters(selected){
 
-        show_node_view(selected);
-        
-        //concatenate_action_strings();
-        find_all_patterns();
-
-        if (selected.data.value == 1) {
-          update_info_view("info_view");
-          new_selection = true;
-        
-
-          var selected_filters = selected.data.filters;
+      var selected_filters = selected.data.filters;
           if (dim) {
               dim.filterAll();
               reset_filters();
@@ -4487,9 +4625,9 @@ d3.csv(csv_file, function(error, data) {
             }
           if(selected_filters) {
 
-          console.log('SELECTED FILTERS', selected_filters);
+            console.log('SELECTED FILTERS', selected_filters);
 
-          selected_filters.forEach(function(f){
+            selected_filters.forEach(function(f){
               type = f.type;
 
               if (type == 'range') {
@@ -4541,6 +4679,38 @@ d3.csv(csv_file, function(error, data) {
             })
             
           }
+
+
+    }
+    
+    function select_node(d){
+       if(!selected){
+           selected = d;
+           d.selected = true;
+        } 
+        else {
+           selected.selected = false;
+           update(selected);
+           selected = d;
+           d.selected = true;
+           
+        }
+
+
+        console.log("Selected node: ", selected);
+
+        show_node_view(selected);
+        
+        //concatenate_action_strings();
+        find_all_patterns();
+
+        if (selected.data.value == 1) {
+          selected_segment = d
+          update_info_view("info_view");
+          new_selection = true;
+        
+          apply_filters(selected)
+
           new_selection = false;
           console.log('The current selection has ' + selected.data.size + ' sequences!' );
           update_horizontal_chart_data();
@@ -4707,7 +4877,13 @@ d3.csv(csv_file, function(error, data) {
 
 
     // }
+    function select_horizontal_action(d){
+      select_action_node(d);
+      clear_contains_builder();
+      add_action_node()
 
+
+    }
 
     function update_horizontal_chart(data){
            
@@ -4722,11 +4898,12 @@ d3.csv(csv_file, function(error, data) {
       var row_enter = row.enter().append("g")
               .attr("transform", function (d) { return "translate(0," + y_hc(d.action) + ")"; })
 
+
       var node = row_enter.append('circle')
               .attr("transform", function (d) { return "translate("+ (-30) +"," + y_hc.bandwidth()/2 + ")"; })
               .attr("r", node_radius)
               .attr("fill", function(d){ return colors[d.action]})
-              .on('click', select_action_node)
+              .on('click', select_horizontal_action)
 
 
               
@@ -4768,8 +4945,9 @@ d3.csv(csv_file, function(error, data) {
         .on("click", function(d) {
           //update_selected_bar(d3.select(this).select('.outer_box'));
           //update_selected_bar(d)
-          select_action_node(d)
-
+          
+          //select_action_node(d)
+          select_horizontal_action(d)
           selectedFilter.div = 'action_strings';
           selectedFilter.chart = d3.select("#contains_action_chart");
           selectedFilter.char = d.char;
@@ -5333,7 +5511,7 @@ d3.csv(csv_file, function(error, data) {
 
     function create_filter(parent_segment) {
 
-      var d = parent_segment || selected;
+      var d = parent_segment || selected_segment;
 
       if (d && selectedFilter.type && d.data.value==1) {
         // var d_filters = d.data.filters,
@@ -5430,7 +5608,7 @@ d3.csv(csv_file, function(error, data) {
         return filter_node;
         
       } else {
-        if (!selected)
+        if (!selected_segment)
           alert('Segment was not selected!');
         else if (d.value != 1)
           alert('Can only filter segments!')
@@ -5542,9 +5720,16 @@ d3.csv(csv_file, function(error, data) {
         pressed_color = "lightgray",
         current_color = original_color;
 
+    // function toggle_button_color(button_id){
+    //   current_color = current_color == original_color? pressed_color : original_color;
+    //   d3.select(button_id).style("background-color", current_color);
+    // }
     function toggle_button_color(button_id){
-      current_color = current_color == original_color? pressed_color : original_color;
-      d3.select(button_id).style("background-color", current_color);
+      var button = d3.select(button_id)
+      current_color = button.node().style.backgroundColor 
+      if (current_color == "") current_color = original_color
+      var color = current_color == original_color? pressed_color : original_color;
+      d3.select(button_id).style("background-color", color);
     }
 
     function show_path_only() {
