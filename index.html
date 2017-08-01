@@ -175,6 +175,11 @@
       top: 1em;
     }
 
+    #tree_info_view{
+      max-width: 425px;
+      min-width: 425px;
+    }
+
     </style>
 
   </head>
@@ -183,170 +188,204 @@
 
 
 <div class= "wrapper" id="wrapper">
-  <div class= "button_box" id="buttons">
-      
-      <div class= "button" id="segment_button">
-        <input name="segmentButton" 
-                     type="button" 
-                    value="Toggle segments!" />
-      </div>
-      <div class= "button" id="path_button">
-        <input name="pathButton" 
-                     type="button" 
-                    value="Show only path" />
-      </div>
-      
+  <div class=charts id=left_panel>
+    <div class= "button_box_h" id="buttons">
+          
+          <div class= "button" id="tree_info_button">
+            <input name="pathButton" 
+                  id="show_tree_info_button"
+                         type="button" 
+                        value="Show/Hide Tree Info" />
+          </div>
+    </div>
+    <div class="charts" style="display:none;" id=tree_info_view>
+      <div class= "button_box_h" id="buttons">
+          
+          <div class= "button" id="path_button">
+            <input name="pathButton" 
+                         type="button" 
+                        value="Show only path" />
+          </div>
+          <div class= "button" id="remove_button">
+            <input name="removeButton" 
+                         type="button" 
+                        value="Remove Filter!" />
+          </div>
+          
 
-      
-      
-      <div class= "button" id="demo_button">
-        <input name="demoButton" 
-                     type="button" 
-                    value="DEMO" />
+          
+          
+          <div class= "button" id="demo_button">
+            <input name="demoButton" 
+                         type="button" 
+                        value="DEMO" />
+          </div>
       </div>
+
+      <div class="charts" id="info_box">
+
+
+        <div class="info" style="display:none;" id="info_view">
+          <div class="title"> Node View </div>
+        </div>
+
+
+      </div>
+      <div id="builder_box" style="width:500">
+        <div class="title"> Operation Builder </div>
+        <div class= 'button_box_h' id="builder buttons">
+          
+          <div class= "button" id="range_button">
+            <input name="groupButton" 
+                         type="button" 
+                        value="Build Range Operation" />
+          </div>
+          <div class= "button" id="contains_button">
+            <input name="groupButton" 
+                         type="button" 
+                        value="Build Contains Operation" />
+          </div>
+          
+
+        </div>
+        <div  class="builder" style="display:none;" id ="range_builder" >
+          <div class="title"> Create Range Operation </div>
+          <div class= 'button_box_h' id="builder buttons">
+            <div class= "button" id="build_filter">
+              <input name="buildFilterButton" 
+                      id="build_filter_button"
+                           type="button" 
+                          value="Range Filter" />
+            </div>
+            <div class= "button" id="partition_button">
+              <input name="groupButton" 
+                      id="partition_button"
+                           type="button" 
+                          value="Range Partition" />
+            </div>
+           
+          </div>
+          <div class="range_builder" style="display:none;" id="partition_builder">
+            <div class="title"> Create Partition View </div> 
+            <div  class="builder_svg" id="create_partition_view"></div>
+            <div class="button_box">
+              <div class= "button" id="addPartition_button">
+                  <input name="addPartitionButton" 
+                               type="button" 
+                              value="Add Partition" />
+              </div>
+              <div class= "button"  id="removePartition_button">
+                <input name="removePartitionButton" 
+                             type="button" 
+                            value="Remove Partition" />
+              </div>
+              <div class= "button" id="applyPartition_button">
+                <input name="applyPartitionButton" 
+                             type="button" 
+                            value="Apply Partition" />
+              </div>
+              
+              <div class= "button" id="input_partition_value">
+                  <input type="text" id="partition_value">
+              </div>
+            </div>
+          </div>
+          <div class="range_builder" style="display:none;" id="filter_builder">
+            <div class="title"> Create Filter View </div> 
+            <div  class="builder_svg" id="build_filter_view"></div>
+            <div class="button_box">
+             
+              
+              <div class= "button" id="input_filter_value">
+                  <input type="text" id="partition_value">
+              </div>
+              <div class= "button" id="range_not_button">
+                <input name="rangeNotButton" 
+                             type="button" 
+                            value="NOT" />
+              </div>
+              <div class= "button" id="toggle_range_button">
+                <input name="toggleRangeButton" 
+                             type="button" 
+                            value="Toggle current/full range" />
+              </div>
+              <div class= "button" id="applyFilter_button">
+                <input name="applyFilterButton" 
+                             type="button" 
+                            value="Apply Range Filter" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div  class="builder" style="display:none;" id="pattern_builder">
+          <div class="title"> Create Contains Operation </div>
+          <div  class="builder_svg" id="pb_graph"></div>
+          <div class="builder_svg" id ="action_list"> </div>
+          <div class="button_box" id="pb_buttons">
+            <div class= "button" id="add_node_button">
+              <input name="addNodeButton" 
+                           type="button" 
+                          value="Add Action Node" 
+                           />
+            </div>
+            <div class= "button" id="remove_node_button">
+              <input name="removeNodeButton" 
+                           type="button" 
+                          value="Remove Node" />
+            </div>
+            <div class= "button" id="add_cons_link">
+              <input name="addConsLinkButton" 
+                      id="add_cons_link_button"
+                           type="button" 
+                          value="Add Consecutive Links" />
+            </div>
+            <div class= "button" id="create_funnel">
+              <input name="addLinkButton" 
+                      id="create_funnel_button"
+                           type="button" 
+                          value="Add Non-Consecutive Links" />
+            </div>
+            <div class= "button" id="toggle_many_button">
+              <input name="manyButton" 
+                           type="button" 
+                          value="Toggle one or many" />
+            </div>
+            <div class= "button" id="contains_not_button">
+              <input name="containsNotButton" 
+                           type="button" 
+                          value="NOT" />
+            </div>
+            <div class= "button" id="clear_pb_button">
+              <input name="clearButton" 
+                           type="button" 
+                          value="Clear All" />
+            </div>
+            <div class= "button" id="apply_funnel_button">
+              <input name="funnelButton" 
+                           type="button" 
+                          value="Apply Contains Filter" />
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
   </div>
+
+
   <div class= 'button_box'>
 
     <div class= "graph" id= "tree"></div>
-    <div class= 'button_box_h' id="builder buttons">
-      <div class= "button" id="build_filter_button">
-        <input name="buildFilterButton" 
-                     type="button" 
-                    value="Build Filter" />
-      </div>
-      <div class= "button" id="partition_button">
-        <input name="groupButton" 
-                     type="button" 
-                    value="Build Range Operation" />
-      </div>
-      <div class= "button" id="contains_button">
-        <input name="groupButton" 
-                     type="button" 
-                    value="Build Contains Operation" />
-      </div>
-      <div class= "button" id="remove_button">
-        <input name="removeButton" 
-                     type="button" 
-                    value="Remove Filter!" />
-      </div>
-
-    </div>
-    <div class="charts" id="builder_box">
-      <div class="builder" style="display:none;" id="partition_builder">
-        <div class="title"> Create Partition View </div> 
-        <div  class="builder_svg" id="create_partition_view"></div>
-        <div class="button_box">
-          <div class= "button" id="addPartition_button">
-              <input name="addPartitionButton" 
-                           type="button" 
-                          value="Add Partition" />
-          </div>
-          <div class= "button"  id="removePartition_button">
-            <input name="removePartitionButton" 
-                         type="button" 
-                        value="Remove Partition" />
-          </div>
-          <div class= "button" id="applyPartition_button">
-            <input name="applyPartitionButton" 
-                         type="button" 
-                        value="Apply Partition" />
-          </div>
-          
-          <div class= "button" id="input_partition_value">
-              <input type="text" id="partition_value">
-          </div>
-        </div>
-      </div>
-      <div class="builder" style="display:none;" id="filter_builder">
-        <div class="title"> Create Filter View </div> 
-        <div  class="builder_svg" id="build_filter_view"></div>
-        <div class="button_box">
-         
-          
-          <div class= "button" id="input_filter_value">
-              <input type="text" id="partition_value">
-          </div>
-          <div class= "button" id="range_not_button">
-            <input name="rangeNotButton" 
-                         type="button" 
-                        value="NOT" />
-          </div>
-          <div class= "button" id="toggle_range_button">
-            <input name="toggleRangeButton" 
-                         type="button" 
-                        value="Toggle current/full range" />
-          </div>
-          <div class= "button" id="applyFilter_button">
-            <input name="applyFilterButton" 
-                         type="button" 
-                        value="Apply Range Filter" />
-          </div>
-        </div>
-      </div>
-
-      <div  class="builder" style="display:none;" id="pattern_builder">
-        <div  class="builder_svg" id="pb_graph"></div>
-        <div class="builder_svg" id ="action_list"> </div>
-        <div class="button_box" id="pb_buttons">
-          <div class= "button" id="add_node_button">
-            <input name="addNodeButton" 
-                         type="button" 
-                        value="Add Action Node" 
-                         />
-          </div>
-          <div class= "button" id="remove_node_button">
-            <input name="removeNodeButton" 
-                         type="button" 
-                        value="Remove Node" />
-          </div>
-          <div class= "button" id="add_cons_link_button">
-            <input name="addConsLinkButton" 
-                         type="button" 
-                        value="Add Consecutive Links" />
-          </div>
-          <div class= "button" id="create_funnel_button">
-            <input name="addLinkButton" 
-                         type="button" 
-                        value="Add Non-Consecutive Links" />
-          </div>
-          <div class= "button" id="toggle_many_button">
-            <input name="manyButton" 
-                         type="button" 
-                        value="Toggle one or many" />
-          </div>
-          <div class= "button" id="contains_not_button">
-            <input name="containsNotButton" 
-                         type="button" 
-                        value="NOT" />
-          </div>
-          <div class= "button" id="clear_pb_button">
-            <input name="clearButton" 
-                         type="button" 
-                        value="Clear All" />
-          </div>
-          <div class= "button" id="apply_funnel_button">
-            <input name="funnelButton" 
-                         type="button" 
-                        value="Apply Contains Filter" />
-          </div>
-        </div>
-
-      </div>
-    </div>
+    
+    
   </div>
   
 
   <div class="charts" id="right_panel">
     
-    <div class="charts" id="info_box">
-
-
-      <div class="info" style="display:none;" id="info_view">
-        <div class="title"> Node View </div>
-      </div>
-
-
-    </div>
+    
 
     <div class="charts" style="display:none;" id="attributes">
 
@@ -645,7 +684,12 @@ d3.csv(csv_file, function(error, data) {
       .on("click", remove_filter);
     d3.select("#segment_button")
       .on("click", toggle_segments);
+
+    d3.select("#range_button")
+      .on("click", show_range_builder);
     
+    d3.select("#tree_info_button")
+      .on("click", toggle_tree_info_view);
     d3.select("#path_button")
       .on("click", show_path_only);
     
@@ -681,7 +725,7 @@ d3.csv(csv_file, function(error, data) {
       .on("click", clear_contains_builder)
 
     d3.select("#print_sequences")
-      .on("click", print_sequences);
+      .on("click", show_detailed_view);
     d3.select("#group_sequences")
       .on("click", group_sequences);
     d3.select("#transitionize_sequences")
@@ -835,8 +879,8 @@ d3.csv(csv_file, function(error, data) {
         })
       }
       
-      console.log('nodes', nodes)
-      console.log('edges', edges)
+      // console.log('nodes', nodes)
+      // console.log('edges', edges)
 
       $('#cy').css('height',250);
       $('#cy').css('width', 400);
@@ -926,9 +970,9 @@ d3.csv(csv_file, function(error, data) {
 
       })
 
-      cy.nodes('.actions').forEach(function(a){
-        console.log(a.data())
-      })
+      // cy.nodes('.actions').forEach(function(a){
+      //   console.log(a.data())
+      // })
 
 
       var box = {x1:0, x2:0, w:390, h:240}
@@ -2310,6 +2354,11 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+    function show_detailed_view(){
+      $("#sequences").show()
+      print_sequences()
+    }
+
     function close_detailed_view(){
       $("#sequences").hide()
     }
@@ -2354,8 +2403,8 @@ d3.csv(csv_file, function(error, data) {
         })
       }
 
-      $("#sequences").show()
-      $("#sequences_text").width(300).height(200)
+      //$("#sequences").show()
+      $("#sequences_text").width(500).height(200)
       $("#sequences_text").html(text)
       $("#sequences_text").css("font-size", "12px");
     }
@@ -2366,6 +2415,17 @@ d3.csv(csv_file, function(error, data) {
       view_id = view_id || null;
       active_builder_view = view_id;
       d3.selectAll(".builder")
+        .style('display', function(d) {
+          var id = d3.select(this).attr('id');
+          if (id != active_builder_view)
+            return 'none';
+        });
+    }
+
+     function update_range_builder_view(view_id){
+      view_id = view_id || null;
+      active_builder_view = view_id;
+      d3.selectAll(".range_builder")
         .style('display', function(d) {
           var id = d3.select(this).attr('id');
           if (id != active_builder_view)
@@ -2427,7 +2487,7 @@ d3.csv(csv_file, function(error, data) {
     }
 
      var nv_margin = {top: 20, right:20, bottom: 20, left: 40},
-      nv_width = 500 - nv_margin.right - nv_margin.left,
+      nv_width = 400 - nv_margin.right - nv_margin.left,
       nv_height = 200 - nv_margin.top - nv_margin.bottom;
 
     
@@ -2446,12 +2506,14 @@ d3.csv(csv_file, function(error, data) {
             pattern_data = o.pattern_data
             draw_pattern_graph(pattern_data)
           }if (o.type == 'range'){
-            update_builder_view("filter_builder");
+            update_builder_view("range_builder")
+            update_range_builder_view("filter_builder");
             update_filter_data(o)
 
           }
         } else {
-          update_builder_view("partition_builder");
+          update_builder_view("range_builder")
+          update_range_builder_view("partition_builder");
           var thresholds = o.thresholds;
           update_partition_data(thresholds.slice(0, thresholds.length -1))
         }
@@ -3003,17 +3065,31 @@ d3.csv(csv_file, function(error, data) {
            
 
     var dateFormat = d3.timeFormat("%b %e, %y")
+    var tree_info_view = false
+
+    function toggle_tree_info_view(){
+      tree_info_view = !tree_info_view
+      d3.select('#tree_info_view').style('display', function(d){return tree_info_view? null: 'none'})
+
+      
+
+    }
+
+    function show_range_builder() {
+      update_builder_view("range_builder");
+      show_filter_builder()
 
 
+    }
     function show_partition_view() {
       //d3.select("#create_partition_view").style("display", "block");
       //update_info_view("create_partition_view");
-      update_builder_view("partition_builder");
+      update_range_builder_view("partition_builder");
       update_partition_view();
     }
 
     function show_filter_builder(){
-      update_builder_view("filter_builder");
+      update_range_builder_view("filter_builder");
       console.log('active range', selected_chart.data()[0].active_range())
       update_filter_data()
     }
@@ -3563,10 +3639,10 @@ d3.csv(csv_file, function(error, data) {
       selected_chart = div;
       selected_chart.style("background-color", "lightyellow" );
 
-      if (active_builder_view == 'partition_builder')
-        update_partition_view();
-      else if (active_builder_view =='filter_builder')
-        update_filter_data();
+      // if (active_builder_view == 'partition_builder')
+      //   update_partition_view();
+      // else if (active_builder_view =='filter_builder')
+      //   update_filter_data();
 
     }
 
@@ -4291,14 +4367,20 @@ d3.csv(csv_file, function(error, data) {
       //nodeEnter.each(create_nodes)
       var root_node = nodeEnter.selectAll(".root")
 
-      root_node.append("path")
-               .each(format_nodes)
+      root_node.append('circle')
+              .attr('r',  2.5)
+              .attr('fill', 'black')
+
+      // root_node.append("path")
+      //          .each(format_nodes)
 
       var segment_nodes = nodeEnter.selectAll(".segment")
 
-
       segment_nodes.append("path")
-               .each(format_nodes)
+              .attr('d', create_rect_path)
+              .attr('fill', "lightgray" )
+      // segment_nodes.append("path")
+      //          .each(format_nodes)
 
       segment_nodes.append("text")
         .attr("dy", ".15em")
@@ -4418,10 +4500,13 @@ d3.csv(csv_file, function(error, data) {
 
       nodeUpdate.selectAll('path')
             .style("stroke", function(d) { return d.selected ? "black" : 'lightgray';})
+      nodeUpdate.selectAll('.segment').selectAll('path')
+            .style("fill", function(d){return d.selected_segment? "lightblue": "lightgray"})
 
       nodeUpdate.selectAll('rect')
             .style("stroke", function(d) { return d.selected ? "black" : 'gray';})
             .style("stroke-width", function(d){return d.selected? "2px": "1px";})
+
 
 
 
@@ -4588,9 +4673,9 @@ d3.csv(csv_file, function(error, data) {
 
                         ();
                       })
-            .style("stroke", function(d) { return d.selected ? "black" : n.stroke;})
+            //.style("stroke", function(d) { return d.selected ? "black" : n.stroke;})
             .style("fill", n.fill)
-            .style("stroke-width", n.stroke_width);
+            //.style("stroke-width", n.stroke_width);
 
 
     }
@@ -4684,6 +4769,7 @@ d3.csv(csv_file, function(error, data) {
     }
     
     function select_node(d){
+
        if(!selected){
            selected = d;
            d.selected = true;
@@ -4705,7 +4791,16 @@ d3.csv(csv_file, function(error, data) {
         find_all_patterns();
 
         if (selected.data.value == 1) {
-          selected_segment = d
+          if (!selected_segment){
+            selected_segment = selected;
+            selected.selected_segment = true;
+          }else{
+            selected_segment.selected_segment = false;
+            update(selected_segment);
+            selected_segment = d;
+            d.selected_segment = true;
+          }
+
           update_info_view("info_view");
           new_selection = true;
         
@@ -4715,6 +4810,8 @@ d3.csv(csv_file, function(error, data) {
           console.log('The current selection has ' + selected.data.size + ' sequences!' );
           update_horizontal_chart_data();
           update_action_transition_graph();
+
+          print_sequences();
 
         } else {
           show_builder(selected.data.operation);
@@ -4726,6 +4823,7 @@ d3.csv(csv_file, function(error, data) {
 
 
     }
+
 
 
 
