@@ -2,9 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Tree Example</title>
     <link rel="stylesheet" href="style1.css" />
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <meta http-equiv="content-type" content="text/html; charset=UTF8"> 
 
     <style>
@@ -186,8 +188,223 @@
 
   <body>
 
+    <div>
+      <div class="col-lg-3">
+        <div class="panel-group" id="operation_info">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" href="#collapse0"> Operation Manager</a>
+              </h4>
+            </div>
+            <div class="panel-body">
+              <div class="btn-group">
+                <button type="button" id="path_button" class="btn btn-primary">Show only path</button>
+                <button type="button" id="remove_button" class="btn btn-primary">Remove Operation</button>
+              </div>
+              <div class="panel-group" id="operation_info">
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h4 class="panel-title">
+                      <a data-toggle="collapse" href="#collapse_node"> Node View</a>
+                    </h4>
+                  </div>
+                  <div id=collapse_node class="panel-body collapse in"> 
+                    <div class="info" id="info_view"></div>
+                  </div>
+                </div>
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h4 class="panel-title">
+                      <a data-toggle="collapse" href="#collapse_builder"> Operation Builder</a>
 
-<div class= "wrapper" id="wrapper">
+                    </h4>
+                  </div>
+                  <div id=collapse_builder class="panel-body collapse in"> 
+                    <ul class="nav nav-tabs">
+                      <li class="active"><a data-toggle="tab" href="#range">Range Operation</a></li>
+                      <li><a data-toggle="tab" href="#contains">Contains Operation</a></li>
+                    </ul>
+                    <div class="tab-content">
+                      <div id="range" class = "tab-pane fade in active">
+                        <h5>Range Operation Builder</h5>
+                          <ul class="nav nav-pills nav-fill">
+                            <li class="nav-item active">
+                              <a class="nav-link" data-toggle="tab" href="#r_filter" role="tab">Filter</a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link" data-toggle="tab" href="#r_partition" role="tab">Partition</a>
+                            </li>
+                          </ul>
+                          <div class="tab-content">
+                            <div id="r_filter" class = "tab-pane fade in active" role="tabpanel">
+                              <h6>Range Filter Builder</h6>
+                              <div  class="builder_svg" id="build_filter_view"></div>
+                              <div class="btn-group-vertical">
+                                <button type="button" id="range_not_button" class="btn btn-primary">NOT</button>
+                                <button type="button" id="toggle_range_button" class="btn btn-primary">Toggle current/full range</button>
+                                <button type="button" id="applyFilter_button" class="btn btn-primary">Apply Range Filter</button>
+                              </div>
+                              <div class= "button" id="input_filter_value">
+                                <input type="text" id="partition_value">
+                              </div>
+                            </div>
+                            <div id="r_partition" class="tab-pane fade in" role="tabpanel">
+                              <h6>Range Partition Builder</h6>
+                              <div  class="builder_svg" id="create_partition_view"></div>
+                              <div class="btn-group-vertical">
+                                <button type="button" id="addPartition_button" class="btn btn-primary">Add Partition</button>
+                                <button type="button" id="removePartition_button" class="btn btn-primary">Remove Partition</button>
+                                <button type="button" id="applyPartition_button" class="btn btn-primary">Apply Partition</button>
+                              </div>
+                              <div class= "button" id="input_partition_value">
+                                <input type="text" id="partition_value">
+                              </div>
+
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div id="contains" class = "tab-pane fade in">
+                        <h5>Contains Operation Builder</h5>
+                        <div  class="builder_svg" id="pb_graph"></div>
+                        <div class="builder_svg" id ="action_list"> </div>
+                        <div class="btn-group-vertical">
+                          <button type="button" id="add_node_button" class="btn btn-primary">Add Action</button>
+                          <button type="button" id="remove_node_button" class="btn btn-primary">Remove Action</button>
+                          <button type="button" id="add_cons_link_button" class="btn 
+                          btn-primary">Add Consecutive Links</button>
+                          <button type="button" id="create)create_funnel" class="btn btn-primary">Add Non-Consecutive Links</button>
+                          <button type="button" id="toggle_many_button" class="btn btn-primary">Toggle one or many</button>
+                          <button type="button" id="contains_not_button" class="btn btn-primary">NOT</button>
+                          <button type="button" id="clear_pb_button" class="btn btn-primary">Clear All</button>
+                          <button type="button" id="apply_contains_operation" class="btn btn-primary">Apply Contains Operation</button>
+                          <button type="button" id="apply_funnel_button" class="btn btn-primary">Apply Operation as Funnel</button>
+                        </div>
+                      </div>
+                    </div>  
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      </div>
+      <div class = "col-lg-2">
+        <h4> TREE DIAGRAM </h4>
+        <div class= "graph" id= "tree"></div>
+      </div>
+      <div class ="col-lg-7">
+        <div class="panel-group" id="segment_info">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" href="#collapse0"> Selected Segment Attributes</a>
+              </h4>
+            </div>
+            <div id="collapse_segment" class="panel-body collapse in">
+              <div class="panel-group" id="accordion">
+                <div class="panel panel-success">
+                  <div class="panel-heading">
+                    <h4 class="panel-title">
+                      <a data-toggle="collapse" href="#collapse1">Range Attributes</a>
+                    </h4>
+                  </div>
+                  <div id="collapse1" class="panel-body collapse in">
+                  
+
+                    <div class="panel-group" id="range_attributes">
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <h4 class="panel-title">
+                            <a data-toggle="collapse" href="#collapse_count">Count Related</a>
+                          </h4>
+                        </div>
+                        <div id="collapse_count" class="panel-collapse collapse in">
+                          <div class="panel-body">
+                            <div class="chart" id="len_chart"> 
+                              <div class="title"> Number of Actions </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <h4 class="panel-title">
+                            <a data-toggle="collapse" href="#collapse_time">Time-Related</a>
+                          </h4>
+                        </div>
+                        <div id="collapse_time" class="panel-collapse collapse in">
+                          <div class="panel-body">
+                            <div class="chart" id="duration_chart"> 
+                              <div class="title"> Duration chart </div>
+                            </div>
+                            <div class="chart" id="hour_chart"> 
+                                <div class="title"> Start hour chart </div>
+                            </div>
+                            <div class="chart" id="date_chart"> 
+                                <div class="title"> Start Date </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>  
+                    </div>
+                  </div>
+                  
+
+                </div>
+                <div class="panel panel-info">
+                  <div class="panel-heading">
+                    <h4 class="panel-title">
+                      <a data-toggle="collapse" href="#collapse2">Contains Attributes</a>
+                    </h4>
+                  </div>
+                  <div id="collapse2" class="panel-collapse collapse in">
+                    <div class="panel-body">
+                      <div class= "chart" id="contains_action_chart">
+                        <div class="title"> Number of Sequences that Contains Action </div>
+                      </div>
+
+                      <div class ="chart" id="node_link">
+                        <div id="cy"></div>
+                      </div>
+                      <div class="chart" id="adjacency_chart">
+                        <div id="tooltip" class="hidden">
+                          <p><span id="value">100</span></p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="panel panel-warning">
+                  <div class="panel-heading">
+                    <h4 class="panel-title">
+                      <a data-toggle="collapse" href="#collapse3">Sequence Details</a>
+                    </h4>
+                  </div>
+                  <div id="collapse3" class="panel-collapse collapse in">
+                    <div class="panel-body">
+                      <div id="sequences">
+                        <div class="btn-group">
+                          <button type="button" id="group_button" class="btn btn-primary">Group Sequences</button>
+                          <button type="button" id="transitionize_button" class="btn btn-primary">Transitionize Sequences</button>
+                        </div>
+                        <div id="sequences_text" style=" height: 200px; width: 500px;
+                            margin-left: 20px; margin-top: 20px;overflow: scroll;"> 
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div> 
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+<!-- <div class= "wrapper" id="wrapper">
   <div class=charts id=left_panel>
     <div class= "button_box_h" id="buttons">
           
@@ -195,7 +412,7 @@
             <input name="pathButton" 
                   id="show_tree_info_button"
                          type="button" 
-                        value="Show/Hide Tree Info" />
+                        value="Show/Hide Operation Manager" />
           </div>
     </div>
     <div class="charts" style="display:none;" id=tree_info_view>
@@ -235,13 +452,15 @@
         <div class="title"> Operation Builder </div>
         <div class= 'button_box_h' id="builder buttons">
           
-          <div class= "button" id="range_button">
+          <div class= "button" >
             <input name="groupButton" 
+                    id="range_button"
                          type="button" 
                         value="Build Range Operation" />
           </div>
-          <div class= "button" id="contains_button">
+          <div class= "button" >
             <input name="groupButton" 
+                    id="contains_button"
                          type="button" 
                         value="Build Contains Operation" />
           </div>
@@ -259,7 +478,7 @@
             </div>
             <div class= "button" id="partition_button">
               <input name="groupButton" 
-                      id="partition_button"
+                      id="build_partition_button"
                            type="button" 
                           value="Range Partition" />
             </div>
@@ -299,8 +518,9 @@
               <div class= "button" id="input_filter_value">
                   <input type="text" id="partition_value">
               </div>
-              <div class= "button" id="range_not_button">
-                <input name="rangeNotButton" 
+              <div class= "button">
+                <input name="rangeNotButton"
+                        id="range_not_button" 
                              type="button" 
                             value="NOT" />
               </div>
@@ -351,8 +571,9 @@
                            type="button" 
                           value="Toggle one or many" />
             </div>
-            <div class= "button" id="contains_not_button">
+            <div class= "button" >
               <input name="containsNotButton" 
+                      id="contains_not_button"
                            type="button" 
                           value="NOT" />
             </div>
@@ -361,10 +582,15 @@
                            type="button" 
                           value="Clear All" />
             </div>
+            <div class= "button" id="apply_contains_operation">
+              <input name="funnelButton" 
+                           type="button" 
+                          value="Apply Contains Operation" />
+            </div>
             <div class= "button" id="apply_funnel_button">
               <input name="funnelButton" 
                            type="button" 
-                          value="Apply Contains Filter" />
+                          value="Apply Operation as Funnel" />
             </div>
           </div>
 
@@ -478,7 +704,7 @@
     </div>
 
     
-</div>
+</div> -->
 
 
 
@@ -492,6 +718,7 @@
  <script src="cytoscape.js"></script>
 <script src="cola.js"></script>
  <script src="cytoscape-cola.js"></script>
+ <script src="bootstrap/js/bootstrap.min.js"></script>
 
 
     
@@ -673,7 +900,8 @@ d3.csv(csv_file, function(error, data) {
     start_chart.dims = starts.all();
     duration_chart.dims = durations.all();
     
-
+    d3.select("#range_button")
+      .on("click", show_range_builder);
     d3.select("#build_filter_button")
       .on("click", show_filter_builder)
     d3.select("#partition_button")
@@ -685,8 +913,7 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#segment_button")
       .on("click", toggle_segments);
 
-    d3.select("#range_button")
-      .on("click", show_range_builder);
+    
     
     d3.select("#tree_info_button")
       .on("click", toggle_tree_info_view);
@@ -711,6 +938,8 @@ d3.csv(csv_file, function(error, data) {
       .on("click", add_action_node);
     d3.select("#create_funnel_button")
       .on("click", create_funnel)
+    d3.select("#apply_contains_operation")
+      .on("click", apply_contains_filter)
     d3.select("#apply_funnel_button")
       .on("click", apply_funnel)
     d3.select("#remove_node_button")
@@ -1958,6 +2187,7 @@ d3.csv(csv_file, function(error, data) {
     }
 
     function create_not_filter(){
+      toggle_button_color("#contains_not_button")
       pattern_data.not =("not" in pattern_data)? !pattern_data.not : true;
          
       draw_pattern_graph(pattern_data)
@@ -2024,6 +2254,17 @@ d3.csv(csv_file, function(error, data) {
 
     function apply_funnel(){
 
+      create_contains_filter(true)
+    }
+
+    function apply_contains_filter(){
+      create_contains_filter(false)
+    }
+
+
+
+    function create_contains_filter(funnelize){
+
       var nodes = pattern_data.nodes,
           links = pattern_data.links,
           not = ("not" in pattern_data)? pattern_data.not: false;
@@ -2076,34 +2317,45 @@ d3.csv(csv_file, function(error, data) {
         regex = regex + c + sep;
         console.log('regex', regex);
         
+        if (funnelize){
 
-        
-        //Create the filter
-        // var match = all.reduce(reduceAdd,reduceRemove, reduceInitial).value();
-        // if (match){
-        //   var size = match.count,
-        //       filter = {},
-        //       funnel = {char: chars.slice(), consecutive:consecutive};
+          if (i < (nodes.length-1)){
+            var match = all.reduce(reduceAdd,reduceRemove, reduceInitial).value();
 
+            if (match){
+              var size = match.count,
+                  filter = {},
+                  //funnel = {char: chars.slice(), consecutive:consecutive};
+                  funnel = chars.slice();
 
+              if (not)
+                size = total_size - size;
 
-        //   selectedFilter.chart = selected_chart;
-        //   selectedFilter.size = size;
-        //   selectedFilter.type = 'contains';
-        //   selectedFilter.char = funnel;
-        //   selectedFilter.regex = regex;
-        //   selectedFilter.pattern = pattern;
+              console.log('Regex used for sizing,' , regex)
+              selectedFilter.chart = selected_chart;
+              selectedFilter.size = size;
+              selectedFilter.type = 'contains';
+              selectedFilter.char = funnel;
+              selectedFilter.regex = regex;
+              selectedFilter.not = not;
+              selectedFilter.chart = d3.select("#node_link");
+              selectedFilter.pattern = pattern;
 
-        //   console.log('pattern created', pattern);
-        //   console.log('creating filter:', selectedFilter);
+              selectedFilter.pattern_data = {nodes: nodes_copy.slice(), links:links_copy.slice(), not:not};
 
-        //   selectedFilter.div = "action_strings";
+              console.log('pattern created', pattern);
+              console.log('creating filter:', selectedFilter);
 
-        //   var filter = create_filter(parent);
+              selectedFilter.div = "action_strings";
 
-        //   parent = filter.children[0];
+              var filter = create_filter(parent);
+              parent = filter.children[0];
 
-        // }
+            }
+          }
+
+        }
+
 
       })
 
@@ -2121,6 +2373,7 @@ d3.csv(csv_file, function(error, data) {
           console.log('Regex used for sizing,' , regex)
           selectedFilter.chart = selected_chart;
           selectedFilter.size = size;
+          selectedFilter.chart = d3.select("#node_link");
           selectedFilter.type = 'contains';
           selectedFilter.char = funnel;
           selectedFilter.regex = regex;
@@ -2353,6 +2606,9 @@ d3.csv(csv_file, function(error, data) {
 
 
     }
+    var transitionized = false,
+        grouped_seqs = false;
+
 
     function show_detailed_view(){
       $("#sequences").show()
@@ -2363,9 +2619,7 @@ d3.csv(csv_file, function(error, data) {
       $("#sequences").hide()
     }
 
-    var transitionized = false,
-        grouped_seqs = false;
-
+    
     function transitionize_sequences(){
       toggle_button_color('#transitionize_button')
       transitionized = !transitionized
@@ -2380,33 +2634,36 @@ d3.csv(csv_file, function(error, data) {
     }
 
     function print_sequences(){
+      if($("#sequences").is(':visible')){
 
-      if (grouped_seqs){
-        var grouped = transitionized? trans_grouped.top(Infinity): strings_grouped.top(Infinity)
-        //var grouped = trans_grouped.top(Infinity),
-            text ="  #  | sequence" + " <br/>" + "___________"+ " <br/>";
+        if (grouped_seqs){
+          var grouped = transitionized? trans_grouped.top(Infinity): strings_grouped.top(Infinity)
+          //var grouped = trans_grouped.top(Infinity),
+              text ="  #  | sequence" + " <br/>" + "___________"+ " <br/>";
 
-        console.log(grouped)
+          console.log(grouped)
 
-        grouped.forEach(function(g){
-          if(g.value != 0){
-            text += ' ' + g.value + "  |  " + g.key + " <br/>"
-          }
-        })
-      }else{
-        var dimData = action_strings.top(Infinity)
-        var text = "";
-        dimData.forEach(function(x){
-          var seq = transitionized? remove_duplicates(x.general_actions): x.general_actions;
+          grouped.forEach(function(g){
+            if(g.value != 0){
+              text += ' ' + g.value + "  |  " + g.key + " <br/>"
+            }
+          })
+        }else{
+          var dimData = action_strings.top(Infinity)
+          var text = "";
+          dimData.forEach(function(x){
+            var seq = transitionized? remove_duplicates(x.general_actions): x.general_actions;
 
-          text += seq + " <br/>";
-        })
+            text += seq + " <br/>";
+          })
+        }
+
+        //$("#sequences").show()
+        $("#sequences_text").width(500).height(200)
+        $("#sequences_text").html(text)
+        $("#sequences_text").css("font-size", "12px");
+
       }
-
-      //$("#sequences").show()
-      $("#sequences_text").width(500).height(200)
-      $("#sequences_text").html(text)
-      $("#sequences_text").css("font-size", "12px");
     }
     //=========================== Builder Views ====================================//
     var active_builder_view = null,
@@ -3075,7 +3332,15 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+    function show_contains_builder(){
+      toggle_operation_buttons("#contains_button")
+      update_builder_view("pattern_builder");
+      update_action_list()
+
+    }
+
     function show_range_builder() {
+      toggle_operation_buttons('#range_button')
       update_builder_view("range_builder");
       show_filter_builder()
 
@@ -3084,21 +3349,21 @@ d3.csv(csv_file, function(error, data) {
     function show_partition_view() {
       //d3.select("#create_partition_view").style("display", "block");
       //update_info_view("create_partition_view");
+      toggle_range_buttons('#build_partition_button')
       update_range_builder_view("partition_builder");
       update_partition_view();
     }
 
     function show_filter_builder(){
+      toggle_range_buttons('#build_filter_button')
       update_range_builder_view("filter_builder");
       console.log('active range', selected_chart.data()[0].active_range())
       update_filter_data()
     }
 
-    function show_contains_builder(){
-      update_builder_view("pattern_builder");
-      update_action_list()
+    
 
-    }
+
 
     function create_range_filter(){
 
@@ -3137,6 +3402,7 @@ d3.csv(csv_file, function(error, data) {
     }
 
     function create_not_range_filter(){
+      toggle_button_color('#range_not_button')
 
       partitions.forEach(function(p){
         p.colored = !p.colored
@@ -4817,6 +5083,7 @@ d3.csv(csv_file, function(error, data) {
           show_builder(selected.data.operation);
         }
 
+        console.log('about to update')
 
         update(selected);
         showDiv();
@@ -5108,7 +5375,7 @@ d3.csv(csv_file, function(error, data) {
         update_thresholds();
         
 
-        var d = selected,
+        var d = selected_segment,
             dim,
             dims;
 
@@ -5828,6 +6095,24 @@ d3.csv(csv_file, function(error, data) {
       if (current_color == "") current_color = original_color
       var color = current_color == original_color? pressed_color : original_color;
       d3.select(button_id).style("background-color", color);
+    }
+
+    function toggle_operation_buttons(button_id){
+      var check_id = button_id == "#contains_button"? "#range_button": "#contains_button"
+      if(d3.select(check_id).node().style.backgroundColor == pressed_color)
+        toggle_button_color(check_id)
+      
+      toggle_button_color(button_id)
+
+    }
+
+    function toggle_range_buttons(button_id){
+      var check_id = button_id == "#build_partition_button"? "#build_filter_button": "#build_partition_button"
+      if(d3.select(check_id).node().style.backgroundColor == pressed_color)
+        toggle_button_color(check_id)
+      
+      toggle_button_color(button_id)
+
     }
 
     function show_path_only() {
