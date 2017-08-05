@@ -9,193 +9,23 @@
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <meta http-equiv="content-type" content="text/html; charset=UTF8"> 
 
-    <style>
-
-    
-      @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700);
-
-      body {
-        font-family: "Helvetica Neue";
-        /*margin: 40px auto;*/
-        /*        width: 960px;
-                min-height: 2000px;*/
-      }
-
-      #body {
-        position: relative;
-      }
-
-      text {
-
-        font: 10px sans-serif;
-      }
-
-      h1 {
-        font-size: 96px;
-        margin-top: .3em;
-        margin-bottom: 0;
-      }
-
-      h1 + h2 {
-        margin-top: 0;
-      }
-
-      h2 {
-        font-weight: 400;
-        font-size: 28px;
-      }
-
-      h1, h2 {
-        font-family: "Yanone Kaffeesatz";
-        text-rendering: optimizeLegibility;
-      }
-
-      #body > p {
-        line-height: 1.5em;
-        width: 640px;
-        text-rendering: optimizeLegibility;
-      }
-
-      /*      #charts {
-              padding: 2px 0;
-            }*/
-
-      .leftovers {
-        fill: gray;
-      }
-
-      /*      .chart {
-              display: inline-block;
-              height: 151px;
-              margin-bottom: 10px;
-            }*/
-
-      .reset {
-        padding-left: 1em;
-        font-size: smaller;
-        color: #ccc;
-      }
-
-      .background.bar {
-        fill: #ccc;
-      }
-
-      .foreground.bar {
-        fill: steelblue;
-      }
-
-      .partition rect{
-        fill: steelblue;
-      }
-
-      .axis path, .axis line {
-        fill: none;
-        stroke: #000;
-        shape-rendering: crispEdges;
-      }
-
-        /*    .axis text {
-              font: 10px sans-serif;
-            }
-        */
-      .axisY path, .axisY line {
-        fill: none;
-        stroke: #000;
-        shape-rendering: crispEdges;
-      }
-
-        /*    .axisY text {
-              font: 10px sans-serif;
-            }
-        */
-
-      .noAxis path, .noAxis line {
-        fill: none;
-        stroke:none;
-        shape-rendering: crispEdges;
-      }
-
-      .brush rect.extent {
-        fill: steelblue;
-        fill-opacity: .125;
-      }
-
-      .brush .resize path {
-        fill: #eee;
-        stroke: #666;
-      }
-
-      .links line {
-        stroke: #999;
-        stroke-opacity: 0.6;
-      }
-
-      .nodes circle {
-        stroke: #fff;
-        stroke-width: 1.5px;
-      }
-
-      #tooltip {
-        position: absolute;
-        height: 20px;
-        width: 65px;
-        padding: 2px;
-        background-color: white;
-/*        -webkit-border-radius: 2px;
-        -moz-border-radius: 2px;
-        border-radius: 2px;
-        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);*/
-        pointer-events: none;
-      }
-
-      #tooltip.hidden {
-        display: none;
-      }
-
-      #tooltip p {
-        margin: 0;
-        font-family: Futura;
-        font-size: 8px;
-        line-height: 20px;
-     }
-     #cy {
-      height: 100%;
-      width: 100%;
-      position: absolute;
-      left: 0;
-      top: 0;
-    }
-
-    #info {
-      color: #c88;
-      font-size: 1em;
-      position: absolute;
-      z-index: -1;
-      left: 1em;
-      top: 1em;
-    }
-
- /*   #tree_info_view{
-      max-width: 425px;
-      min-width: 425px;
-    }*/
-
-    </style>
-
   </head>
 
   <body>
 
     <div>
-      <div class="col-lg-3 col-md-3 col-sm-3">
+      <div class="col-md-3 hidden" id="operation_manager">
         <div class="panel-group" id="operation_info">
           <div class="panel panel-default">
             <div class="panel-heading">
               <h4 class="panel-title">
                 <a data-toggle="collapse" href="#collapse0"> Operation Manager</a>
+                <!-- <button type="button" class="close" data-target="#operation_manager" data-dismiss="alert"> <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                </button> -->
+                <button type="button" class="close" id="close_oManager"> <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                </button>
               </h4>
+
             </div>
             <div class="panel-body">
               <div class="btn-group">
@@ -222,18 +52,18 @@
                   </div>
                   <div id=collapse_builder class="panel-body collapse in"> 
                     <ul class="nav nav-tabs">
-                      <li class="active"><a data-toggle="tab" href="#range">Range Operation</a></li>
-                      <li><a data-toggle="tab" href="#contains">Contains Operation</a></li>
+                      <li class="active"><a style="background-color:#f4fff5" data-toggle="tab" href="#range">Range</a></li>
+                      <li><a style="background-color:#fff7f7" data-toggle="tab" href="#contains">Contains</a></li>
                     </ul>
                     <div class="tab-content">
                       <div id="range" class = "tab-pane fade in active">
                         <h5>Range Operation Builder</h5>
                           <ul class="nav nav-pills nav-fill">
                             <li class="nav-item active">
-                              <a class="nav-link" data-toggle="tab" href="#r_filter" role="tab">Filter</a>
+                              <a class="nav-link" data-toggle="tab" id="filter_view" href="#r_filter" role="tab">Filter</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link" data-toggle="tab" href="#r_partition" role="tab">Partition</a>
+                              <a class="nav-link" data-toggle="tab" id="partition_view" href="#r_partition" role="tab">Partition</a>
                             </li>
                           </ul>
                           <div class="tab-content">
@@ -290,11 +120,12 @@
           </div>
         </div>
       </div>
-      <div class = "col-lg-2 col-md-2 col-sm-2">
+      <div class = "col-md-5" id="tree_view">
+        <button type="button" id="toggle_oManager" class="btn btn-primary">Operation Manager</button>
         <h4> TREE DIAGRAM </h4>
         <div class= "graph" id= "tree"></div>
       </div>
-      <div class ="col-lg-7 col-md-7 col-sm-7">
+      <div class ="col-md-7">
         <div class="panel-group" id="segment_info">
           <div class="panel panel-info">
             <div class="panel-heading">
@@ -404,310 +235,6 @@
 
 
 
-<!-- <div class= "wrapper" id="wrapper">
-  <div class=charts id=left_panel>
-    <div class= "button_box_h" id="buttons">
-          
-          <div class= "button" id="tree_info_button">
-            <input name="pathButton" 
-                  id="show_tree_info_button"
-                         type="button" 
-                        value="Show/Hide Operation Manager" />
-          </div>
-    </div>
-    <div class="charts" style="display:none;" id=tree_info_view>
-      <div class= "button_box_h" id="buttons">
-          
-          <div class= "button" id="path_button">
-            <input name="pathButton" 
-                         type="button" 
-                        value="Show only path" />
-          </div>
-          <div class= "button" id="remove_button">
-            <input name="removeButton" 
-                         type="button" 
-                        value="Remove Filter!" />
-          </div>
-          
-
-          
-          
-          <div class= "button" id="demo_button">
-            <input name="demoButton" 
-                         type="button" 
-                        value="DEMO" />
-          </div>
-      </div>
-
-      <div class="charts" id="info_box">
-
-
-        <div class="info" style="display:none;" id="info_view">
-          <div class="title"> Node View </div>
-        </div>
-
-
-      </div>
-      <div id="builder_box" style="width:500">
-        <div class="title"> Operation Builder </div>
-        <div class= 'button_box_h' id="builder buttons">
-          
-          <div class= "button" >
-            <input name="groupButton" 
-                    id="range_button"
-                         type="button" 
-                        value="Build Range Operation" />
-          </div>
-          <div class= "button" >
-            <input name="groupButton" 
-                    id="contains_button"
-                         type="button" 
-                        value="Build Contains Operation" />
-          </div>
-          
-
-        </div>
-        <div  class="builder" style="display:none;" id ="range_builder" >
-          <div class="title"> Create Range Operation </div>
-          <div class= 'button_box_h' id="builder buttons">
-            <div class= "button" id="build_filter">
-              <input name="buildFilterButton" 
-                      id="build_filter_button"
-                           type="button" 
-                          value="Range Filter" />
-            </div>
-            <div class= "button" id="partition_button">
-              <input name="groupButton" 
-                      id="build_partition_button"
-                           type="button" 
-                          value="Range Partition" />
-            </div>
-           
-          </div>
-          <div class="range_builder" style="display:none;" id="partition_builder">
-            <div class="title"> Create Partition View </div> 
-            <div  class="builder_svg" id="create_partition_view"></div>
-            <div class="button_box">
-              <div class= "button" id="addPartition_button">
-                  <input name="addPartitionButton" 
-                               type="button" 
-                              value="Add Partition" />
-              </div>
-              <div class= "button"  id="removePartition_button">
-                <input name="removePartitionButton" 
-                             type="button" 
-                            value="Remove Partition" />
-              </div>
-              <div class= "button" id="applyPartition_button">
-                <input name="applyPartitionButton" 
-                             type="button" 
-                            value="Apply Partition" />
-              </div>
-              
-              <div class= "button" id="input_partition_value">
-                  <input type="text" id="partition_value">
-              </div>
-            </div>
-          </div>
-          <div class="range_builder" style="display:none;" id="filter_builder">
-            <div class="title"> Create Filter View </div> 
-            <div  class="builder_svg" id="build_filter_view"></div>
-            <div class="button_box">
-             
-              
-              <div class= "button" id="input_filter_value">
-                  <input type="text" id="partition_value">
-              </div>
-              <div class= "button">
-                <input name="rangeNotButton"
-                        id="range_not_button" 
-                             type="button" 
-                            value="NOT" />
-              </div>
-              <div class= "button" id="toggle_range_button">
-                <input name="toggleRangeButton" 
-                             type="button" 
-                            value="Toggle current/full range" />
-              </div>
-              <div class= "button" id="applyFilter_button">
-                <input name="applyFilterButton" 
-                             type="button" 
-                            value="Apply Range Filter" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div  class="builder" style="display:none;" id="pattern_builder">
-          <div class="title"> Create Contains Operation </div>
-          <div  class="builder_svg" id="pb_graph"></div>
-          <div class="builder_svg" id ="action_list"> </div>
-          <div class="button_box" id="pb_buttons">
-            <div class= "button" id="add_node_button">
-              <input name="addNodeButton" 
-                           type="button" 
-                          value="Add Action Node" 
-                           />
-            </div>
-            <div class= "button" id="remove_node_button">
-              <input name="removeNodeButton" 
-                           type="button" 
-                          value="Remove Node" />
-            </div>
-            <div class= "button" id="add_cons_link">
-              <input name="addConsLinkButton" 
-                      id="add_cons_link_button"
-                           type="button" 
-                          value="Add Consecutive Links" />
-            </div>
-            <div class= "button" id="create_funnel">
-              <input name="addLinkButton" 
-                      id="create_funnel_button"
-                           type="button" 
-                          value="Add Non-Consecutive Links" />
-            </div>
-            <div class= "button" id="toggle_many_button">
-              <input name="manyButton" 
-                           type="button" 
-                          value="Toggle one or many" />
-            </div>
-            <div class= "button" >
-              <input name="containsNotButton" 
-                      id="contains_not_button"
-                           type="button" 
-                          value="NOT" />
-            </div>
-            <div class= "button" id="clear_pb_button">
-              <input name="clearButton" 
-                           type="button" 
-                          value="Clear All" />
-            </div>
-            <div class= "button" id="apply_contains_operation">
-              <input name="funnelButton" 
-                           type="button" 
-                          value="Apply Contains Operation" />
-            </div>
-            <div class= "button" id="apply_funnel_button">
-              <input name="funnelButton" 
-                           type="button" 
-                          value="Apply Operation as Funnel" />
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-
-  <div class= 'button_box'>
-
-    <div class= "graph" id= "tree"></div>
-    
-    
-  </div>
-  
-
-  <div class="charts" id="right_panel">
-    
-    
-
-    <div class="charts" style="display:none;" id="attributes">
-
-      <div class="charts" id="chart_box">
-        <div class="title"> Range Attributes </div>
-
-        <div class= "charts" id= "count">
-          <div class="title"> Count Related </div>
-            
-          <div class="chart" id="len_chart"> 
-            <div class="title"> Number of Actions </div>
-          </div>
-        </div>
-        <div class = "charts" id ="Time">
-          <div class="title"> Time Related</div>
-          <div class="chart" id="duration_chart"> 
-            <div class="title"> Duration chart </div>
-          </div>
-          <div class="chart" id="hour_chart"> 
-              <div class="title"> Start hour chart </div>
-          </div>
-          <div class="chart" id="date_chart"> 
-              <div class="title"> Start Date </div>
-          </div>
-        </div>
-      </div>
-
-      <div class= "charts" id= "list_box">
-        
-      </div>
-
-      <div class ="charts" id="action_transition">
-        <div class="title"> Contains Attributes </div>
-          
-
-
- 
-          <div class= "chart" id="contains_action_chart">
-            <div class="title"> Number of Sequences that Contains Action </div>
-          </div>
-
-          <div class ="chart" id="node_link">
-            <div id="cy"></div>
-          </div>
-          <div class="chart" id="adjacency_chart">
-            <div id="tooltip" class="hidden">
-              <p><span id="value">100</span></p>
-            </div>
-          </div>
-          
-
-
-      </div>
-
-      <div class="charts" id="detailed_view">
-        <div class=button_box_h>
-          <div class= "button" id="print_sequences">
-            <input name="printSeqsButton" 
-                         type="button" 
-                        value="Print Sequences" />
-          </div>
-          <div class= "button" id="close_detailed_view">
-            <input name="closeViewButton" 
-                         type="button" 
-                        value="Close View" />
-          </div>
-        </div>
-        <div id="sequences" style=" display:none">
-           <div class=button_box_h>
-              <div class= "button" id="group_sequences">
-                <input name="groupSeqsButton" 
-                        id="group_button"
-                             type="button" 
-                            value="Group Sequences" />
-              </div>
-              <div class= "button" id="transitionize_sequences">
-                <input name="transitionizeSeqsButton" 
-                            id= "transitionize_button"
-                             type="button"
-                            value="Transitionize Sequences" />
-              </div>
-            </div>
-            <div id="sequences_text" style=" height: 200px; width: 500px;
-                margin-left: 20px; margin-top: 20px;overflow: scroll;"></div>
-        </div>
-      </div>          
-
-
-
-    </div>
-
-    
-</div> -->
-
-
-
 <!-- load the d3.js library --> 
 <script src="http://d3js.org/d3.v4.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
@@ -726,18 +253,6 @@
 
 $(document).ready(function(){
 
-
-
-  
-
-  // top_level.value = -1;
-  // top_level.shape = "circle",
-  // top_level.fill = "black",
-  // top_level.stroke = "black",
-  // top_level.stroke_width = "1px";
-  // top_level.size = 20;
-
-  // node_types[top_level.value] = top_level;
 
   chart_data = {},
   hour_chart ={},
@@ -863,9 +378,10 @@ d3.csv(csv_file, function(error, data) {
     
     d3.select("#range_button")
       .on("click", show_range_builder);
-    d3.select("#build_filter_button")
+    //d3.select("#build_filter_button")
+    d3.select("#filter_view")
       .on("click", show_filter_builder)
-    d3.select("#partition_button")
+    d3.select("#partition_view")
       .on("click", show_partition_view);
     d3.select("#contains_button")
       .on("click", show_contains_builder);
@@ -874,7 +390,10 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#segment_button")
       .on("click", toggle_segments);
 
-    
+    d3.select("#toggle_oManager")
+      .on("click", toggle_operation_manager);
+    d3.select("#close_oManager")
+      .on("click", toggle_operation_manager);
     
     d3.select("#tree_info_button")
       .on("click", toggle_tree_info_view);
@@ -2552,7 +2071,7 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-     var nv_margin = {top: 20, right:20, bottom: 20, left: 40},
+     var nv_margin = {top: 20, right:10, bottom: 20, left: 10},
       nv_width = 400 - nv_margin.right - nv_margin.left,
       nv_height = 200 - nv_margin.top - nv_margin.bottom;
 
@@ -3133,6 +2652,30 @@ d3.csv(csv_file, function(error, data) {
     var dateFormat = d3.timeFormat("%b %e, %y")
     var tree_info_view = false
 
+    function toggle_operation_manager(){
+      if($('#operation_manager').hasClass('open'))
+      { 
+        $('#toggle_oManager').removeClass('hidden')
+        $('#operation_manager').removeClass('col-md-3');
+        $('#operation_manager').removeClass('open');
+        $('#operation_manager').addClass('hidden');
+        $('#tree_view').addClass('col-md-5');
+        $('#tree_view').removeClass('col-md-2');
+      }
+      else
+      {
+        $('#toggle_oManager').addClass('hidden')
+        $('#operation_manager').addClass('col-md-3');
+        $('#operation_manager').addClass('open');
+        $('#operation_manager').removeClass('hidden');
+        $('#tree_view').removeClass('col-md-5');
+        $('#tree_view').addClass('col-md-2');
+      }
+
+      resize_windows()
+
+    }
+
     function toggle_tree_info_view(){
       tree_info_view = !tree_info_view
       d3.select('#tree_info_view').style('display', function(d){return tree_info_view? null: 'none'})
@@ -3142,15 +2685,15 @@ d3.csv(csv_file, function(error, data) {
     }
 
     function show_contains_builder(){
-      toggle_operation_buttons("#contains_button")
-      update_builder_view("pattern_builder");
+      //toggle_operation_buttons("#contains_button")
+      //update_builder_view("pattern_builder");
       update_action_list()
 
     }
 
     function show_range_builder() {
-      toggle_operation_buttons('#range_button')
-      update_builder_view("range_builder");
+      // toggle_operation_buttons('#range_button')
+      // update_builder_view("range_builder");
       show_filter_builder()
 
 
@@ -3158,14 +2701,14 @@ d3.csv(csv_file, function(error, data) {
     function show_partition_view() {
       //d3.select("#create_partition_view").style("display", "block");
       //update_info_view("create_partition_view");
-      toggle_range_buttons('#build_partition_button')
-      update_range_builder_view("partition_builder");
+      //toggle_range_buttons('#build_partition_button')
+      //update_range_builder_view("partition_builder");
       update_partition_view();
     }
 
     function show_filter_builder(){
-      toggle_range_buttons('#build_filter_button')
-      update_range_builder_view("filter_builder");
+      // toggle_range_buttons('#build_filter_button')
+      // update_range_builder_view("filter_builder");
       console.log('active range', selected_chart.data()[0].active_range())
       update_filter_data()
     }
@@ -3670,7 +3213,7 @@ d3.csv(csv_file, function(error, data) {
     
 
     function update_partition_view(){
-      // resize_builder()
+
      //render selected chart
  
 
@@ -4421,8 +3964,8 @@ d3.csv(csv_file, function(error, data) {
       else
         update_partition_view()
 
-      infoLength = width/3,
-      translation = 1.4*infoLength;
+      infoLength = width*(3/7),
+      translation = width*(4/7);
 
       infoRange = [0,infoLength]
       rScale.range([1,infoLength])
@@ -4475,7 +4018,7 @@ d3.csv(csv_file, function(error, data) {
       console.log('tree width', width)
       console.log(' tree height ', height)
 
-      tree.size([width, height]);
+      tree.size([width-(oLength/2), height]);
 
       root.x0 = height / 2;
       root.y0 = 0;
