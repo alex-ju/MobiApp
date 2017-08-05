@@ -189,7 +189,7 @@
   <body>
 
     <div>
-      <div class="col-lg-3">
+      <div class="col-lg-3 col-md-3 col-sm-3">
         <div class="panel-group" id="operation_info">
           <div class="panel panel-default">
             <div class="panel-heading">
@@ -239,9 +239,9 @@
                           <div class="tab-content">
                             <div id="r_filter" class = "tab-pane fade in active" role="tabpanel">
                               <h6>Range Filter Builder</h6>
-                              <div  class="builder_svg" id="build_filter_view"></div>
+                              <div  class="graph" id="build_filter_view"></div>
+                              <label class="checkbox-inline"><input id="range_not_button" type="checkbox" value="">NOT</label>
                               <div class="btn-group-vertical">
-                                <button type="button" id="range_not_button" class="btn btn-primary">NOT</button>
                                 <button type="button" id="toggle_range_button" class="btn btn-primary">Toggle current/full range</button>
                                 <button type="button" id="applyFilter_button" class="btn btn-primary">Apply Range Filter</button>
                               </div>
@@ -251,7 +251,7 @@
                             </div>
                             <div id="r_partition" class="tab-pane fade in" role="tabpanel">
                               <h6>Range Partition Builder</h6>
-                              <div  class="builder_svg" id="create_partition_view"></div>
+                              <div  class="graph" id="create_partition_view"></div>
                               <div class="btn-group-vertical">
                                 <button type="button" id="addPartition_button" class="btn btn-primary">Add Partition</button>
                                 <button type="button" id="removePartition_button" class="btn btn-primary">Remove Partition</button>
@@ -264,36 +264,37 @@
                             </div>
                           </div>
                         </div>
-                      </div>
+                      
                       <div id="contains" class = "tab-pane fade in">
                         <h5>Contains Operation Builder</h5>
-                        <div  class="builder_svg" id="pb_graph"></div>
-                        <div class="builder_svg" id ="action_list"> </div>
+                        <div  class="graph" id="pb_graph"></div>
+                        <div class="graph" id ="action_list"> </div>
+                        <label class="checkbox-inline"><input id="contains_not_button" type="checkbox" value="">NOT</label>
                         <div class="btn-group-vertical">
                           <button type="button" id="add_node_button" class="btn btn-primary">Add Action</button>
                           <button type="button" id="remove_node_button" class="btn btn-primary">Remove Action</button>
                           <button type="button" id="add_cons_link_button" class="btn 
                           btn-primary">Add Consecutive Links</button>
-                          <button type="button" id="create)create_funnel" class="btn btn-primary">Add Non-Consecutive Links</button>
+                          <button type="button" id="create_funnel_button" class="btn btn-primary">Add Non-Consecutive Links</button>
                           <button type="button" id="toggle_many_button" class="btn btn-primary">Toggle one or many</button>
-                          <button type="button" id="contains_not_button" class="btn btn-primary">NOT</button>
                           <button type="button" id="clear_pb_button" class="btn btn-primary">Clear All</button>
                           <button type="button" id="apply_contains_operation" class="btn btn-primary">Apply Contains Operation</button>
                           <button type="button" id="apply_funnel_button" class="btn btn-primary">Apply Operation as Funnel</button>
                         </div>
                       </div>
-                    </div>  
-                  </div>
+                    </div>
+                  </div>  
                 </div>
               </div>
             </div>
           </div>
+        </div>
       </div>
-      <div class = "col-lg-2">
+      <div class = "col-lg-2 col-md-2 col-sm-2">
         <h4> TREE DIAGRAM </h4>
         <div class= "graph" id= "tree"></div>
       </div>
-      <div class ="col-lg-7">
+      <div class ="col-lg-7 col-md-7 col-sm-7">
         <div class="panel-group" id="segment_info">
           <div class="panel panel-default">
             <div class="panel-heading">
@@ -384,10 +385,9 @@
                   <div id="collapse3" class="panel-collapse collapse in">
                     <div class="panel-body">
                       <div id="sequences">
-                        <div class="btn-group">
-                          <button type="button" id="group_button" class="btn btn-primary">Group Sequences</button>
-                          <button type="button" id="transitionize_button" class="btn btn-primary">Transitionize Sequences</button>
-                        </div>
+                        <label class="checkbox-inline"><input id="group_sequences" type="checkbox" value="">Group Sequences</label>
+                        <label class="checkbox-inline"><input id="transitionize_sequences" type="checkbox" value="">Transitionize Sequences</label>
+                    
                         <div id="sequences_text" style=" height: 200px; width: 500px;
                             margin-left: 20px; margin-top: 20px;overflow: scroll;"> 
                         </div>
@@ -726,57 +726,18 @@
 
 $(document).ready(function(){
 
-  var node_types = {},
-      filter = {},
-      filter_p = {},
-      segment = {},
-      partition = {},
-      top_level = {};
 
-  partition.value = 2;
-  partition.shape = "diamond";
-  partition.fill = "lightgreen";
-  partition.stroke = "lightgreen";
-  partition.stroke_width = "1px";
-  partition.size = 300;
 
-  node_types[partition.value] = partition;
+  
 
-  filter.value = 0;
-  filter.shape = "triangle-down";
-  filter.fill = "lightblue";
-  filter.stroke = "lightblue";
-  filter.stroke_width = "1px";
-  filter.size = 300;
+  // top_level.value = -1;
+  // top_level.shape = "circle",
+  // top_level.fill = "black",
+  // top_level.stroke = "black",
+  // top_level.stroke_width = "1px";
+  // top_level.size = 20;
 
-  node_types[filter.value] = filter;
-
-  filter_p.value = 3;
-  filter_p.shape = "triangle-down";
-  filter_p.fill = "lightgreen";
-  filter_p.stroke = "lightgreen";
-  filter_p.stroke_width = "1px";
-  filter_p.size = 300;
-
-  node_types[filter_p.value] = filter_p;
-
-  segment.value = 1;
-  segment.shape = "square";
-  segment.fill = "lightgray",
-  segment.stroke = "lightgray",
-  segment.stroke_width = "3px";
-  segment.size = 1000;
-
-  node_types[segment.value] = segment;
-
-  top_level.value = -1;
-  top_level.shape = "circle",
-  top_level.fill = "black",
-  top_level.stroke = "black",
-  top_level.stroke_width = "1px";
-  top_level.size = 20;
-
-  node_types[top_level.value] = top_level;
+  // node_types[top_level.value] = top_level;
 
   chart_data = {},
   hour_chart ={},
@@ -1300,159 +1261,7 @@ d3.csv(csv_file, function(error, data) {
       
     }
 
-    // var nl_simulation = d3.forceSimulation(nl_graph_data.nodes)
-    //     // .force("link", d3.forceLink(nl_graph_data.links).distance(200))
-    //     .force("link", d3.forceLink().id(function(d) {return d.id;}).distance(100))
-    //     .force("charge", d3.forceManyBody().strength(-150).distanceMin(10).distanceMax(100))
-    //     .force("center", d3.forceCenter(nl_width / 2, nl_height/2))
-    //     .force("collide", d3.forceCollide().radius(function(d){return node_radius}))
-    //     //.alphaTarget(1)
-    //     //.on("tick", ticked);
-
-    // // var nl_simulation = cola.d3adaptor(d3)
-    // //                     .size([nl_width, nl_height])
-    // //                     .linkDistance(200)
-    // //                     .avoidOverlaps(true)
-
-
-
-    // //build the arrow
-    // nl_graph.append("svg:defs").selectAll("marker")
-    //       .data(["marker-end"])      // Different link/path types can be defined here
-    //     .enter().append("svg:marker")    // This section adds in the arrows
-    //       .attr("id", String)
-    //       .attr("viewBox", "0 -5 10 10")
-    //       .attr("refX", 20)
-    //       .attr("refY", 0)
-    //       .attr("markerWidth", 4)
-    //       .attr("markerHeight", 4)
-    //       .attr("orient", "auto")
-    //       .append("svg:path")
-    //         .attr("d", "M0,-5L10,0L0,5")
-    //         .attr("fill", "gray");
-
-    
-
-    
-
-    // function draw_action_transition_graph(node_link_data){
-    //   draw_node_link(node_link_data);
-    // }
-    
-    
-
-    
-        
-
-    // function draw_node_link(node_link_data){
-
-
-    //   console.log('NODE LINK DATA', node_link_data)
-    //   var node_radius = 8;
-
-    //   //var node = nodes.selectAll("g").data(node_link_data.nodes);
-    //   nl_node = nl_node.data(node_link_data.nodes, function(d) {return d.id;});
-
-    //   nl_node.exit().remove();
-
-    //   var node_enter = nl_node.enter().append("g")
-    //     .on('click', select_action_node)
-    //     // .call(d3.drag()
-    //     //   .on("start", dragstarted)
-    //     //   .on("drag", dragged)
-    //     //   .on("end", dragended));
-        
-    //   node_enter.append('circle')
-    //       .attr("r", function(d){
-    //         if(d.action == 'start' || d.action == 'exit')
-    //           return end_radius
-    //         else
-    //           return node_radius
-    //       })
-    //       .attr("fill", function(d) { 
-    //         //return color(d.group); 
-    //         return colors[d.action];
-    //       })
-      
-    //   node_enter.append('text')
-    //       .style('fill', 'black')
-    //       .style("font-size", "10px")
-    //       .style("text-anchor", "start")
-    //       .attr('dy', 
-    //         //node_radius/2 
-    //         node_radius
-    //         )
-    //       // .style("text-anchor", "middle")
-    //       // .attr('dy', 
-    //       //   //node_radius
-    //       //   node_radius/2 
-    //       //   )
-    //       .text(function(d) {return d.action;})
-
-
-    //   node_enter.append("title") 
-    //       .text(function(d) { return d.id; })
-
-    //   nl_node = node_enter.merge(nl_node)
-                
-    //   nl_node.select('circle')
-    //       .attr('stroke', function(d) { return d.selected? 'black' : 'none' })
-      
-
-    //   //var strokeScale = d3.scaleLinear().domain([0,100]).range([1,5]);
-
-    //   //nl_link = nl_link.data(node_link_data.links);
-    //   nl_link = nl_link.data(node_link_data.links, function(d){return d.id;});
-
-    //   nl_link.exit().remove();
-
-
-    //   var link_enter = nl_link.enter().append("line")
-    //       .attr("stroke-width", function(d) { 
-    //         //return Math.sqrt(d.value);
-    //         return 2; 
-
-    //         //return strokeScale(d.value);
-    //       })
-    //       .attr("marker-end", "url(#marker-end)");
-
-    //   nl_link = link_enter.merge(nl_link);
-
-    //   nl_simulation
-    //       .nodes(node_link_data.nodes)
-    //       .on("tick", ticked);
-    //   nl_simulation.force("link")
-    //       .links(node_link_data.links)
-      
-    //   nl_simulation.alpha(1).restart();
-
-
-
-     
-
-    //   function ticked() {
-    //     //link_enter
-    //     nl_link
-    //         .attr("x1", function(d) { return d.source.x; })
-    //         .attr("y1", function(d) { return d.source.y; })
-    //         .attr("x2", function(d) { return d.target.x; })
-    //         .attr("y2", function(d) { return d.target.y; });
-
-    //     //node_enter.selectAll('circle')
-    //     nl_node.selectAll('circle')
-    //         .attr("cx", function(d) { return d.x; })
-    //         .attr("cy", function(d) { return d.y; });
-
-    //     //node_enter.selectAll('text')
-    //     nl_node.selectAll('text')
-    //         .attr("x", function(d) { return d.x; })
-    //         .attr("y", function(d) { return d.y; });
-    //   }
-
-      
-
-    // }
-
+   
     function dragstarted(d, simulation) {
       if (!d3.event.active) simulation.alphaTarget(0.3).restart();
       d.fx = d.x;
@@ -2187,7 +1996,7 @@ d3.csv(csv_file, function(error, data) {
     }
 
     function create_not_filter(){
-      toggle_button_color("#contains_not_button")
+      //toggle_button_color("#contains_not_button")
       pattern_data.not =("not" in pattern_data)? !pattern_data.not : true;
          
       draw_pattern_graph(pattern_data)
@@ -2208,7 +2017,7 @@ d3.csv(csv_file, function(error, data) {
         consecutive = false;
 
     function create_funnel(){
-      toggle_button_color("#create_funnel_button");
+      //toggle_button_color("#create_funnel_button");
       consecutive = false;
       pressed = !pressed;
       d3.select("#create_funnel_button").text(function(d){return pressed? 'Complete Pattern': 'Add Non-Consecutive Links'});
@@ -2216,7 +2025,7 @@ d3.csv(csv_file, function(error, data) {
     }
 
     function add_link(){
-      toggle_button_color("#add_cons_link_button");
+      //toggle_button_color("#add_cons_link_button");
       consecutive = true;
       pressed = !pressed;
       d3.select("#add_cons_link_button").text(function(d){return pressed? 'Complete Pattern': 'Add Consecutive Links'});
@@ -2621,13 +2430,13 @@ d3.csv(csv_file, function(error, data) {
 
     
     function transitionize_sequences(){
-      toggle_button_color('#transitionize_button')
+      //toggle_button_color('#transitionize_button')
       transitionized = !transitionized
       print_sequences()
     }
 
     function group_sequences(){
-      toggle_button_color('#group_button')
+      //toggle_button_color('#group_button')
       grouped_seqs = !grouped_seqs
       print_sequences()
 
@@ -3402,7 +3211,7 @@ d3.csv(csv_file, function(error, data) {
     }
 
     function create_not_range_filter(){
-      toggle_button_color('#range_not_button')
+      //toggle_button_color('#range_not_button')
 
       partitions.forEach(function(p){
         p.colored = !p.colored
@@ -3431,8 +3240,8 @@ d3.csv(csv_file, function(error, data) {
 
      var fb_svg = d3.select("#build_filter_view")
                     .append("svg")
-                    .attr("width", b_width + b_margin.left + b_margin.right)
-                    .attr("height", b_height + b_margin.top + b_margin.bottom),
+                    // .attr("width", b_width + b_margin.left + b_margin.right)
+                    // .attr("height", b_height + b_margin.top + b_margin.bottom),
                     //.attr("transform", "translate(" + b_margin.left + "," + b_margin.top + ")");
                     
         filter_view = fb_svg.append("g")
@@ -3450,6 +3259,7 @@ d3.csv(csv_file, function(error, data) {
       partitions = []
       var domain_range = o? o.current_range: null;
       update_builder_range(domain_range)
+      
 
       active_range = selected_chart.data()[0].active_range()
 
@@ -3550,12 +3360,12 @@ d3.csv(csv_file, function(error, data) {
 
     //------------ Partition view ------- //
 
-    
+    var builderDiv = d3.select("#build_filter_view")
 
     var b_svg = d3.select("#create_partition_view")
                     .append("svg")
-                    .attr("width", b_width + b_margin.left + b_margin.right)
-                    .attr("height", b_height + b_margin.top + b_margin.bottom)
+                    // .attr("width", b_width + b_margin.left + b_margin.right)
+                    // .attr("height", b_height + b_margin.top + b_margin.bottom)
                     //.attr("transform", "translate(" + b_margin.left + "," + b_margin.top + ")");
                     
         partition_view = b_svg.append("g")
@@ -3576,6 +3386,10 @@ d3.csv(csv_file, function(error, data) {
     
     var partition_width = 4,
           partition_height = 30;
+
+    
+
+
     
 
     function set_partition_value(value){
@@ -3856,9 +3670,9 @@ d3.csv(csv_file, function(error, data) {
     
 
     function update_partition_view(){
-
+      // resize_builder()
      //render selected chart
-     
+ 
 
      if (selected_chart.data()[0]){
 
@@ -4540,10 +4354,15 @@ d3.csv(csv_file, function(error, data) {
   var tree = d3.tree()
         .size([width, height]);
 
+  var treeDiv = d3.select('#tree')
 
-  var svg = d3.select("#tree").append("svg")
-      .attr("width", width + margin.right + margin.left)
-      .attr("height", height + margin.top + margin.bottom)
+  var svg = treeDiv.append("svg")
+      // .attr("width", width + margin.right + margin.left)
+      // .attr("height", height + margin.top + margin.bottom)
+     //  .attr("preserveAspectRatio", "xMinYMin meet")
+     //  .attr("viewBox", "0 0 600 400")
+     // //class to make it responsive
+     //  .classed("svg-content-responsive", true)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -4565,8 +4384,42 @@ d3.csv(csv_file, function(error, data) {
   root.y0 = 0;
 
 
-  update(root);
 
+  window.addEventListener('resize', resize_windows)
+  resize_tree()
+
+  function resize_windows(){
+    resize_tree()
+    resize_builder()
+  }
+  function resize_builder(){
+      var width = builderDiv.node().clientWidth,
+          height = builderDiv.node().clientHeight;
+
+      b_width = width - b_margin.right - b_margin.left,
+      b_height = height - b_margin.top - b_margin.bottom;
+
+      b_range = [0,b_width]
+
+      update_builder_range()
+
+      
+
+      fb_svg
+          .attr("width", width)
+          .attr("height", height);
+
+      b_svg
+          .attr("width", width)
+          .attr("height", height);
+      console.log('builder width', width)
+      console.log('builder height ', height)
+
+      update_filter_data()
+      update_partition_view()
+
+      
+    }
 
 
   d3.select(self.frameElement).style("height", "500px");
@@ -4596,9 +4449,31 @@ d3.csv(csv_file, function(error, data) {
         });
     }
 
+    
+    function resize_tree(){
+      var width = treeDiv.node().clientWidth,
+          height = treeDiv.node().clientHeight;
+
+      svg
+          .attr("width", width)
+          .attr("height", height);
+
+      console.log('tree width', width)
+      console.log(' tree height ', height)
+
+      tree.size([width, height]);
+
+      root.x0 = height / 2;
+      root.y0 = 0;
+
+      update(root)
+    }
 
 
     function update(source) {
+
+
+      
 
       //console.log('UPDATING');
       // Compute the new tree layout.
@@ -6119,7 +5994,7 @@ d3.csv(csv_file, function(error, data) {
 
       only_path = !only_path;
 
-      toggle_button_color("#path_button")
+      //toggle_button_color("#path_button")
       // current_color = current_color == original_color? pressed_color : original_color;
       // d3.select("#path_button").style("background-color", current_color);
 
