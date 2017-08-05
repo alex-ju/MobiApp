@@ -177,10 +177,10 @@
       top: 1em;
     }
 
-    #tree_info_view{
+ /*   #tree_info_view{
       max-width: 425px;
       min-width: 425px;
-    }
+    }*/
 
     </style>
 
@@ -296,7 +296,7 @@
       </div>
       <div class ="col-lg-7 col-md-7 col-sm-7">
         <div class="panel-group" id="segment_info">
-          <div class="panel panel-default">
+          <div class="panel panel-info">
             <div class="panel-heading">
               <h4 class="panel-title">
                 <a data-toggle="collapse" href="#collapse0"> Selected Segment Attributes</a>
@@ -353,7 +353,7 @@
                   
 
                 </div>
-                <div class="panel panel-info">
+                <div class="panel panel-danger">
                   <div class="panel-heading">
                     <h4 class="panel-title">
                       <a data-toggle="collapse" href="#collapse2">Contains Attributes</a>
@@ -1505,7 +1505,7 @@ d3.csv(csv_file, function(error, data) {
 
     var margin_ac = {top: 15, right: 15, bottom: 15, left: 15},
       width_ac = 300 - margin_ac.left - margin_ac.right,
-      height_ac = 150 - margin_ac.top - margin_ac.bottom,
+      height_ac = 165 - margin_ac.top - margin_ac.bottom,
       adjacency_chart = d3.select("#adjacency_chart").append('svg').append("g").attr("transform", "translate(" + margin_ac.left + "," + margin_ac.top + ")");
 
     var center_node = {
@@ -2589,7 +2589,7 @@ d3.csv(csv_file, function(error, data) {
 
     //----------- Filter View -------------- //
     var infoLength = 100,
-        seperation = 40,
+        separation = 40,
         infoRange = [0,infoLength]
         infoScale = d3.scaleLinear().range(infoRange)
 
@@ -2602,8 +2602,8 @@ d3.csv(csv_file, function(error, data) {
 
     var fv_svg = d3.select("#info_view")
                     .append("svg")
-                    .attr("width", nv_width + nv_margin.left + nv_margin.right)
-                    .attr("height", nv_height + nv_margin.top + nv_margin.bottom)
+                    // .attr("width", nv_width + nv_margin.left + nv_margin.right)
+                    // .attr("height", nv_height + nv_margin.top + nv_margin.bottom)
                     //.attr("transform", "translate(" + b_margin.left + "," + b_margin.top + ")");
                     
     var info_view = fv_svg.append("g")
@@ -2620,7 +2620,7 @@ d3.csv(csv_file, function(error, data) {
 
     var results_view = operation_result_view.append('g')
                     .attr("class", "results_view")
-                    .attr("transform", "translate(" + (infoLength+ seperation)  + "," + 0 + ")")
+                    .attr("transform", "translate(" + (infoLength+ separation)  + "," + 0 + ")")
 
     var operation_data = [],
         results_data =[],
@@ -2877,7 +2877,7 @@ d3.csv(csv_file, function(error, data) {
       // Enter any new nodes at the parent's previous position.
       var presultEnter = presult.enter().append("g")
           .attr("class", "presult")
-          .attr("transform", function(d, i) { return "translate(" + (i*(infoLength+ seperation))  + "," + 0 + ")"; })
+          .attr("transform", function(d, i) { return "translate(" + (i*(infoLength+ separation))  + "," + 0 + ")"; })
 
       presultEnter.append('rect')
           .attr("width", infoLength)
@@ -4356,7 +4356,10 @@ d3.csv(csv_file, function(error, data) {
 
   var treeDiv = d3.select('#tree')
 
-  var svg = treeDiv.append("svg")
+  var t_svg = d3.select('#tree').append("svg")
+            .attr('width', "100%")
+            .attr('height', "100%")
+
       // .attr("width", width + margin.right + margin.left)
       // .attr("height", height + margin.top + margin.bottom)
      //  .attr("preserveAspectRatio", "xMinYMin meet")
@@ -4385,19 +4388,15 @@ d3.csv(csv_file, function(error, data) {
 
 
 
-  window.addEventListener('resize', resize_windows)
-  resize_tree()
-
+  
   function resize_windows(){
     resize_tree()
     resize_builder()
   }
   function resize_builder(){
-      var width = builderDiv.node().clientWidth,
-          height = builderDiv.node().clientHeight;
+      var width = builderDiv.node().clientWidth
 
-      b_width = width - b_margin.right - b_margin.left,
-      b_height = height - b_margin.top - b_margin.bottom;
+      b_width = width - b_margin.right - b_margin.left
 
       b_range = [0,b_width]
 
@@ -4407,17 +4406,34 @@ d3.csv(csv_file, function(error, data) {
 
       fb_svg
           .attr("width", width)
-          .attr("height", height);
 
       b_svg
           .attr("width", width)
-          .attr("height", height);
+
+      fv_svg
+          .attr("width", width)
+
       console.log('builder width', width)
       console.log('builder height ', height)
 
-      update_filter_data()
-      update_partition_view()
+      if( $("#build_filter_view").is(':visible'))
+        update_filter_data()
+      else
+        update_partition_view()
 
+      infoLength = width/3,
+      translation = 1.4*infoLength;
+
+      infoRange = [0,infoLength]
+      rScale.range([1,infoLength])
+
+      d3.selectAll('.results_view').remove()
+
+      results_view = operation_result_view.append('g')
+                    .attr("class", "results_view")
+                    .attr("transform", "translate(" + translation  + "," + 0 + ")")
+
+      show_node_view(selected)
       
     }
 
@@ -4452,11 +4468,9 @@ d3.csv(csv_file, function(error, data) {
     
     function resize_tree(){
       var width = treeDiv.node().clientWidth,
-          height = treeDiv.node().clientHeight;
+          height = 2000
 
-      svg
-          .attr("width", width)
-          .attr("height", height);
+      t_svg.attr("width", width)
 
       console.log('tree width', width)
       console.log(' tree height ', height)
@@ -4486,7 +4500,7 @@ d3.csv(csv_file, function(error, data) {
       nodes.forEach(function(d) { d.y = d.depth * DEPTH; });
 
       // Update the nodes…
-      var node = svg.selectAll("g.node")
+      var node = t_svg.selectAll("g.node")
           .data(nodes, function(d) {return d.id || (d.id = ++i); });
 
       // Enter any new nodes at the parent's previous position.
@@ -4659,7 +4673,7 @@ d3.csv(csv_file, function(error, data) {
 
 
       // Update the links…
-      var link = svg.selectAll("path.link")
+      var link = t_svg.selectAll("path.link")
           .data(links, function(d) { return d.id; });
 
       link.style("opacity", function(d){
@@ -5006,6 +5020,26 @@ d3.csv(csv_file, function(error, data) {
 
     //******** horizontal chart ***********
     var char;
+    var margin_hc = {top: 20, right: 20, bottom: 30, left: 100},
+      width_hc = 300 - margin_hc.left - margin_hc.right,
+      height_hc = 175 - margin_hc.top - margin_hc.bottom,
+      horizontal_chart = d3.select("#contains_action_chart").append('svg').append("g").attr("transform", "translate(" + margin_hc.left + "," + margin_hc.top + ")");
+
+      
+      console.log('svg width', width_hc);
+      console.log('svg height', height_hc);
+
+      var x_hc = d3.scaleLinear()
+              .rangeRound([0, width_hc]);
+
+      var y_hc = d3.scaleBand()
+              .rangeRound([0, height_hc])
+              .paddingInner(0.1);
+
+      var z_hc = d3.scaleOrdinal()
+          .range(['steelblue', '#dee2e8'])
+
+      var yAxis_hc = d3.axisLeft(y_hc);
 
 
     function update_horizontal_chart_data() {
@@ -5082,26 +5116,7 @@ d3.csv(csv_file, function(error, data) {
       }
     }
    
-      var margin_hc = {top: 20, right: 20, bottom: 30, left: 100},
-      width_hc = 300 - margin_hc.left - margin_hc.right,
-      height_hc = 150 - margin_hc.top - margin_hc.bottom,
-      horizontal_chart = d3.select("#contains_action_chart").append('svg').append("g").attr("transform", "translate(" + margin_hc.left + "," + margin_hc.top + ")");
-
       
-      console.log('svg width', width_hc);
-      console.log('svg height', height_hc);
-
-      var x_hc = d3.scaleLinear()
-              .rangeRound([0, width_hc]);
-
-      var y_hc = d3.scaleBand()
-              .rangeRound([0, height_hc])
-              .paddingInner(0.1);
-
-      var z_hc = d3.scaleOrdinal()
-          .range(['steelblue', '#dee2e8'])
-
-      var yAxis_hc = d3.axisLeft(y_hc);
 
     // var selected_bar;
 
@@ -6018,6 +6033,10 @@ d3.csv(csv_file, function(error, data) {
       update(root);
 
     }
+
+    window.addEventListener('resize', resize_windows)
+    resize_windows()
+
 
 
   });
