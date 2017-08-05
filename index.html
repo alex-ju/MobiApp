@@ -19,9 +19,8 @@
           <div class="panel panel-default">
             <div class="panel-heading">
               <h4 class="panel-title">
-                <a data-toggle="collapse" href="#collapse0"> Operation Manager</a>
-                <!-- <button type="button" class="close" data-target="#operation_manager" data-dismiss="alert"> <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
-                </button> -->
+
+                <a data-toggle="collapse" href="#collapse0"><span class="glyphicon glyphicon-cog"></span> Operation Manager</a>
                 <button type="button" class="close" id="close_oManager"> <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
                 </button>
               </h4>
@@ -121,8 +120,11 @@
         </div>
       </div>
       <div class = "col-md-5" id="tree_view">
-        <button type="button" id="toggle_oManager" class="btn btn-primary">Operation Manager</button>
-        <h4> TREE DIAGRAM </h4>
+        <button type="button" id="toggle_oManager" class="btn btn-default"><span class="glyphicon glyphicon-cog"></span>
+        </button>
+        <h4 class="text-center"> 
+        TREE DIAGRAM 
+        </h4>
         <div class= "graph" id= "tree"></div>
       </div>
       <div class ="col-md-7">
@@ -137,8 +139,10 @@
               <div class="panel-group" id="accordion">
                 <div class="panel panel-success">
                   <div class="panel-heading">
-                    <h4 class="panel-title">
-                      <a data-toggle="collapse" href="#collapse1">Range Attributes</a>
+                    <h4 class="panel-title"> 
+                      <a data-toggle="collapse" class="info-toggle" href="#collapse1"></a>
+                      Range Attributes
+                      
                     </h4>
                   </div>
                   <div id="collapse1" class="panel-body collapse in">
@@ -148,7 +152,9 @@
                       <div class="panel panel-default">
                         <div class="panel-heading">
                           <h4 class="panel-title">
-                            <a data-toggle="collapse" href="#collapse_count">Count Related</a>
+                            <!-- <a data-toggle="collapse" class="info-toggle" href="#collapse_count"><span class="glyphicon glyphicon-chevron-down" id="show_hide_icon"></span></a> -->
+                            <a data-toggle="collapse" class="info-toggle" href="#collapse_count"></a>
+                            # Count-Related
                           </h4>
                         </div>
                         <div id="collapse_count" class="panel-collapse collapse in">
@@ -162,7 +168,9 @@
                       <div class="panel panel-default">
                         <div class="panel-heading">
                           <h4 class="panel-title">
-                            <a data-toggle="collapse" href="#collapse_time">Time-Related</a>
+                            <a data-toggle="collapse" class="info-toggle" href="#collapse_time"></a>
+                            <span class="glyphicon glyphicon-time"></span>
+                            Time-Related
                           </h4>
                         </div>
                         <div id="collapse_time" class="panel-collapse collapse in">
@@ -187,7 +195,8 @@
                 <div class="panel panel-danger">
                   <div class="panel-heading">
                     <h4 class="panel-title">
-                      <a data-toggle="collapse" href="#collapse2">Contains Attributes</a>
+                      <a data-toggle="collapse" class="info-toggle" href="#collapse2"></a>
+                      Contains Attributes
                     </h4>
                   </div>
                   <div id="collapse2" class="panel-collapse collapse in">
@@ -210,7 +219,8 @@
                 <div class="panel panel-warning">
                   <div class="panel-heading">
                     <h4 class="panel-title">
-                      <a data-toggle="collapse" href="#collapse3">Sequence Details</a>
+                      <a data-toggle="collapse" class="info-toggle" href="#collapse3"></a>
+                      Sequence Details
                     </h4>
                   </div>
                   <div id="collapse3" class="panel-collapse collapse in">
@@ -376,6 +386,10 @@ d3.csv(csv_file, function(error, data) {
     start_chart.dims = starts.all();
     duration_chart.dims = durations.all();
     
+    d3.selectAll("#sequence_details")
+      .on("click", print_sequences);
+
+
     d3.select("#range_button")
       .on("click", show_range_builder);
     //d3.select("#build_filter_button")
@@ -2676,6 +2690,20 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+    function toggle_panel(){
+      if ($('#show_hide_icon').hasClass('glyphicon-chevron-down')){
+        $('#show_hide_icon').removeClass('glyphicon-chevron-down')
+        $('#show_hide_icon').addClass('glyphicon-chevron-right')
+
+      }else{
+
+        $('#show_hide_icon').addClass('glyphicon-chevron-down')
+        $('#show_hide_icon').removeClass('glyphicon-chevron-right')
+
+      }
+      $
+    }
+
     function toggle_tree_info_view(){
       tree_info_view = !tree_info_view
       d3.select('#tree_info_view').style('display', function(d){return tree_info_view? null: 'none'})
@@ -3891,7 +3919,8 @@ d3.csv(csv_file, function(error, data) {
 
       
   var i = 0,
-      duration = 750,
+      //duration = 750,
+      duration = 0,
       root;
 
   var tree = d3.tree()
