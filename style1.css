@@ -180,7 +180,7 @@ html, body {
 
 #tooltip p {
   margin: 0;
-  font-family: Futura;
+  font-family: sans-serif;
   font-size: 8px;
   line-height: 20px;
 }
@@ -213,6 +213,31 @@ top: 1em;
     content: "\e080";    /* adjust as needed, taken from bootstrap.css */
 }
 
+.range_radio {
+
+  font-size: 12px;
+  font-family: sans-serif;
+  font-weight: normal;
+
+}
+
+.top-buffer { margin-top:20px; }
+.left-buffer { margin-left:20px; }
+
+.panel-background{
+  background-color: #f9f9f9;
+}
+
+.inline-center {
+  /*position: relative;
+  display: inline-flex;*/
+  display: flex;
+  text-align: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  padding: 0 3%;
+
+}
 
 
 /*----------*/

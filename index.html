@@ -35,7 +35,7 @@
                 <div class="panel panel-default">
                   <div class="panel-heading">
                     <h4 class="panel-title">
-                      <a data-toggle="collapse" href="#collapse_node"> Node View</a>
+                      <a data-toggle="collapse" class="info-toggle" href="#collapse_node"> Node View</a>
                     </h4>
                   </div>
                   <div id=collapse_node class="panel-body collapse in"> 
@@ -45,7 +45,7 @@
                 <div class="panel panel-default">
                   <div class="panel-heading">
                     <h4 class="panel-title">
-                      <a data-toggle="collapse" href="#collapse_builder"> Operation Builder</a>
+                      <a data-toggle="collapse" class="info-toggle" href="#collapse_builder"> Operation Builder</a>
 
                     </h4>
                   </div>
@@ -57,42 +57,67 @@
                     <div class="tab-content">
                       <div id="range" class = "tab-pane fade in active">
                         <h5>Range Operation Builder</h5>
-                          <ul class="nav nav-pills nav-fill">
-                            <li class="nav-item active">
-                              <a class="nav-link" data-toggle="tab" id="filter_view" href="#r_filter" role="tab">Filter</a>
-                            </li>
-                            <li class="nav-item">
-                              <a class="nav-link" data-toggle="tab" id="partition_view" href="#r_partition" role="tab">Partition</a>
-                            </li>
-                          </ul>
-                          <div class="tab-content">
-                            <div id="r_filter" class = "tab-pane fade in active" role="tabpanel">
-                              <h6>Range Filter Builder</h6>
-                              <div  class="graph" id="build_filter_view"></div>
-                              <label class="checkbox-inline"><input id="range_not_button" type="checkbox" value="">NOT</label>
-                              <div class="btn-group-vertical">
-                                <button type="button" id="toggle_range_button" class="btn btn-primary">Toggle current/full range</button>
-                                <button type="button" id="applyFilter_button" class="btn btn-primary">Apply Range Filter</button>
+                        <!-- <button type="button" id="toggle_range_button" class="btn btn-primary">Toggle current/full range</button> -->
+                        
+                        <ul class="nav nav-pills nav-fill">
+                          <li class="nav-item active">
+                            <a class="nav-link" data-toggle="tab" id="filter_view" href="#r_filter" role="tab">Filter</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" id="partition_view" href="#r_partition" role="tab">Partition</a>
+                          </li>
+                        </ul>
+                        <div class="tab-content">
+                          <div id="r_filter" class = "tab-pane fade in active panel-background" role="tabpanel">
+                            <h6>Range Filter Builder</h6>
+                            <div class="text-center">
+                              <div class="radio-inline">
+                                <label class="range_radio"><input type="radio" id="full_range_opt" name="optradio">Full Range</label>
                               </div>
-                              <div class= "button" id="input_filter_value">
-                                <input type="text" id="partition_value">
+                              <div class="radio-inline">
+                                <label class="range_radio"><input checked type="radio" id= "current_range_opt" name="optradio">Current Range</label>
+                              </div>
+                                <!-- <label class="btn btn-default center-block"><input type="radio">All</label>
+                                <label class="btn btn-default active center-block"><input type="radio">Filtered</label> -->
+                            </div>
+                            <div  class="graph" id="build_filter_view"></div>
+          
+                            <div class="range_radio inline-center" id="input_filter_value">
+                              <div>
+                              Start: 
+                              <input type="text" size="6" id="partition_value">
+                              </div>
+                              <div class="left-buffer">
+                              End:
+                              <input type="text" size="6" id="partition_value2">
                               </div>
                             </div>
-                            <div id="r_partition" class="tab-pane fade in" role="tabpanel">
-                              <h6>Range Partition Builder</h6>
-                              <div  class="graph" id="create_partition_view"></div>
-                              <div class="btn-group-vertical">
-                                <button type="button" id="addPartition_button" class="btn btn-primary">Add Partition</button>
-                                <button type="button" id="removePartition_button" class="btn btn-primary">Remove Partition</button>
-                                <button type="button" id="applyPartition_button" class="btn btn-primary">Apply Partition</button>
+                            <div class="text-right top-buffer">
+                              <label class="checkbox-inline"><input id="range_not_button" type="checkbox" value="">NOT</label>
+                              <div class="btn-group">
+                                <button type="button" id="applyFilter_button" class="btn btn-primary">Apply</button>
                               </div>
-                              <div class= "button" id="input_partition_value">
-                                <input type="text" id="partition_value">
+                            </div>
+                          </div>
+                          <div id="r_partition" class="tab-pane fade in panel-background" role="tabpanel">
+                            <h6>Range Partition Builder</h6>
+                            <div  class="graph" id="create_partition_view"></div>
+                            <div class="btn-group-vertical">
+                              <button type="button" id="addPartition_button" class="btn btn-primary">Add Partition</button>
+                              <button type="button" id="removePartition_button" class="btn btn-primary">Remove Partition</button>
+                              <!-- <button type="button" id="applyPartition_button" class="btn btn-primary">Apply Partition</button> -->
+                            </div>
+                            <div class= "button" id="input_partition_value">
+                              <input type="text" id="partition_value">
+                            </div>
+                            <div class="text-right top-buffer">
+                              <div class="btn-group">
+                                <button type="button" id="applyPartition_button" class="btn btn-primary">Apply</button>
                               </div>
-
                             </div>
                           </div>
                         </div>
+                      </div>
                       
                       <div id="contains" class = "tab-pane fade in">
                         <h5>Contains Operation Builder</h5>
@@ -152,7 +177,6 @@
                       <div class="panel panel-default">
                         <div class="panel-heading">
                           <h4 class="panel-title">
-                            <!-- <a data-toggle="collapse" class="info-toggle" href="#collapse_count"><span class="glyphicon glyphicon-chevron-down" id="show_hide_icon"></span></a> -->
                             <a data-toggle="collapse" class="info-toggle" href="#collapse_count"></a>
                             # Count-Related
                           </h4>
@@ -223,7 +247,7 @@
                       Sequence Details
                     </h4>
                   </div>
-                  <div id="collapse3" class="panel-collapse collapse in">
+                  <div id="collapse3" class="panel-collapse collapse">
                     <div class="panel-body">
                       <div id="sequences">
                         <label class="checkbox-inline"><input id="group_sequences" type="checkbox" value="">Group Sequences</label>
@@ -421,8 +445,10 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#applyPartition_button")
       .on("click", create_partition);
 
-    d3.select("#toggle_range_button")
-      .on("click", toggle_builder_range);
+    d3.select("#full_range_opt")
+      .on("click", update_to_full_range);
+    d3.select("#current_range_opt")
+      .on("click", update_to_current_range);
     d3.select("#applyFilter_button")
       .on("click", create_range_filter);
     d3.select("#range_not_button")
@@ -2197,7 +2223,7 @@ d3.csv(csv_file, function(error, data) {
           show = show_text
 
 
-      var labels = {text: ["# of seqs:", "% of previous:", "% of total:"], show:show},
+      var labels = {text: ["# of seqs:", "% relative:", "% total:"], show:show},
           values = {text: [size, rel, abs], show:show}
       
       result.text_data = [labels, values]
@@ -2242,7 +2268,7 @@ d3.csv(csv_file, function(error, data) {
       if (o.type == 'range'){
         infoScale = update_scale(o.range, infoRange)
         operation_data = create_range_filter_data(o, infoScale)
-        label_text =['Chart: ', 'Domain range: ', 'Filtered range: ']
+        label_text =['Chart: ', 'Domain: ', 'Filtered: ']
         var value_text = [o.div]
         var domain_range = format_range_text(o.range),
             filtered_range = format_range_text(o.extents)
@@ -2793,9 +2819,9 @@ d3.csv(csv_file, function(error, data) {
 
     // ------------ Filter Builder ------------------- //
 
-    var b_margin = {top: 20, right:25, bottom: 20, left: 25},
+    var b_margin = {top: 20, right:15, bottom: 10, left: 15},
       b_width = 400 - b_margin.right - b_margin.left,
-      b_height = 200 - b_margin.top - b_margin.bottom,
+      b_height = 130 - b_margin.top - b_margin.bottom,
       b_range= [0, b_width],
       builder_range,
       partitions =[],
@@ -2811,6 +2837,7 @@ d3.csv(csv_file, function(error, data) {
 
      var fb_svg = d3.select("#build_filter_view")
                     .append("svg")
+                    .attr("height", b_height)
                     // .attr("width", b_width + b_margin.left + b_margin.right)
                     // .attr("height", b_height + b_margin.top + b_margin.bottom),
                     //.attr("transform", "translate(" + b_margin.left + "," + b_margin.top + ")");
@@ -2931,16 +2958,17 @@ d3.csv(csv_file, function(error, data) {
 
     //------------ Partition view ------- //
 
-    var builderDiv = d3.select("#build_filter_view")
+    var builderDiv = d3.select("#info_view")
 
     var b_svg = d3.select("#create_partition_view")
                     .append("svg")
+                    .attr("height", b_height)
                     // .attr("width", b_width + b_margin.left + b_margin.right)
                     // .attr("height", b_height + b_margin.top + b_margin.bottom)
                     //.attr("transform", "translate(" + b_margin.left + "," + b_margin.top + ")");
                     
         partition_view = b_svg.append("g")
-                      .attr("transform", "translate(" + b_margin.left + "," + b_margin.top + ")");
+                      .attr("transform", "translate(" + b_margin.left + "," + -b_margin.top/2 + ")");
 
 
     var selected_partition_bar,
@@ -3116,6 +3144,25 @@ d3.csv(csv_file, function(error, data) {
     var fullRange = true,
         rangeEnds = [],
         end_len = 15;
+
+    function update_to_full_range(){
+      var range = selected_chart.data()[0].range()
+      fullRange= true
+      update_builder_range(range)
+      create_filter_data(builder_range, [partitions[2].value, partitions[1].value] )
+      update_filter_view()
+
+    }
+
+    function update_to_current_range(){
+      fullRange = false
+      var range = selected_chart.data()[0].current_range()
+      update_builder_range(range)
+      get_range_ends_data()
+      create_filter_data(builder_range, [partitions[2].value, partitions[1].value] )
+      update_filter_view()
+
+    }
 
 
     function toggle_builder_range(){
@@ -3515,7 +3562,7 @@ d3.csv(csv_file, function(error, data) {
               .style("text-anchor", "left")
               .style("font-size", "8px")
               .style("fill","black")
-              .text(function(d) { return x_domain_max? "LO" : "";});
+              .text(function(d) { return x_domain_max? ">" : "";});
 
 
             g.append("clipPath")
@@ -3895,7 +3942,7 @@ d3.csv(csv_file, function(error, data) {
 
   var data0 = [
       { "name": "Root", "parent": "null", "visible":1, "value":-1},
-      { "name" : "Segment A", "parent":"Root", "value":1, "visible":1 }
+      { "name" : "Segment A", "parent":"Root", "value":1, "visible":1}
       ];
 
   total_size = all.reduceCount().value();
@@ -3911,6 +3958,8 @@ d3.csv(csv_file, function(error, data) {
   var treeData = [];
 
   unflatten(treeData, data);
+
+
 
 
   // ************** Generate the tree diagram  *****************
@@ -3957,6 +4006,8 @@ d3.csv(csv_file, function(error, data) {
   root = d3.hierarchy(treeData[0], function(d) { return d.children; })
   root.x0 = height / 2;
   root.y0 = 0;
+
+
 
 
 
@@ -4513,9 +4564,8 @@ d3.csv(csv_file, function(error, data) {
         console.log("Selected node: ", selected);
 
         show_node_view(selected);
-        
-        //concatenate_action_strings();
-        find_all_patterns();
+      
+        //find_all_patterns();
 
         if (selected.data.value == 1) {
           if (!selected_segment){
@@ -4547,7 +4597,7 @@ d3.csv(csv_file, function(error, data) {
         console.log('about to update')
 
         update(selected);
-        showDiv();
+        //showDiv();
 
 
     }
@@ -5543,39 +5593,39 @@ d3.csv(csv_file, function(error, data) {
         }
     })();
 
-    var original_color = "white",
-        pressed_color = "lightgray",
-        current_color = original_color;
+    // var original_color = "white",
+    //     pressed_color = "lightgray",
+    //     current_color = original_color;
 
     // function toggle_button_color(button_id){
     //   current_color = current_color == original_color? pressed_color : original_color;
     //   d3.select(button_id).style("background-color", current_color);
     // }
-    function toggle_button_color(button_id){
-      var button = d3.select(button_id)
-      current_color = button.node().style.backgroundColor 
-      if (current_color == "") current_color = original_color
-      var color = current_color == original_color? pressed_color : original_color;
-      d3.select(button_id).style("background-color", color);
-    }
+    // function toggle_button_color(button_id){
+    //   var button = d3.select(button_id)
+    //   current_color = button.node().style.backgroundColor 
+    //   if (current_color == "") current_color = original_color
+    //   var color = current_color == original_color? pressed_color : original_color;
+    //   d3.select(button_id).style("background-color", color);
+    // }
 
-    function toggle_operation_buttons(button_id){
-      var check_id = button_id == "#contains_button"? "#range_button": "#contains_button"
-      if(d3.select(check_id).node().style.backgroundColor == pressed_color)
-        toggle_button_color(check_id)
+    // function toggle_operation_buttons(button_id){
+    //   var check_id = button_id == "#contains_button"? "#range_button": "#contains_button"
+    //   if(d3.select(check_id).node().style.backgroundColor == pressed_color)
+    //     toggle_button_color(check_id)
       
-      toggle_button_color(button_id)
+    //   toggle_button_color(button_id)
 
-    }
+    // }
 
-    function toggle_range_buttons(button_id){
-      var check_id = button_id == "#build_partition_button"? "#build_filter_button": "#build_partition_button"
-      if(d3.select(check_id).node().style.backgroundColor == pressed_color)
-        toggle_button_color(check_id)
+    // function toggle_range_buttons(button_id){
+    //   var check_id = button_id == "#build_partition_button"? "#build_filter_button": "#build_partition_button"
+    //   if(d3.select(check_id).node().style.backgroundColor == pressed_color)
+    //     toggle_button_color(check_id)
       
-      toggle_button_color(button_id)
+    //   toggle_button_color(button_id)
 
-    }
+    // }
 
     function show_path_only() {
 
@@ -5606,6 +5656,9 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+
+    //make sure first node is selected
+    select_node(root.children[0])
     window.addEventListener('resize', resize_windows)
     resize_windows()
 
