@@ -1,0 +1,337 @@
+@import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700);
+
+.bar rect {
+  fill: steelblue;
+}
+
+.bar:hover {
+  fill: brown;
+}
+
+.axis--x path {
+  display: none;
+}
+
+.node {
+    cursor: pointer;
+}
+
+
+.node text {
+  font: 12px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+}
+
+.graph {
+  left: 0px;
+  position: relative;
+  top: 0px;
+  bottom: 0px;
+  right: 0px;
+
+}
+
+.info {
+  left: 0px;
+  position: relative;
+  top: 0px;
+  bottom: 0px;
+  right: 0px;
+
+}
+
+
+.wrapper {
+  display: inline-flex;
+  position: absolute;
+  right: 10px;
+  left: 10px;
+}
+
+
+
+    
+
+
+
+
+.charts {
+  padding: 2px 0;
+  -webkit-flex-flow: row wrap;
+  display: -ms-flexbox;
+  -ms-flex-flow: row wrap
+/*  display: inline-flex;*/
+}
+
+.chart {
+  display: inline-block;
+  position: relative;
+/*  height: 151px;*/
+  margin-bottom: 20px;
+}
+
+
+.reset {
+  padding-left: 1em;
+  font-size: smaller;
+  color: #ccc;
+}
+
+.background.bar {
+  fill: #ccc;
+}
+
+.foreground.bar {
+  fill: steelblue;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.noAxis path, .noAxis line {
+  fill: none;
+  stroke:none;
+  shape-rendering: crispEdges;
+}
+
+.brush rect.extent {
+  fill: steelblue;
+  fill-opacity: .125;
+}
+
+.brush .resize path {
+  fill: #eee;
+  stroke: #666;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+#svg_container {
+    width: 100%;
+    height: 100%;
+}
+
+#tree{
+  height:1500px;
+}
+
+
+
+.leftovers {
+  fill: gray;
+}
+
+.partition rect{
+  fill: steelblue;
+}
+
+.hidden{display:none;}
+
+.noAxis path, .noAxis line {
+  fill: none;
+  stroke:none;
+  shape-rendering: crispEdges;
+}
+
+
+.links line {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+#tooltip {
+  position: absolute;
+  height: 20px;
+  width: 65px;
+  padding: 2px;
+  background-color: white;
+/*        -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+  -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);*/
+  pointer-events: none;
+}
+
+#tooltip.hidden {
+  display: none;
+}
+
+#tooltip p {
+  margin: 0;
+  font-family: Futura;
+  font-size: 8px;
+  line-height: 20px;
+}
+#cy {
+height: 100%;
+width: 100%;
+position: absolute;
+left: 0;
+top: 0;
+}
+
+#info {
+color: #c88;
+font-size: 1em;
+position: absolute;
+z-index: -1;
+left: 1em;
+top: 1em;
+}
+
+
+.panel-heading .info-toggle:after {
+    /* symbol for "opening" panels */
+    font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+    content: "\e114";    /* adjust as needed, taken from bootstrap.css */
+    float: right;        /* adjust as needed */
+}
+.panel-heading .info-toggle.collapsed:after {
+    /* symbol for "collapsed" panels */
+    content: "\e080";    /* adjust as needed, taken from bootstrap.css */
+}
+
+
+
+/*----------*/
+
+/*body {
+  font-family: "Helvetica Neue";
+  margin: 40px auto;
+  width: 960px;
+  min-height: 2000px;
+}*/
+
+/*#body {
+  position: relative;
+}*/
+
+/*    footer {
+  padding: 2em 0 1em 0;
+  font-size: 12px;
+}*/
+
+/*h1 {
+  font-size: 96px;
+  margin-top: .3em;
+  margin-bottom: 0;
+}
+
+h1 + h2 {
+  margin-top: 0;
+}
+
+h2 {
+  font-weight: 400;
+  font-size: 28px;
+}
+
+h1, h2 {
+  font-family: "Yanone Kaffeesatz";
+  text-rendering: optimizeLegibility;
+}
+
+#body > p {
+  line-height: 1.5em;
+  width: 640px;
+  text-rendering: optimizeLegibility;
+}*/
+
+/*.svg-container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 10px;
+    left: 0;
+}
+*/
+
+/*
+.builder {
+  display: inline-block;
+  position: relative;
+  height: 151px;
+  margin-bottom: 20px;
+}
+*/
+/*.builder_svg {
+  display: inline-block;
+  position: relative;
+  height: 151px;
+  margin-bottom: 20px;
+}*/
+
+
+/*
+.builder {
+  -webkit-flex-flow: row wrap;
+  display: -ms-flexbox;
+  -ms-flex-flow: row wrap
+}
+*/
+/*.button_box {
+  position: relative;
+  display: inline-block;
+
+}
+
+.button_box_h {
+  position: relative;
+  display: inline-flex;
+
+}
+
+.button {
+
+  position:relative;
+}
+*/
+/*.button_box button {
+  left: 50px;
+  position: relative;
+  display: block;
+  width: 100px;
+  height: 20px;
+
+}*/
+
+/*div {
+  border: 1px solid black;
+}*/
+
+/*.button {
+  position: relative;
+  top: 20px;
+  display: block;
+  text-align:center;
+  width: 100px;
+}*/
