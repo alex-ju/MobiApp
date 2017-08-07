@@ -85,11 +85,12 @@
                             <div class="range_radio inline-center" id="input_filter_value">
                               <div>
                               Start: 
-                              <input type="text" size="6" id="partition_value">
+                              <!-- <input type="text" size="6" id="partition_value"> -->
+                              <input type="text" size="6" id="range_start_value">
                               </div>
                               <div class="left-buffer">
                               End:
-                              <input type="text" size="6" id="partition_value2">
+                              <input type="text" size="6" id="range_end_value">
                               </div>
                             </div>
                             <div class="text-right top-buffer">
@@ -2818,6 +2819,8 @@ d3.csv(csv_file, function(error, data) {
     }
 
     // ------------ Filter Builder ------------------- //
+    var partition_width = 5,
+          partition_height = 25;
 
     var b_margin = {top: 20, right:15, bottom: 10, left: 15},
       b_width = 400 - b_margin.right - b_margin.left,
@@ -2826,13 +2829,55 @@ d3.csv(csv_file, function(error, data) {
       builder_range,
       partitions =[],
       range_axis,
-      rangeHeight = 15;
+      rangeHeight = partition_height/2;
+
+    var range_end_input = d3.selectAll("#range_end_value")
+    var range_start_input = d3.selectAll("#range_start_value")
+
+
+
+
+    // range_end_input.on("input", function(){
+
+    //                       set_range_end(this.value)
+                
+    //                     })
+
+    range_start_input.on("input", function(){
+                          set_range_start(this.value)
+                
+                        })
+
+    function set_range_end(value){
+      console.log('going to set the range end')
+      console.log(range_end_bar)
+      range_end_bar.value = value;
+      range_end_bar.x = builder_range(value);
+      update_partition_bars(partitions);
+      update_filter_view()
+      
+
+    }
+
+    function set_range_start(value){
+      console.log('going to set the range start')
+      
+      range_start_bar.value = value;
+      range_start_bar.x = builder_range(value);
+      update_partition_bars(partitions);
+      update_filter_view()
+      
+
+    }
 
     var partition_input = d3.selectAll("#partition_value")
               
 
         partition_input.on("input", function(){
                 set_partition_value(this.value);
+                })
+        range_end_input.on("input", function(){
+                set_range_end(this.value);
                 })
 
      var fb_svg = d3.select("#build_filter_view")
@@ -2867,12 +2912,7 @@ d3.csv(csv_file, function(error, data) {
         var extents = o? o.extents: active_range
 
         create_filter_data(builder_range, extents)
-        //     max_value = builder_range.domain()[1];
-  
-        // partitions.push( {value: max_value , colored: false, x: builder_range(max_value), hide:true})
-        // partitions.push( {value: extents[1], colored: true, x:builder_range(extents[1])})
-        // partitions.push( {value: extents[0], colored: false, x:builder_range(extents[0])})
-  
+
       
       }
 
@@ -2886,8 +2926,13 @@ d3.csv(csv_file, function(error, data) {
       var max_value = scale.domain()[1];
   
         partitions.push( {value: max_value , colored: false, x: scale(max_value), hide:true})
-        partitions.push( {value: extents[1], colored: true, x:scale(extents[1])})
-        partitions.push( {value: extents[0], colored: false, x:scale(extents[0])})
+        partitions.push( {value: extents[1], id: 'end', colored: true, x:scale(extents[1])})
+        partitions.push( {value: extents[0], id:'start', colored: false, x:scale(extents[0])})
+
+        range_end_bar= partitions[1]
+        range_end_input.property("value", range_end_bar.value)
+        range_start_bar= partitions[2]
+        range_start_input.property("value", range_start_bar.value)
     }
     
 
@@ -2972,6 +3017,8 @@ d3.csv(csv_file, function(error, data) {
 
 
     var selected_partition_bar,
+        range_end_bar,
+        range_start_bar,
         barId= 1,
         range_bar = partition_view.append("g")
           .attr("transform", "translate(" + 0 + "," + b_height/2 +")")
@@ -2983,8 +3030,9 @@ d3.csv(csv_file, function(error, data) {
         partitions = [];
 
     
-    var partition_width = 4,
-          partition_height = 30;
+    // var partition_width = 4,
+    //       partition_height = 30;
+
 
     
 
@@ -2993,6 +3041,7 @@ d3.csv(csv_file, function(error, data) {
 
     function set_partition_value(value){
       if (selected_partition_bar){
+        console.log('selected partition bar', selected_partition_bar)
         selected_partition_bar.value = value;
         selected_partition_bar.x = builder_range(value);
         update_partition_bars(partitions);
@@ -3126,6 +3175,8 @@ d3.csv(csv_file, function(error, data) {
 
          
          update_filter_view()
+         range_start_input.property("value", range_start_bar.value)
+         range_end_input.property("value", range_end_bar.value)
          partition_input.property("value", selected_partition_bar.value);
       }
 
@@ -3557,10 +3608,10 @@ d3.csv(csv_file, function(error, data) {
                     })
             g.append("text")
               .attr("y", height+2)
-              .attr("x", leftover_x)
+              .attr("x", leftover_x+1)
               .attr("dy", "1em")
               .style("text-anchor", "left")
-              .style("font-size", "8px")
+              .style("font-size", "10px")
               .style("fill","black")
               .text(function(d) { return x_domain_max? ">" : "";});
 
