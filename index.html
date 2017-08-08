@@ -52,7 +52,7 @@
                   <div id=collapse_builder class="panel-body collapse in"> 
                     <ul class="nav nav-tabs" style="margin-bottom:1px">
                       <li class="active"><a style="background-color:#f4fff5;" data-toggle="tab" href="#range">Range</a></li>
-                      <li><a style="background-color:#fff7f7" data-toggle="tab" href="#contains">Contains</a></li>
+                      <li><a style="background-color:#fff7f7" data-toggle="tab" id="contains_button" href="#contains">Contains</a></li>
                     </ul>
                     <div class="tab-content">
                       <div id="range" class = "tab-pane fade in active">
@@ -95,7 +95,7 @@
                               </div>
                             </div>
                             <div class="text-right top-buffer">
-                              <label class="checkbox-inline"><input id="range_not_button" type="checkbox" value="">NOT</label>
+                              <label class="checkbox-inline right-buffer"><input id="range_not_button" type="checkbox" value="">NOT</label>
                               <div class="btn-group">
                                 <button type="button" id="applyFilter_button" class="btn btn-primary">Apply</button>
                               </div>
@@ -139,19 +139,66 @@
                       
                       <div id="contains" class = "tab-pane fade in">
                         <h5>Contains Operation Builder</h5>
-                        <div  class="graph" id="pb_graph"></div>
-                        <div class="graph" id ="action_list"> </div>
-                        <div class="btn-group-vertical">
-                          <button type="button" id="add_node_button" class="btn btn-primary">Add Action</button>
-                          <button type="button" id="remove_node_button" class="btn btn-primary">Remove Action</button>
+                        <div class="inline">
+                          <div  class="graph" id="pb_graph"></div>
+                          <div style="width:140px;" >
+                            <div class="text-center">
+                              <button type="button" id="clear_pb_button" class="btn btn-sm btn-default btn-block">Clear All</button>
+                            </div>
+                            <div class="panel-group" id="operation_info">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  Actions
+                                  <a data-toggle="collapse" class="info-toggle" href="#collapse_actions"></a>
+                                </div>
+                                <div id=collapse_actions class="panel-body collapse">
+
+                                  
+                                  <div class="btn-toolbar">
+                                    <button class="btn btn-xs btn-success" id="add_node_button" type="button">
+                                      <span class="glyphicon glyphicon-plus"></span>
+                                    </button>
+                                    <button class="btn btn-xs btn-danger" id="remove_node_button" type="button">
+                                      <span class="glyphicon glyphicon-minus"></span>
+                                    </button>
+                                    <button class="btn btn-xs btn-default" id="toggle_many_button" type="button">
+                                      1/+
+                                    </button>
+                                  </div>
+                                  <div class='top-buffer'>
+                                    Actions:
+                                    <div class="graph scroll border" style=" height: 110px; width: 100px;" id ="action_list"> </div>
+                                  </div>
+                                </div>
+
+                              </div>
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  Links
+                                  <a data-toggle="collapse" class="info-toggle" href="#collapse_links"></a>
+                                </div>
+                                <div id=collapse_links class="panel-body collapse">
+                                  <div class=btn-group-vertical data-toggle="buttons">
+                                    <label class="btn btn-sm btn-default" id="add_cons_link_button"><input  name="link_radio" type="radio" >Consecutive</label>
+                                    <label class="btn btn-sm btn-default" id="create_funnel_button"><input name="link_radio" type="radio" >Non-Consecutive</label>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+
+                          </div>
+                          <!-- <div class="graph" id ="action_list"> </div> -->
+                        </div>
+                        <!-- <div class="btn-group-vertical">
+                          
                           <button type="button" id="add_cons_link_button" class="btn 
                           btn-primary">Add Consecutive Links</button>
                           <button type="button" id="create_funnel_button" class="btn btn-primary">Add Non-Consecutive Links</button>
-                          <button type="button" id="toggle_many_button" class="btn btn-primary">Toggle one or many</button>
-                          <button type="button" id="clear_pb_button" class="btn btn-primary">Clear All</button>
-                        </div>
+                     
+                        </div> -->
                         <div class="text-right top-buffer">
-                          <label class="checkbox-inline"><input id="contains_not_button" type="checkbox" value="">NOT</label>
+                          <label class="checkbox-inline right-buffer"><input id="contains_not_button" type="checkbox" value="">NOT</label>
                           <div class="btn-group">
                             <button type="button" id="apply_contains_operation" class="btn btn-primary">Apply</button>
                             <button type="button" id="apply_funnel_button" class="btn btn-primary">Apply as Funnel</button>
@@ -275,8 +322,7 @@
                         <label class="checkbox-inline"><input id="group_sequences" type="checkbox" value="">Group Sequences</label>
                         <label class="checkbox-inline"><input id="transitionize_sequences" type="checkbox" value="">Transitionize Sequences</label>
                     
-                        <div id="sequences_text" style=" height: 200px; width: 500px;
-                            margin-left: 20px; margin-top: 20px;overflow: scroll;"> 
+                        <div id="sequences_text" class="border scroll" style=" height: 200px; width: 500px; margin-left: 20px; margin-top: 20px;"> 
                         </div>
                       </div>
                     </div>
@@ -1463,8 +1509,7 @@ d3.csv(csv_file, function(error, data) {
     
     var pb_margin = {top: 20, right:20, bottom: 20, left: 20},
         pb_svg = d3.select("#pb_graph").append("svg")
-                    .attr("width", 300)
-                    .attr("height", 250),
+                    .attr("height", 400),
         pb_width = +pb_svg.attr("width")- pb_margin.right - pb_margin.left,
         pb_height = +pb_svg.attr("height")- pb_margin.top - pb_margin.bottom;
 
@@ -1473,6 +1518,7 @@ d3.csv(csv_file, function(error, data) {
                           .attr('width', "100%")
                           .attr('height', '100%')
                           .attr('fill', 'white')
+                          .attr('stroke', 'lightgray')
 
     var pb_graph = pb_svg.append("g")
                     .attr("transform", "translate(" + pb_margin.left + "," + pb_margin.top + ")"),
@@ -1579,7 +1625,10 @@ d3.csv(csv_file, function(error, data) {
     function create_not_filter(){
       //toggle_button_color("#contains_not_button")
       pattern_data.not =("not" in pattern_data)? !pattern_data.not : true;
-         
+      if($('#apply_funnel_button').is(':disabled'))
+        $('#apply_funnel_button').prop('disabled', false);
+      else
+        $('#apply_funnel_button').prop('disabled', true);
       draw_pattern_graph(pattern_data)
     }
 
@@ -1600,16 +1649,16 @@ d3.csv(csv_file, function(error, data) {
     function create_funnel(){
       //toggle_button_color("#create_funnel_button");
       consecutive = false;
-      pressed = !pressed;
-      d3.select("#create_funnel_button").text(function(d){return pressed? 'Complete Pattern': 'Add Non-Consecutive Links'});
+      pressed = true;
+      // d3.select("#create_funnel_button").text(function(d){return pressed? 'Complete Pattern': 'Add Non-Consecutive Links'});
 
     }
 
     function add_link(){
       //toggle_button_color("#add_cons_link_button");
       consecutive = true;
-      pressed = !pressed;
-      d3.select("#add_cons_link_button").text(function(d){return pressed? 'Complete Pattern': 'Add Consecutive Links'});
+      pressed = true;
+      // d3.select("#add_cons_link_button").text(function(d){return pressed? 'Complete Pattern': 'Add Consecutive Links'});
 
     }
 
@@ -1808,6 +1857,7 @@ d3.csv(csv_file, function(error, data) {
     }
 
     var contains_not_color = '#54575b'
+    var contains_not_bg_color = '#c5c8cc'
 
 
     function draw_pattern_graph(node_link_data){
@@ -1817,7 +1867,7 @@ d3.csv(csv_file, function(error, data) {
 
       var not = node_link_data.not,
           highlight_color = not? 'white': 'black';
-          background_color = not? contains_not_color: 'white';
+          background_color = not? contains_not_bgcolor: 'white';
 
       var background = pb_svg.select('.background')
                         .attr('fill', background_color)
@@ -2181,13 +2231,13 @@ d3.csv(csv_file, function(error, data) {
                   .domain([0, original_size])
                   .range(rRange)
 
-    var fv_svg = d3.select("#info_view")
+    var nv_svg = d3.select("#info_view")
                     .append("svg")
                     // .attr("width", nv_width + nv_margin.left + nv_margin.right)
                     // .attr("height", nv_height + nv_margin.top + nv_margin.bottom)
                     //.attr("transform", "translate(" + b_margin.left + "," + b_margin.top + ")");
                     
-    var info_view = fv_svg.append("g")
+    var info_view = nv_svg.append("g")
                       .attr("transform", "translate(" + nv_margin.left + "," + nv_margin.top + ")")
 
     var operation_result_view  = info_view.append("g")
@@ -3424,7 +3474,7 @@ d3.csv(csv_file, function(error, data) {
         update_filter_data()
       else
         update_partition_view()
-      
+
 
       // if (active_builder_view == 'partition_builder')
       //   update_partition_view();
@@ -4114,7 +4164,8 @@ d3.csv(csv_file, function(error, data) {
 
       update_builder_range()
 
-      
+       p_width = (width< 235)? width: width-150
+      //p_width = (0.25*width <100)? width-110: 0.75*width
 
       fb_svg
           .attr("width", width)
@@ -4122,8 +4173,11 @@ d3.csv(csv_file, function(error, data) {
       b_svg
           .attr("width", width)
 
-      fv_svg
+      nv_svg
           .attr("width", width)
+
+      pb_svg
+          .attr("width", p_width)
 
       console.log('builder width', width)
       console.log('builder height ', height)
@@ -4146,6 +4200,7 @@ d3.csv(csv_file, function(error, data) {
                     .attr("transform", "translate(" + translation  + "," + 0 + ")")
 
       show_node_view(selected)
+      draw_pattern_graph(pattern_data)
       
     }
 
@@ -5681,40 +5736,6 @@ d3.csv(csv_file, function(error, data) {
             d3.select(this).style("fill", currentColor);
         }
     })();
-
-    // var original_color = "white",
-    //     pressed_color = "lightgray",
-    //     current_color = original_color;
-
-    // function toggle_button_color(button_id){
-    //   current_color = current_color == original_color? pressed_color : original_color;
-    //   d3.select(button_id).style("background-color", current_color);
-    // }
-    // function toggle_button_color(button_id){
-    //   var button = d3.select(button_id)
-    //   current_color = button.node().style.backgroundColor 
-    //   if (current_color == "") current_color = original_color
-    //   var color = current_color == original_color? pressed_color : original_color;
-    //   d3.select(button_id).style("background-color", color);
-    // }
-
-    // function toggle_operation_buttons(button_id){
-    //   var check_id = button_id == "#contains_button"? "#range_button": "#contains_button"
-    //   if(d3.select(check_id).node().style.backgroundColor == pressed_color)
-    //     toggle_button_color(check_id)
-      
-    //   toggle_button_color(button_id)
-
-    // }
-
-    // function toggle_range_buttons(button_id){
-    //   var check_id = button_id == "#build_partition_button"? "#build_filter_button": "#build_partition_button"
-    //   if(d3.select(check_id).node().style.backgroundColor == pressed_color)
-    //     toggle_button_color(check_id)
-      
-    //   toggle_button_color(button_id)
-
-    // }
 
     function show_path_only() {
 

@@ -16,6 +16,12 @@
     cursor: pointer;
 }
 
+.partition{
+  cursor: pointer;
+}
+
+
+
 
 .node text {
   font: 12px sans-serif;
@@ -223,6 +229,7 @@ top: 1em;
 
 .top-buffer { margin-top:20px; }
 .left-buffer { margin-left:20px; }
+.right-buffer { margin-right:10px; }
 
 .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover{
   margin-bottom: -1px;
@@ -242,6 +249,25 @@ input {
   display: inline-flex;
 }
 
+/*.inline {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 3%;
+
+}*/
+.scroll{
+  overflow: scroll;
+}
+.border {
+  border:1px solid lightgrey;
+}
+
+.inline-right {
+  position: relative;
+  display: inline-flex;
+  text-align: right;
+}
+
 .inline-center {
   /*position: relative;
   display: inline-flex;*/
@@ -252,6 +278,8 @@ input {
   padding: 0 3%;
 
 }
+
+
 
 
 /*----------*/
