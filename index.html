@@ -145,13 +145,13 @@
                             <div class="text-center">
                               <button type="button" id="clear_pb_button" class="btn btn-sm btn-default btn-block">Clear All</button>
                             </div>
-                            <div class="panel-group" id="operation_info">
+                            <div class="panel-group top-buffer-sm" id="operation_info">
                               <div class="panel panel-default">
                                 <div class="panel-heading">
                                   Actions
                                   <a data-toggle="collapse" class="info-toggle" href="#collapse_actions"></a>
                                 </div>
-                                <div id=collapse_actions class="panel-body collapse">
+                                <div id=collapse_actions class="panel-body collapse in">
 
                                   
                                   <div class="btn-toolbar">
@@ -165,7 +165,7 @@
                                       1/+
                                     </button>
                                   </div>
-                                  <div class='top-buffer'>
+                                  <div class='top-buffer-sm'>
                                     Actions:
                                     <div class="graph scroll border" style=" height: 110px; width: 100px;" id ="action_list"> </div>
                                   </div>
@@ -177,7 +177,7 @@
                                   Links
                                   <a data-toggle="collapse" class="info-toggle" href="#collapse_links"></a>
                                 </div>
-                                <div id=collapse_links class="panel-body collapse">
+                                <div id=collapse_links class="panel-body collapse in">
                                   <div class=btn-group-vertical data-toggle="buttons">
                                     <label class="btn btn-sm btn-default" id="add_cons_link_button"><input  name="link_radio" type="radio" >Consecutive</label>
                                     <label class="btn btn-sm btn-default" id="create_funnel_button"><input name="link_radio" type="radio" >Non-Consecutive</label>
@@ -590,7 +590,8 @@ d3.csv(csv_file, function(error, data) {
           .round(d3.timeDay.round)
         .x(d3.scaleTime()
           .domain([new Date(2017, 0, 24), new Date(2017, 3, 3)])
-          .rangeRound([0, 300]))
+           .rangeRound([0, 225]))
+          //.rangeRound([0, 300]))
 
 
     ]
@@ -1508,7 +1509,8 @@ d3.csv(csv_file, function(error, data) {
     // ========================== Pattern Builder ============================== //
     
     var pb_margin = {top: 20, right:20, bottom: 20, left: 20},
-        pb_svg = d3.select("#pb_graph").append("svg")
+        pbDiv = d3.select('#pb_graph')
+        pb_svg = pbDiv.append("svg")
                     .attr("height", 400),
         pb_width = +pb_svg.attr("width")- pb_margin.right - pb_margin.left,
         pb_height = +pb_svg.attr("height")- pb_margin.top - pb_margin.bottom;
@@ -1537,7 +1539,7 @@ d3.csv(csv_file, function(error, data) {
 
     var pb_simulation = d3.forceSimulation(pattern_data.nodes)
         .force("link", d3.forceLink().id(function(d) {return d.id;}).distance(10))
-        .force("charge", d3.forceManyBody())
+        //.force("charge", d3.forceManyBody())
         .force("center", d3.forceCenter(pb_width / 2, pb_height/2))
         //.alphaTarget(1)
 
@@ -1563,6 +1565,7 @@ d3.csv(csv_file, function(error, data) {
           id: selected_action_node.id
         }
         if (pattern_data.nodes.length == 0){
+          pb_width =  pbDiv.node().clientWidth
           new_node.fx = pb_width/2;
           new_node.fy = 0;
         }
@@ -1719,9 +1722,9 @@ d3.csv(csv_file, function(error, data) {
       console.log('nodes', nodes)
       console.log('links',links)
 
-      links.forEach(function(l){
-        links_copy.push(copy_link(l))
-      })
+      // links.forEach(function(l){
+      //   links_copy.push(copy_link(l))
+      // })
 
       if (nodes[0].action != 'start'){
         regex = '.*';
@@ -1737,6 +1740,10 @@ d3.csv(csv_file, function(error, data) {
           c = '$';
         else if (c == start_c)
           c = '^';
+
+        if( i>0){
+          links_copy.push(copy_link(links[i-1]))
+        }
 
         var pattern_node = {
             action: n.id,
@@ -1856,21 +1863,32 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    var contains_not_color = '#54575b'
+    //var contains_not_color = '#54575b'
+    var contains_not_color = '#81858c'
     var contains_not_bg_color = '#c5c8cc'
 
 
     function draw_pattern_graph(node_link_data){
+      console.log('pattern builder width', pb_width)
+      pb_simulation.force("center", d3.forceCenter(pb_width / 2, pb_height/2))
       
-      if (!("not" in node_link_data))
+      if (!("not" in node_link_data)){
         node_link_data.not = false
+
+
+      }
 
       var not = node_link_data.not,
           highlight_color = not? 'white': 'black';
-          background_color = not? contains_not_bgcolor: 'white';
+          background_color = not? contains_not_bg_color: 'white';
 
       var background = pb_svg.select('.background')
                         .attr('fill', background_color)
+
+      if(not) 
+        $('#contains_not_button').prop('checked', true); 
+      else 
+        $('#contains_not_button').prop('checked', false);
 
       pb_node = pb_node.data(node_link_data.nodes, function(d) {return d.id;});
 
@@ -2099,7 +2117,8 @@ d3.csv(csv_file, function(error, data) {
         }
 
         //$("#sequences").show()
-        $("#sequences_text").width(500).height(200)
+        var width = d3.select('#sequences').node().clientWidth
+        $("#sequences_text").width(width).height(200)
         $("#sequences_text").html(text)
         $("#sequences_text").css("font-size", "12px");
 
@@ -2201,6 +2220,7 @@ d3.csv(csv_file, function(error, data) {
             
             clear_contains_builder()
             pattern_data = o.pattern_data
+            console.log('drawing builder for following pattern data', pattern_data)
             draw_pattern_graph(pattern_data)
           }if (o.type == 'range'){
             update_builder_view("range_builder")
@@ -2347,6 +2367,7 @@ d3.csv(csv_file, function(error, data) {
         
         value_text.push(domain_range)
         if(o.not){
+
           //filtered_range = '~' + filtered_range
           var pos_ranges = convert_neg_to_pos_ranges(o.range, o.extents)
           pos_ranges.forEach(function(r){
@@ -2978,7 +2999,7 @@ d3.csv(csv_file, function(error, data) {
       var domain_range = o? o.current_range: null;
       update_builder_range(domain_range)
       
-
+      //o.not
 
       active_range = selected_chart? selected_chart.data()[0].active_range(): null;
 
@@ -2987,7 +3008,9 @@ d3.csv(csv_file, function(error, data) {
       if (builder_range){
         var extents = o? o.extents: active_range
 
-        create_filter_data(builder_range, extents)
+        var not = o? o.not: $('#range_not_button').is(':checked')? true: false;
+
+        create_filter_data(builder_range, extents, not)
 
       
       }
@@ -2997,13 +3020,15 @@ d3.csv(csv_file, function(error, data) {
 
     } 
 
-    function create_filter_data(scale, extents){
+    function create_filter_data(scale, extents, not){
       partitions = []
-      var max_value = scale.domain()[1];
+      var max_value = scale.domain()[1],
+          value = not? true:false;
+
   
-        partitions.push( {value: max_value , colored: false, x: scale(max_value), hide:true})
-        partitions.push( {value: extents[1], id: 'end', colored: true, x:scale(extents[1])})
-        partitions.push( {value: extents[0], id:'start', colored: false, x:scale(extents[0])})
+        partitions.push( {value: max_value , colored: value, x: scale(max_value), hide:true})
+        partitions.push( {value: extents[1], id: 'end', colored: !value, x:scale(extents[1])})
+        partitions.push( {value: extents[0], id:'start', colored: value, x:scale(extents[0])})
 
         range_end_bar= partitions[1]
         range_end_input.property("value", range_end_bar.value)
@@ -3040,6 +3065,8 @@ d3.csv(csv_file, function(error, data) {
               .on('click', toggle_builder_range)
         
       data = partitions
+
+
 
 
       // var dimension = selected_chart.data()[0].dimension(),
@@ -3283,7 +3310,8 @@ d3.csv(csv_file, function(error, data) {
       var range = selected_chart.data()[0].range()
       fullRange= true
       update_builder_range(range)
-      create_filter_data(builder_range, [partitions[2].value, partitions[1].value] )
+      var not = $('#range_not_button').is(':checked')? true: false
+      create_filter_data(builder_range, [partitions[2].value, partitions[1].value], not )
       update_filter_view()
 
     }
@@ -3293,7 +3321,9 @@ d3.csv(csv_file, function(error, data) {
       var range = selected_chart.data()[0].current_range()
       update_builder_range(range)
       get_range_ends_data()
-      create_filter_data(builder_range, [partitions[2].value, partitions[1].value] )
+
+      var not = $('#range_not_button').is(':checked')? true: false
+      create_filter_data(builder_range, [partitions[2].value, partitions[1].value], not )
       update_filter_view()
 
     }
@@ -3319,7 +3349,8 @@ d3.csv(csv_file, function(error, data) {
 
       update_builder_range(range)
       get_range_ends_data()
-      create_filter_data(builder_range, [partitions[2].value, partitions[1].value] )
+      var not = $('#range_not_button').is(':checked')? true: false
+      create_filter_data(builder_range, [partitions[2].value, partitions[1].value], not )
       update_filter_view()
       
 
@@ -3470,8 +3501,10 @@ d3.csv(csv_file, function(error, data) {
         selected_chart.style("background-color", "white" );
       selected_chart = div;
       selected_chart.style("background-color", "lightyellow" );
-      if( $("#build_filter_view").is(':visible'))
+      if( $("#build_filter_view").is(':visible')){
         update_filter_data()
+        $('#range_not_button').prop('checked', false);
+      }
       else
         update_partition_view()
 
@@ -3637,6 +3670,14 @@ d3.csv(csv_file, function(error, data) {
             x_max = group.all()[group.all().length-1].key;
             x_min = group.all()[0].key;
             range = add_one([x_min,x_max]);
+
+
+            //remove if change date chart range back to 300
+            if (typeof(x_min) != 'number'){
+              axis.ticks(4)
+              axis.scale(x)
+
+            }
       
             if (x_domain_max){
               x.domain([x.domain()[0], x_domain_max]);
@@ -4152,8 +4193,15 @@ d3.csv(csv_file, function(error, data) {
 
   
   function resize_windows(){
+
     resize_tree()
     resize_builder()
+    resize_sequence_details()
+  }
+
+  function resize_sequence_details(){
+    var width = d3.select('#sequences').node().clientWidth - 40;
+    $("#sequences_text").width(width)
   }
   function resize_builder(){
       var width = builderDiv.node().clientWidth
@@ -4179,8 +4227,6 @@ d3.csv(csv_file, function(error, data) {
       pb_svg
           .attr("width", p_width)
 
-      console.log('builder width', width)
-      console.log('builder height ', height)
 
       if( $("#build_filter_view").is(':visible'))
         update_filter_data()
@@ -4238,9 +4284,6 @@ d3.csv(csv_file, function(error, data) {
           height = 2000
 
       t_svg.attr("width", width)
-
-      console.log('tree width', width)
-      console.log(' tree height ', height)
 
       tree.size([width-(oLength/2), height]);
 
@@ -4741,6 +4784,7 @@ d3.csv(csv_file, function(error, data) {
         console.log('about to update')
 
         update(selected);
+        resize_windows()
         //showDiv();
 
 
@@ -5328,6 +5372,12 @@ d3.csv(csv_file, function(error, data) {
 
 
     function create_range_filter_data(filter, scale){
+      
+      if (filter.not)
+        $('#range_not_button').prop('checked', true);
+      else
+        $('#range_not_button').prop('checked', false);
+
       var value = filter.not? true: false,
           range = filter.range,
           extents = filter.extents,
