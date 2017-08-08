@@ -1393,10 +1393,13 @@ d3.csv(csv_file, function(error, data) {
     function tooltip(d){
       
       if (d.selected){
-
-        var xPosition = d.translate + margin_ac.left + bar_width;
+        var bar_position = d.translate
+        var xPosition = (d.translate == 0)? -65 :d.translate + bar_width;
         var yPosition = bar_len(d.x0 +((d.x1-d.x0)/2)) 
 
+        xPosition += margin_ac.left
+
+        console.log('xposition', d.translate)
 
         var text = d3.format(".1%")(d.percent/100) + ', ' + d3.format(",")(d.count);
 
