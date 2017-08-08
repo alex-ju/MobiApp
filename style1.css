@@ -224,8 +224,22 @@ top: 1em;
 .top-buffer { margin-top:20px; }
 .left-buffer { margin-left:20px; }
 
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover{
+  margin-bottom: -1px;
+}
+
+input {
+    text-align:right;
+}
+
+
 .panel-background{
   background-color: #f9f9f9;
+}
+
+.inline {
+  position: relative;
+  display: inline-flex;
 }
 
 .inline-center {
