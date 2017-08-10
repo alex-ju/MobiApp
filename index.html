@@ -288,11 +288,11 @@
                 <div class="panel panel-danger">
                   <div class="panel-heading">
                     <h4 class="panel-title">
-                      <a data-toggle="collapse" class="info-toggle" href="#collapse2"></a>
+                      <a data-toggle="collapse" class="info-toggle" href="#collapse_contains"></a>
                       Contains Attributes
                     </h4>
                   </div>
-                  <div id="collapse2" class="panel-collapse collapse in">
+                  <div id="collapse_contains" class="panel-collapse collapse in">
                     <div class="panel-body">
                       <div class= "chart" id="contains_action_chart">
                         <div class="title"> Number of Sequences that Contains Action </div>
@@ -709,6 +709,12 @@ d3.csv(csv_file, function(error, data) {
               'line-color': 'white'
             })
       });;
+
+      $('#collapse_contains').on('shown.bs.collapse', function () {
+        if(node_link_data)
+          draw_action_transition_graph(node_link_data)
+      });
+
 
     function draw_action_transition_graph(node_link_data){
 
@@ -1152,6 +1158,9 @@ d3.csv(csv_file, function(error, data) {
       height_ac = 165 - margin_ac.top - margin_ac.bottom,
       adjacency_chart = d3.select("#adjacency_chart").append('svg').append("g").attr("transform", "translate(" + margin_ac.left + "," + margin_ac.top + ")");
 
+
+
+
     var center_node = {
           x: (width_ac+8)/2,
           y: (height_ac+8)/2
@@ -1169,6 +1178,19 @@ d3.csv(csv_file, function(error, data) {
         adj_chart_data = {nodes:[], links:[]};
               
 
+    adjacency_chart.append("svg:defs").selectAll("marker")
+          .data(["end"])      // Different link/path types can be defined here
+        .enter().append("svg:marker")    // This section adds in the arrows
+          .attr("id", String)
+          .attr("viewBox", "0 -5 10 10")
+          .attr("refX", 20)
+          .attr("refY", 0)
+          .attr("markerWidth", 4)
+          .attr("markerHeight", 4)
+          .attr("orient", "auto")
+          .append("svg:path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", "gray");
                       
 
 
@@ -1534,54 +1556,10 @@ d3.csv(csv_file, function(error, data) {
 
     // ========================== Pattern Builder ============================== //
     
-    // var pb_margin = {top: 20, right:20, bottom: 20, left: 20},
-        // pbDiv = d3.select('#pb_graph')
-        // pb_svg = pbDiv.append("svg")
-        //             .attr("height", 400),
-        // pb_width = +pb_svg.attr("width")- pb_margin.right - pb_margin.left,
-        // pb_height = +pb_svg.attr("height")- pb_margin.top - pb_margin.bottom;
 
-    // var pb_background = pb_svg.append("rect")
-    //                       .attr('class', 'background')
-    //                       .attr('width', "100%")
-    //                       .attr('height', '100%')
-    //                       .attr('fill', 'white')
-    //                       .attr('stroke', 'lightgray')
-
-    // var pb_graph = pb_svg.append("g")
-    //                 .attr("transform", "translate(" + pb_margin.left + "," + pb_margin.top + ")"),
-
-
-    //     // pb_link = pb_graph.append("g")
-    //     //               .attr("class", "links"),
-    //     // pb_node = pb_graph.append("g");
-
-    //     pb_link = pb_graph.append("g").attr("stroke", "#000").attr("stroke-width", 1.5)
-    //                   .attr("class", "links").selectAll(".link"),
-    //     pb_node = pb_graph.append("g").selectAll(".node");
 
     var pattern_data = {nodes:[], links: []},
         selected_pattern_node;
-
-    // var pb_simulation = d3.forceSimulation(pattern_data.nodes)
-    //     .force("link", d3.forceLink().id(function(d) {return d.id;}).distance(10))
-    //     //.force("charge", d3.forceManyBody())
-    //     .force("center", d3.forceCenter(pb_width / 2, pb_height/2))
-    //     //.alphaTarget(1)
-
-        // pb_graph.append("svg:defs").selectAll("marker")
-        //   .data(["end"])      // Different link/path types can be defined here
-        // .enter().append("svg:marker")    // This section adds in the arrows
-        //   .attr("id", String)
-        //   .attr("viewBox", "0 -5 10 10")
-        //   .attr("refX", 20)
-        //   .attr("refY", 0)
-        //   .attr("markerWidth", 4)
-        //   .attr("markerHeight", 4)
-        //   .attr("orient", "auto")
-        //   .append("svg:path")
-        //     .attr("d", "M0,-5L10,0L0,5")
-        //     .attr("fill", "gray");
 
     var node_id = 0
     function add_action_node(){
@@ -1989,27 +1967,23 @@ d3.csv(csv_file, function(error, data) {
 
       })
 
-      var nodes = node_link_data.nodes.map(function(n){
+      node_link_data.nodes.forEach(function(n){
         n.color = colors[n.action]
 
-        var node ={data:n}
+        var node ={group:"nodes", data:n}
 
-        pb_graph.add({group:"nodes", data:n})
+        pb_graph.add(node)
+      })
 
-        return node})
-
-      //f(nodes.length>0) nodes.push({data:{id:'all_actions', color: 'white'}})
-      var edges = node_link_data.links.map(function(e){
+      node_link_data.links.forEach(function(e){
 
 
         var value = (e.percent >1)? e.percent: 1; 
-        // return {data:{source: e.source.id, target:e.target.id, value: value}}
-        var edge = {data:{source: e.source.id, target:e.target.id, consecutive:e.consecutive}}
 
-        edge.group = "edges"
+        var edge = {group:"edges", data:{source: e.source.id, target:e.target.id, consecutive:e.consecutive}}
         pb_graph.add(edge)
-        return edge
-        })
+
+      })
 
 
 
