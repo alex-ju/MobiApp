@@ -360,6 +360,7 @@
  <script src="bootstrap/js/bootstrap.min.js"></script>
 
 
+
     
 <script>
 
@@ -633,14 +634,8 @@ d3.csv(csv_file, function(error, data) {
         nl_svg = d3.select("#node_link").append("svg")
                     .attr("width", 400)
                     .attr("height", 250),
-        nl_width = +nl_svg.attr("width")- nl_margin.right - nl_margin.left,
-        nl_height = +nl_svg.attr("height")- nl_margin.top - nl_margin.bottom;
-
-    // var nl_graph = nl_svg.append("g")
-    //                 .attr("transform", "translate(" + nl_margin.left + "," + nl_margin.top + ")"),
-    //     nl_link = nl_graph.append("g").attr("stroke", "#000").attr("stroke-width", 1.5)
-    //                   .attr("class", "links").selectAll(".link"),
-    //     nl_node = nl_graph.append("g").selectAll(".node");
+        nl_width = 400 - nl_margin.right - nl_margin.left,
+        nl_height = 250 - nl_margin.top - nl_margin.bottom;
 
 
     var strokeScale = d3.scaleLinear().domain([0,100]).range([1,6]).clamp(true);
@@ -662,58 +657,7 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    var nl_graph;
-
-    function draw_action_transition_graph(node_link_data){
-
-      console.log('NODE LINK DATA', node_link_data)
-
-      node_link_data.links.forEach(function(l,i){
-        node_link_data.nodes.forEach(function(n){
-          l.id = i;
-          if (n.id == l.source) l.source = n;
-          if (n.id == l.target) l.target = n;
-
-        })
-
-      })
-
-      var nodes = node_link_data.nodes.map(function(n){
-        n.color = colors[n.action]
-        var node ={data:n}
-        if (n.fx){
-          n.size = 9;
-          n.end = true;
-          node.position ={x:n.fx, y:n.fy}
-        }else{
-         // n.parent ='all_actions'
-        }
-        return node})
-
-      //f(nodes.length>0) nodes.push({data:{id:'all_actions', color: 'white'}})
-      var edges = node_link_data.links.map(function(e){
-
-        
-
-        //e.value = (e.percent >1)? d3.format('.0%')(e.percent/100): 1;
-        value = (e.percent >1)? e.percent: 1; 
-        return {data:{source: e.source.id, target:e.target.id, value: value}}
-
-        })
-
-      if (edges.length>0){
-        nodes.forEach(function(n){
-
-          edges.push({data:{source: 'start', target:n.data.id, value: 0, invisible:true}})
-          edges.push({data:{source: n.data.id, target:'exit', value: 0, invisible:true}})
-        })
-      }
-
-
-      $('#cy').css('height',250);
-      $('#cy').css('width', 400);
-
-      var nl_graph = cytoscape({
+    var nl_graph= cytoscape({
         container: document.querySelector('#cy'),
         boxSelectionEnabled: false,
         minZoom: 0.75,
@@ -763,18 +707,78 @@ d3.csv(csv_file, function(error, data) {
             .css({
               'background-color': 'white',
               'line-color': 'white'
-            }),
+            })
+      });;
 
-        elements: {
-          nodes : nodes,
-          edges: edges
-          
-        },
-          layout: {
-            name: 'preset'
-          }
-      });
+    function draw_action_transition_graph(node_link_data){
 
+      console.log('NODE LINK DATA', node_link_data)
+      nl_graph.zoomingEnabled(true);
+      $('#cy').css('height',250);
+      $('#cy').css('width', 400);
+
+      nl_graph.elements().remove()
+
+
+      node_link_data.links.forEach(function(l,i){
+        node_link_data.nodes.forEach(function(n){
+          l.id = i;
+          if (n.id == l.source) l.source = n;
+          if (n.id == l.target) l.target = n;
+
+        })
+
+      })
+
+      var nodes = node_link_data.nodes.map(function(n){
+        n.color = colors[n.action]
+        var node ={group:"nodes", data:n}
+
+        if (n.fx){
+          n.size = 9;
+          n.end = true;
+          node.position ={x:n.fx, y:n.fy}
+        }else{
+         // n.parent ='all_actions'
+        }
+        nl_graph.add(node)
+        return node})
+
+      //f(nodes.length>0) nodes.push({data:{id:'all_actions', color: 'white'}})
+      var edges = node_link_data.links.map(function(e){
+
+        
+
+        //e.value = (e.percent >1)? d3.format('.0%')(e.percent/100): 1;
+        value = (e.percent >1)? e.percent: 1; 
+        var edge = {group:"edges", data:{source: e.source.id, target:e.target.id, value: value}}
+
+        nl_graph.add(edge)
+
+        return edge
+
+        })
+
+      if (edges.length>0){
+        nodes.forEach(function(n){
+
+          edges.push({data:{source: 'start', target:n.data.id, value: 0, invisible:true}})
+          edges.push({data:{source: n.data.id, target:'exit', value: 0, invisible:true}})
+          nl_graph.add({group:"edges", data:{source: 'start', target:n.data.id, value: 0, invisible:true}})
+          nl_graph.add({group: "edges", data:{source: n.data.id, target:'exit', value: 0, invisible:true}})
+        })
+      }
+
+
+      
+
+      var layout1 = nl_graph.layout({
+              name: 'preset'
+            })
+
+      layout1.run()
+
+      
       nl_graph.nodes("#all_actions").css({'background-color': 'white',
               'line-color': 'white'})
 
@@ -1530,12 +1534,12 @@ d3.csv(csv_file, function(error, data) {
 
     // ========================== Pattern Builder ============================== //
     
-    var pb_margin = {top: 20, right:20, bottom: 20, left: 20},
-        pbDiv = d3.select('#pb_graph')
-        pb_svg = pbDiv.append("svg")
-                    .attr("height", 400),
-        pb_width = +pb_svg.attr("width")- pb_margin.right - pb_margin.left,
-        pb_height = +pb_svg.attr("height")- pb_margin.top - pb_margin.bottom;
+    // var pb_margin = {top: 20, right:20, bottom: 20, left: 20},
+        // pbDiv = d3.select('#pb_graph')
+        // pb_svg = pbDiv.append("svg")
+        //             .attr("height", 400),
+        // pb_width = +pb_svg.attr("width")- pb_margin.right - pb_margin.left,
+        // pb_height = +pb_svg.attr("height")- pb_margin.top - pb_margin.bottom;
 
     // var pb_background = pb_svg.append("rect")
     //                       .attr('class', 'background')
@@ -1901,63 +1905,7 @@ d3.csv(csv_file, function(error, data) {
     var contains_not_color = '#81858c'
     var contains_not_bg_color = '#c5c8cc'
 
-    function draw_pattern_graph(node_link_data){
-      console.log('NODE LINK DATA', node_link_data)
-      $('#pb_graph').css('height',400);
-
-      if(node_link_data.not)
-        $('#pb_graph').css('background-color',contains_not_bg_color);
-      else{
-        $('#pb_graph').css('background-color',"");
-      }
-      
-
-      node_link_data.links.forEach(function(l,i){
-        node_link_data.nodes.forEach(function(n){
-          l.id = i;
-          // if (n.id == l.source) l.source = n;
-          // if (n.id == l.target) l.target = n;
-          if (n.id == l.source) l.source = n;
-          if (n.id == l.target) l.target = n;
-
-        })
-
-      })
-
-      var current_width = d3.select('#pb_graph').node().clientWidth
-
-      if (current_width == 0){
-        current_width = $('#pb_graph').width()
-        $('#pb_graph').css('height', current_width);
-      }
-
-      console.log('current width for pattern builder', current_width)
-      var x_position = current_width/2,
-          y_position = 0,
-          node_spacing = 50;
-
-      var nodes = node_link_data.nodes.map(function(n){
-        n.color = colors[n.action]
-        var node ={data:n}
-        // if (n.fx){
-        //   node.position ={x:n.fx, y:n.fy}
-        // }
-        // node.position = {x:x_position, y:y_position}
-        // y_position += node_spacing;
-        return node})
-
-      //f(nodes.length>0) nodes.push({data:{id:'all_actions', color: 'white'}})
-      var edges = node_link_data.links.map(function(e){
-
-
-        var value = (e.percent >1)? e.percent: 1; 
-        // return {data:{source: e.source.id, target:e.target.id, value: value}}
-        return {data:{source: e.source.id, target:e.target.id, consecutive:e.consecutive}}
-
-        })
-
-
-      var cy = cytoscape({
+    var pb_graph = cytoscape({
         container: document.querySelector('#pb_graph'),
         boxSelectionEnabled: false,
         maxZoom: 1.25,
@@ -1986,6 +1934,19 @@ d3.csv(csv_file, function(error, data) {
             .css({
               'line-style': 'dashed'
             })
+          .selector('.end')
+            .css({
+              'width': 9,
+              'height': 9
+            })
+          .selector('.many')
+            .css({
+              'border-width': 5,
+              'border-color': 'data(color)',
+              'background-color': 'black'
+              // 'width': 9,
+              // 'height': 9
+            })
           .selector('.selected')
             .css({
               
@@ -1997,41 +1958,115 @@ d3.csv(csv_file, function(error, data) {
             .css({
               'opacity': 0.25,
               'text-opacity': 0.25
-            }),
-          
-
-        elements: {
-          nodes : nodes,
-          edges: edges
-          
-        },
-          layout: {
-            name: 'dagre'
-          }
+            })
       });
 
-      cy.edges().forEach(function(e){
+    function draw_pattern_graph(node_link_data){
+      console.log('NODE LINK DATA', node_link_data)
+      
+      pb_graph.zoomingEnabled(true);
+
+      //var current_width = d3.select('#pb_graph').node().clientWidth,
+      var current_width = $('#pb_graph').width()
+
+
+      console.log('current width for pattern builder', current_width)
+
+      $('#pb_graph').css('height', 400);
+      $('#pb_graph').css('width', current_width);
+      pb_graph.resize()
+
+      pb_graph.elements().remove()
+      
+
+      node_link_data.links.forEach(function(l,i){
+        node_link_data.nodes.forEach(function(n){
+          l.id = i;
+          if (n.id == l.source) l.source = n;
+          if (n.id == l.target) l.target = n;
+
+        })
+
+      })
+
+      var nodes = node_link_data.nodes.map(function(n){
+        n.color = colors[n.action]
+
+        var node ={data:n}
+
+        pb_graph.add({group:"nodes", data:n})
+
+        return node})
+
+      //f(nodes.length>0) nodes.push({data:{id:'all_actions', color: 'white'}})
+      var edges = node_link_data.links.map(function(e){
+
+
+        var value = (e.percent >1)? e.percent: 1; 
+        // return {data:{source: e.source.id, target:e.target.id, value: value}}
+        var edge = {data:{source: e.source.id, target:e.target.id, consecutive:e.consecutive}}
+
+        edge.group = "edges"
+        pb_graph.add(edge)
+        return edge
+        })
+
+
+
+      $('#pb_graph').css('height',400);
+
+      if(node_link_data.not)
+        $('#pb_graph').css('background-color',contains_not_bg_color);
+      else{
+        $('#pb_graph').css('background-color',"");
+      }
+      
+      var layout = pb_graph.layout({
+        name: 'dagre'
+      })
+
+      layout.run();
+
+      pb_graph.edges().forEach(function(e){
         var data = e.data()
 
         if(!data.consecutive){
           e.addClass('dotted')
         }
       })
-      cy.on('tap', 'node', function(e){
+
+      pb_graph.nodes().forEach(function(n){
+        var data = n.data()
+
+        // if (data.type =='many'){
+          
+        //   n.addClass('many')
+        // }
+
+        if(data.many){
+          n.addClass('many');
+        }
+        if((data.action=='start') || (data.action=='exit')){
+          n.addClass('end');
+        }
+      })
+
+      pb_graph.on('tap', 'node', function(e){
 
 
 
         var node = e.target;
         var neighborhood = node.neighborhood().add(node);
 
+
+
         select_pattern_node(node.data())
 
-        cy.elements().removeClass('selected')
+        pb_graph.elements().removeClass('selected')
         node.addClass('selected')
       });
 
-      cy.zoomingEnabled(false);
-      cy.resize();
+      pb_graph.zoomingEnabled(false);
     }
 
 
