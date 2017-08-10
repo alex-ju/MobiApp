@@ -50,8 +50,8 @@
                     </h4>
                   </div>
                   <div id=collapse_builder class="panel-body collapse in"> 
-                    <ul class="nav nav-tabs" style="margin-bottom:1px">
-                      <li class="active"><a style="background-color:#f4fff5;" data-toggle="tab" href="#range">Range</a></li>
+                    <ul class="nav nav-tabs" id="operation_types" style="margin-bottom:1px">
+                      <li class="active"><a style="background-color:#f4fff5;" id="range_button" data-toggle="tab" href="#range">Range</a></li>
                       <li><a style="background-color:#fff7f7" data-toggle="tab" id="contains_button" href="#contains">Contains</a></li>
                     </ul>
                     <div class="tab-content">
@@ -139,10 +139,8 @@
                       
                       <div id="contains" class = "tab-pane fade in">
                         <h5>Contains Operation Builder</h5>
-                        <div class="inline">
-                          <div  class="graph">
-                            <div id="pb_graph"></div>
-                          </div>
+                        <div class="inline border">
+                          <div  class="graph" id="pb_graph"></div>
                           <div style="width:140px;" >
                             <div class="text-center">
                               <button type="button" id="clear_pb_button" class="btn btn-sm btn-default btn-block">Clear All</button>
@@ -342,7 +340,15 @@
 <!-- load the d3.js library --> 
 <script src="http://d3js.org/d3.v4.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> -->
+<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+<script
+  src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+  crossorigin="anonymous"></script>
 
 <script src="js/crossfilter.js"></script>
 <script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script>
@@ -630,11 +636,11 @@ d3.csv(csv_file, function(error, data) {
         nl_width = +nl_svg.attr("width")- nl_margin.right - nl_margin.left,
         nl_height = +nl_svg.attr("height")- nl_margin.top - nl_margin.bottom;
 
-    var nl_graph = nl_svg.append("g")
-                    .attr("transform", "translate(" + nl_margin.left + "," + nl_margin.top + ")"),
-        nl_link = nl_graph.append("g").attr("stroke", "#000").attr("stroke-width", 1.5)
-                      .attr("class", "links").selectAll(".link"),
-        nl_node = nl_graph.append("g").selectAll(".node");
+    // var nl_graph = nl_svg.append("g")
+    //                 .attr("transform", "translate(" + nl_margin.left + "," + nl_margin.top + ")"),
+    //     nl_link = nl_graph.append("g").attr("stroke", "#000").attr("stroke-width", 1.5)
+    //                   .attr("class", "links").selectAll(".link"),
+    //     nl_node = nl_graph.append("g").selectAll(".node");
 
 
     var strokeScale = d3.scaleLinear().domain([0,100]).range([1,6]).clamp(true);
@@ -655,6 +661,8 @@ d3.csv(csv_file, function(error, data) {
 
 
     }
+
+    var nl_graph;
 
     function draw_action_transition_graph(node_link_data){
 
@@ -705,7 +713,7 @@ d3.csv(csv_file, function(error, data) {
       $('#cy').css('height',250);
       $('#cy').css('width', 400);
 
-      var cy = cytoscape({
+      var nl_graph = cytoscape({
         container: document.querySelector('#cy'),
         boxSelectionEnabled: false,
         minZoom: 0.75,
@@ -767,13 +775,13 @@ d3.csv(csv_file, function(error, data) {
           }
       });
 
-      cy.nodes("#all_actions").css({'background-color': 'white',
+      nl_graph.nodes("#all_actions").css({'background-color': 'white',
               'line-color': 'white'})
 
       // cy.nodes('#start').lock();
       // cy.nodes('#exit').lock();
 
-      cy.nodes().forEach(function(d){
+      nl_graph.nodes().forEach(function(d){
         var data = d.data();
 
         if (data.size){
@@ -796,7 +804,7 @@ d3.csv(csv_file, function(error, data) {
 
 
       var box = {x1:0, x2:0, w:390, h:240}
-      var layout  =cy.layout({
+      var layout  =nl_graph.layout({
               name: 'cola',
               flow: {"axis":"y", "left":"start", "right":"exit", "gap":225, "equality":"true"},
               unconstrIter: 10,
@@ -818,7 +826,7 @@ d3.csv(csv_file, function(error, data) {
 
       
 
-      cy.edges().forEach(function(e){
+      nl_graph.edges().forEach(function(e){
         var data = e.data()
 
 
@@ -832,7 +840,7 @@ d3.csv(csv_file, function(error, data) {
       })
 
 
-      cy.on('tap', 'node', function(e){
+      nl_graph.on('tap', 'node', function(e){
 
 
 
@@ -841,16 +849,16 @@ d3.csv(csv_file, function(error, data) {
 
         select_action_node(node.data())
 
-        cy.elements().removeClass('selected')
-        cy.nodes().addClass('faded');
-        cy.edges('.visible').addClass('faded')
+        nl_graph.elements().removeClass('selected')
+        nl_graph.nodes().addClass('faded');
+        nl_graph.edges('.visible').addClass('faded')
         neighborhood.removeClass('faded');
         node.addClass('selected')
       });
 
-      cy.on('tap', function(e){
+      nl_graph.on('tap', function(e){
         if( e.target === cy ){
-          cy.elements().removeClass('faded');
+          nl_graph.elements().removeClass('faded');
         }
       });
 
@@ -858,13 +866,13 @@ d3.csv(csv_file, function(error, data) {
       function resize(){
         
         
-        cy.nodes('#start').renderedPosition({x:180, y:20});
-      cy.nodes('#exit').renderedPosition({x:180, y:230});
+        nl_graph.nodes('#start').renderedPosition({x:180, y:20});
+      nl_graph.nodes('#exit').renderedPosition({x:180, y:230});
 
         
       
 
-        cy.nodes('.actions').forEach(function(d){
+        nl_graph.nodes('.actions').forEach(function(d){
           var data = d.data();
 
           var pos = d.renderedPosition()
@@ -883,9 +891,9 @@ d3.csv(csv_file, function(error, data) {
         
         })
 
-        cy.resize()
+        nl_graph.resize()
         // cy.fit()
-        cy.zoomingEnabled(false);
+        nl_graph.zoomingEnabled(false);
       }
       
       
@@ -2013,6 +2021,7 @@ d3.csv(csv_file, function(error, data) {
       });
 
       cy.zoomingEnabled(false);
+      cy.resize();
     }
     // function draw_pattern_graph(node_link_data){
     //   console.log('pattern builder width', pb_width)
@@ -2284,25 +2293,22 @@ d3.csv(csv_file, function(error, data) {
     //     });
     // }
 
-    function update_builder_view(view_id){
-      var id = '.nav-tabs a[href="#' + view_id + '"]';
+
+
+     function update_range_builder_view(view_id){
+
+      var id = '.nav-pills a[href="#' + view_id + '"]';
       
       $(id).tab('show')
 
-      resize_builder();
-
-
-    }
-
-     function update_range_builder_view(view_id){
-      view_id = view_id || null;
-      active_builder_view = view_id;
-      d3.selectAll(".range_builder")
-        .style('display', function(d) {
-          var id = d3.select(this).attr('id');
-          if (id != active_builder_view)
-            return 'none';
-        });
+      // view_id = view_id || null;
+      // active_builder_view = view_id;
+      // d3.selectAll(".range_builder")
+      //   .style('display', function(d) {
+      //     var id = d3.select(this).attr('id');
+      //     if (id != active_builder_view)
+      //       return 'none';
+      //   });
     }
 
     //=========================== Info Views ====================================//
@@ -2362,41 +2368,67 @@ d3.csv(csv_file, function(error, data) {
       nv_width = 400 - nv_margin.right - nv_margin.left,
       nv_height = 200 - nv_margin.top - nv_margin.bottom;
 
-    
+    // $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+    //     alert('TAB CHANGED');
+
+    // })
+
+     // $("#contains").tabs({
+     //         load: function(event, ui) { alert('loaded contains tabs'); 
+     //          }
+     //        });
+
+    function update_builder_view(o){
+      var id = '.nav-tabs a[href="#' + o.type + '"]',
+          new_tab = $(id)
+
+      current_tab =  $("ul#operation_types li.active a")
+
+      if (new_tab[0].id != current_tab[0].id){
+        $(id).tab('show')
+        $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+          show_builder(o);
+        })
+      }else{
+        show_builder(o);
+      }
+
+
+    }
 
 
     function show_builder(o){
       console.log('SHOWING BUILDER of ', selected)
 
 
-   
       if (o.value != 1){
 
         if (o.value == 0){
           if (o.type == 'contains'){
-            update_builder_view("contains");
-            
             clear_contains_builder()
             pattern_data = o.pattern_data
             console.log('drawing builder for following pattern data', pattern_data)
-            draw_pattern_graph(pattern_data)
+            draw_pattern_graph(pattern_data) 
+              
+            
           }if (o.type == 'range'){
-            update_builder_view("range")
-            update_range_builder_view("filter_builder");
+
+            update_range_builder_view("r_filter");
             update_filter_data(o)
 
           }
         } else {
-          update_builder_view("range")
-          update_range_builder_view("partition_builder");
+
+          update_range_builder_view("r_partition");
           var thresholds = o.thresholds;
           update_partitions_data(thresholds.slice(0, thresholds.length -1))
         }
 
-        
 
       }
     }
+
+
 
     //----------- Filter View -------------- //
     var infoLength = 100,
@@ -2585,8 +2617,6 @@ d3.csv(csv_file, function(error, data) {
 
       info_data.operation_data= operation_data
       info_data.results_data = results_data
-
-      console.log('info data for segment', info_data)
 
       return info_data
     }
@@ -3474,7 +3504,7 @@ d3.csv(csv_file, function(error, data) {
 
     function select_operation_node(o){
       update_selected_chart(o.chart)
-      show_builder(o)
+      update_builder_view(o)
     }
     var initialRange = false;
     var fullRange = true,
@@ -4424,8 +4454,7 @@ d3.csv(csv_file, function(error, data) {
           .attr("width", width)
 
 
-      console.log('resize patter builder width to:', p_width);
-      $('#pb_graph').css('width', p_width);
+      $('#pb_graph').css('width', p_width).css('height', 400);
 
       // pb_svg
       //     .attr("width", p_width)
@@ -4984,10 +5013,9 @@ d3.csv(csv_file, function(error, data) {
           print_sequences();
 
         } else {
-          show_builder(selected.data.operation);
+          update_builder_view(selected.data.operation);
         }
 
-        console.log('about to update')
 
         update(selected);
         resize_windows()
@@ -5573,7 +5601,6 @@ d3.csv(csv_file, function(error, data) {
         
       })
 
-      console.log('node_data for contains', node_data)
 
       return node_data
     }
@@ -5860,29 +5887,14 @@ d3.csv(csv_file, function(error, data) {
 
         var segment_node = add_child_node(filter_node, segment_data);
 
-        //NOT FILTER
-        // selectedFilter.not = true;
-        // var filter_data_not = get_filter_data_for_segment(d, selectedFilter),
-        //     filter_copy_not = filter_data.filter, 
-        //     operations_not = filter_data.operations,
-        //     not_filters = filter_data.agg_filters;
-
-        // selectedFilter.not = false;
-
-        // var not_segment_data = { 'name': name,
-        //              'value': 1,
-        //              'filters': not_filters,
-        //              'size': prev_size - size,
-        //              'prev_size': prev_size
-        //            };
-
-        // var not_segment_node = add_child_node(filter_node, not_segment_data, true);
 
         selectedExtents = null;
         selectedChar = null;
 
         
         update(d);
+
+        selectedFilter = {};
 
         return filter_node;
         
