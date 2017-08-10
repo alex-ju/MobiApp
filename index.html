@@ -39,7 +39,7 @@
                     </h4>
                   </div>
                   <div id=collapse_node class="panel-body collapse in"> 
-                    <div class="info" id="info_view"></div>
+                    <div class="info scroll" id="info_view"></div>
                   </div>
                 </div>
                 <div class="panel panel-default">
@@ -140,7 +140,9 @@
                       <div id="contains" class = "tab-pane fade in">
                         <h5>Contains Operation Builder</h5>
                         <div class="inline">
-                          <div  class="graph" id="pb_graph"></div>
+                          <div  class="graph">
+                            <div id="pb_graph"></div>
+                          </div>
                           <div style="width:140px;" >
                             <div class="text-center">
                               <button type="button" id="clear_pb_button" class="btn btn-sm btn-default btn-block">Clear All</button>
@@ -347,6 +349,8 @@
  <script src="cytoscape.js"></script>
 <script src="cola.js"></script>
  <script src="cytoscape-cola.js"></script>
+ <script src="https://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.js"></script>
+ <script src="cytoscape-dagre.js"></script>
  <script src="bootstrap/js/bootstrap.min.js"></script>
 
 
@@ -696,9 +700,7 @@ d3.csv(csv_file, function(error, data) {
           edges.push({data:{source: n.data.id, target:'exit', value: 0, invisible:true}})
         })
       }
-      
-      // console.log('nodes', nodes)
-      // console.log('edges', edges)
+
 
       $('#cy').css('height',250);
       $('#cy').css('width', 400);
@@ -1103,8 +1105,10 @@ d3.csv(csv_file, function(error, data) {
         
         if(pattern_data.nodes.length>0){
           //add link to previously added node
+          // previous_node_id = selected_pattern_node.id;
           previous_node_id = selected_pattern_node.id;
           add_action_node();
+          // current_node_id = selected_pattern_node.id;
           current_node_id = selected_pattern_node.id;
           pattern_data.links.push({"source": previous_node_id, "target": current_node_id, "value": 0.5, "consecutive": consecutive});
           draw_pattern_graph(pattern_data);
@@ -1166,7 +1170,7 @@ d3.csv(csv_file, function(error, data) {
           link_data =[],
           x0 = 0,
           total= 0,
-          spacing = 25;
+          spacing = 30;
 
 
 
@@ -1331,6 +1335,7 @@ d3.csv(csv_file, function(error, data) {
           )
 
       adj_node.append('text')
+          .attr('dy', -(node_radius+1))
           .style("font-size", "10px")
           .style("text-anchor", "middle")
           .style('fill', 'black')
@@ -1371,6 +1376,12 @@ d3.csv(csv_file, function(error, data) {
             })
 
       node_enter.append('text')
+            .attr('dy', function(d){
+              if(d.action == 'start' || d.action == 'exit')
+                return -(end_radius+1)
+              else
+                return -(node_radius+1)
+            })
             .style("font-size", "10px")
             .style("text-anchor", "middle")
             .style('fill', 'black')
@@ -1432,7 +1443,7 @@ d3.csv(csv_file, function(error, data) {
       
 
 
-      draw_pattern_graph(pattern_data);
+      //draw_pattern_graph(pattern_data);
 
 
     }
@@ -1518,60 +1529,62 @@ d3.csv(csv_file, function(error, data) {
         pb_width = +pb_svg.attr("width")- pb_margin.right - pb_margin.left,
         pb_height = +pb_svg.attr("height")- pb_margin.top - pb_margin.bottom;
 
-    var pb_background = pb_svg.append("rect")
-                          .attr('class', 'background')
-                          .attr('width', "100%")
-                          .attr('height', '100%')
-                          .attr('fill', 'white')
-                          .attr('stroke', 'lightgray')
+    // var pb_background = pb_svg.append("rect")
+    //                       .attr('class', 'background')
+    //                       .attr('width', "100%")
+    //                       .attr('height', '100%')
+    //                       .attr('fill', 'white')
+    //                       .attr('stroke', 'lightgray')
 
-    var pb_graph = pb_svg.append("g")
-                    .attr("transform", "translate(" + pb_margin.left + "," + pb_margin.top + ")"),
+    // var pb_graph = pb_svg.append("g")
+    //                 .attr("transform", "translate(" + pb_margin.left + "," + pb_margin.top + ")"),
 
 
-        // pb_link = pb_graph.append("g")
-        //               .attr("class", "links"),
-        // pb_node = pb_graph.append("g");
+    //     // pb_link = pb_graph.append("g")
+    //     //               .attr("class", "links"),
+    //     // pb_node = pb_graph.append("g");
 
-        pb_link = pb_graph.append("g").attr("stroke", "#000").attr("stroke-width", 1.5)
-                      .attr("class", "links").selectAll(".link"),
-        pb_node = pb_graph.append("g").selectAll(".node");
+    //     pb_link = pb_graph.append("g").attr("stroke", "#000").attr("stroke-width", 1.5)
+    //                   .attr("class", "links").selectAll(".link"),
+    //     pb_node = pb_graph.append("g").selectAll(".node");
 
     var pattern_data = {nodes:[], links: []},
         selected_pattern_node;
 
-    var pb_simulation = d3.forceSimulation(pattern_data.nodes)
-        .force("link", d3.forceLink().id(function(d) {return d.id;}).distance(10))
-        //.force("charge", d3.forceManyBody())
-        .force("center", d3.forceCenter(pb_width / 2, pb_height/2))
-        //.alphaTarget(1)
+    // var pb_simulation = d3.forceSimulation(pattern_data.nodes)
+    //     .force("link", d3.forceLink().id(function(d) {return d.id;}).distance(10))
+    //     //.force("charge", d3.forceManyBody())
+    //     .force("center", d3.forceCenter(pb_width / 2, pb_height/2))
+    //     //.alphaTarget(1)
 
-        pb_graph.append("svg:defs").selectAll("marker")
-          .data(["end"])      // Different link/path types can be defined here
-        .enter().append("svg:marker")    // This section adds in the arrows
-          .attr("id", String)
-          .attr("viewBox", "0 -5 10 10")
-          .attr("refX", 20)
-          .attr("refY", 0)
-          .attr("markerWidth", 4)
-          .attr("markerHeight", 4)
-          .attr("orient", "auto")
-          .append("svg:path")
-            .attr("d", "M0,-5L10,0L0,5")
-            .attr("fill", "gray");
+        // pb_graph.append("svg:defs").selectAll("marker")
+        //   .data(["end"])      // Different link/path types can be defined here
+        // .enter().append("svg:marker")    // This section adds in the arrows
+        //   .attr("id", String)
+        //   .attr("viewBox", "0 -5 10 10")
+        //   .attr("refX", 20)
+        //   .attr("refY", 0)
+        //   .attr("markerWidth", 4)
+        //   .attr("markerHeight", 4)
+        //   .attr("orient", "auto")
+        //   .append("svg:path")
+        //     .attr("d", "M0,-5L10,0L0,5")
+        //     .attr("fill", "gray");
 
-
+    var node_id = 0
     function add_action_node(){
+
       if (selected_action_node){
         new_node = {
           action: selected_action_node.action,
-          id: selected_action_node.id
+          id: selected_action_node.id + node_id++,
+          pid: 'n' + node_id++
         }
-        if (pattern_data.nodes.length == 0){
-          pb_width =  pbDiv.node().clientWidth
-          new_node.fx = pb_width/2;
-          new_node.fy = 0;
-        }
+        // if (pattern_data.nodes.length == 0){
+        //   pb_width =  pbDiv.node().clientWidth
+        //   new_node.fx = pb_width/2;
+        //   new_node.fy = 0;
+        // }
 
         select_pattern_node(new_node);
         pattern_data.nodes.push(new_node);
@@ -1678,7 +1691,7 @@ d3.csv(csv_file, function(error, data) {
       var node_copy = {}
       node_copy.action = node.action
       node_copy.value = node.value
-      node_copy.id = node.action 
+      node_copy.id = node.id 
       node_copy.fx = node.x;
       node_copy.fy = node.y;
       //node_copy.selected = false;
@@ -1737,7 +1750,7 @@ d3.csv(csv_file, function(error, data) {
       nodes.forEach(function(n, i){
         nodes_copy.push(copy_node(n))
         var sep,
-            c = alphabet[n.id],
+            c = alphabet[n.action],
             many = n.many | false;
         if (c == exit_c)
           c = '$';
@@ -1749,12 +1762,12 @@ d3.csv(csv_file, function(error, data) {
         }
 
         var pattern_node = {
-            action: n.id,
+            action: n.action,
             char: c,
             group: n.group,
             many: many
         }
-        if( (n.id != 'start') && (n.id != 'exit')){
+        if( (n.action != 'start') && (n.action != 'exit')){
           pattern.push(pattern_node)
           chars.push(pattern_node.char); 
         }
@@ -1870,140 +1883,270 @@ d3.csv(csv_file, function(error, data) {
     var contains_not_color = '#81858c'
     var contains_not_bg_color = '#c5c8cc'
 
-
     function draw_pattern_graph(node_link_data){
-      console.log('pattern builder width', pb_width)
-      pb_simulation.force("center", d3.forceCenter(pb_width / 2, pb_height/2))
+      console.log('NODE LINK DATA', node_link_data)
+      $('#pb_graph').css('height',400);
+
+      if(node_link_data.not)
+        $('#pb_graph').css('background-color',contains_not_bg_color);
+      else{
+        $('#pb_graph').css('background-color',"");
+      }
       
-      if (!("not" in node_link_data)){
-        node_link_data.not = false
 
+      node_link_data.links.forEach(function(l,i){
+        node_link_data.nodes.forEach(function(n){
+          l.id = i;
+          // if (n.id == l.source) l.source = n;
+          // if (n.id == l.target) l.target = n;
+          if (n.id == l.source) l.source = n;
+          if (n.id == l.target) l.target = n;
 
+        })
+
+      })
+
+      var current_width = d3.select('#pb_graph').node().clientWidth
+
+      if (current_width == 0){
+        current_width = $('#pb_graph').width()
+        $('#pb_graph').css('height', current_width);
       }
 
-      var not = node_link_data.not,
-          highlight_color = not? 'white': 'black';
-          background_color = not? contains_not_bg_color: 'white';
+      console.log('current width for pattern builder', current_width)
+      var x_position = current_width/2,
+          y_position = 0,
+          node_spacing = 50;
 
-      var background = pb_svg.select('.background')
-                        .attr('fill', background_color)
+      var nodes = node_link_data.nodes.map(function(n){
+        n.color = colors[n.action]
+        var node ={data:n}
+        // if (n.fx){
+        //   node.position ={x:n.fx, y:n.fy}
+        // }
+        // node.position = {x:x_position, y:y_position}
+        // y_position += node_spacing;
+        return node})
 
-      if(not) 
-        $('#contains_not_button').prop('checked', true); 
-      else 
-        $('#contains_not_button').prop('checked', false);
-
-      pb_node = pb_node.data(node_link_data.nodes, function(d) {return d.id;});
-
-      pb_node.exit().remove();
-
-      var node_enter = pb_node.enter().append("g")
-        .on('click', select_pattern_node)
-        .call(d3.drag()
-          .on("start", function(d){ return dragstarted(d, pb_simulation);})
-          .on("drag", function(d){ return dragged(d, pb_simulation);})
-          .on("end", function(d){ return dragended(d, pb_simulation);}))
-        
-      node_enter.append('circle')
-          .attr("class", 'pattern_node')
-          .attr("r", function(d){
-            if(d.action == 'start' || d.action == 'exit')
-              return end_radius
-            else
-              return node_radius
-          })
-          .attr("fill", function(d) { 
-            //return color(d.group); 
-            return colors[d.action];
-          })
-      
-      node_enter.append('circle')
-          .attr('class', 'many')
-      
-
-      node_enter.append('text')
-          .attr('class', 'pb_text')
-          //.style('fill', highlight_color)
-          .style("font-size", "10px")
-          .style("text-anchor", "start")
-          .attr('dy', 
-            //node_radius/2 
-            node_radius
-            )
-          .text(function(d) {return d.action;})
+      //f(nodes.length>0) nodes.push({data:{id:'all_actions', color: 'white'}})
+      var edges = node_link_data.links.map(function(e){
 
 
-      node_enter.append("title") 
-          .text(function(d) { return d.id; })
+        var value = (e.percent >1)? e.percent: 1; 
+        // return {data:{source: e.source.id, target:e.target.id, value: value}}
+        return {data:{source: e.source.id, target:e.target.id, consecutive:e.consecutive}}
 
-      pb_node = node_enter.merge(pb_node)
-                
-      // pb_node.select('circle')
-      //     .attr('stroke', function(d) { return d.selected? 'black' : 'none' })
-
-      pb_node.selectAll('.pattern_node')
-          .attr('stroke', function(d) { return d.selected? highlight_color : 'none' })
-
-      pb_node.selectAll('.many')
-          .attr('r', 3)
-          .attr('fill', function(d){ return d.many? 'black': 'none'})
-
-      pb_node.selectAll('.pb_text')
-          .style('fill', highlight_color)
-      
-
-      //var strokeScale = d3.scaleLinear().domain([0,100]).range([1,5]);
-
-      pb_link = pb_link.data(node_link_data.links);
-      pb_link.exit().remove();
+        })
 
 
-      var link_enter = pb_link.enter().append("line")
-          .attr("stroke-width", function(d) { 
-            //return Math.sqrt(d.value);
-            return 2; 
+      var cy = cytoscape({
+        container: document.querySelector('#pb_graph'),
+        boxSelectionEnabled: false,
+        maxZoom: 1.25,
 
-            //return strokeScale(d.value);
-          })
-          .style("stroke-dasharray", function(d){return d.consecutive? ("1, 0"): ("3,3");})
-          .attr("marker-end", "url(#end)");
+        style: cytoscape.stylesheet()
+          .selector('node')
+            .css({
+              'content': 'data(action)',
+              'width': 18,
+              'height': 18,
+              'text-halign': 'center',
+              'font-size': 12,
+              'background-color':'data(color)'
+            })
+          .selector('edge')
+            .css({
+              'curve-style': 'bezier',
+              'target-arrow-shape': 'triangle',
+              'target-arrow-color': 'darkgray',
+              'line-color': 'darkgray',
+              'font-size': 12,
+              'width': 1
+              //'label': 'data(value)'
+            })
+          .selector('.dotted')
+            .css({
+              'line-style': 'dashed'
+            })
+          .selector('.selected')
+            .css({
+              
+              'border-width': 2,
+              'border-style': 'solid',
+              'border-color': 'black'
+            })
+          .selector('.faded')
+            .css({
+              'opacity': 0.25,
+              'text-opacity': 0.25
+            }),
+          
 
-      pb_link = link_enter.merge(pb_link);
+        elements: {
+          nodes : nodes,
+          edges: edges
+          
+        },
+          layout: {
+            name: 'dagre'
+          }
+      });
+
+      cy.edges().forEach(function(e){
+        var data = e.data()
+
+        if(!data.consecutive){
+          e.addClass('dotted')
+        }
+      })
+      cy.on('tap', 'node', function(e){
 
 
-      pb_simulation
-          .nodes(node_link_data.nodes)
-          .on("tick", ticked);
 
+        var node = e.target;
+        var neighborhood = node.neighborhood().add(node);
 
-      pb_simulation.force("link")
-          .links(node_link_data.links)
+        select_pattern_node(node.data())
 
-      //pb_simulation.alpha(1).restart();
-      pb_simulation.restart();
+        cy.elements().removeClass('selected')
+        node.addClass('selected')
+      });
 
-      function ticked() {
-        //link_enter
-        pb_link
-            .attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.target.x; })
-            .attr("y2", function(d) { return d.target.y; });
-
-        //node_enter.selectAll('circle')
-        pb_node.selectAll('circle')
-            .attr("cx", function(d) { return d.x; })
-            .attr("cy", function(d) { return d.y; });
-
-        //node_enter.selectAll('text')
-        pb_node.selectAll('text')
-            .attr("x", function(d) { return d.x; })
-            .attr("y", function(d) { return d.y; });
-      }
-
-      
-
+      cy.zoomingEnabled(false);
     }
+    // function draw_pattern_graph(node_link_data){
+    //   console.log('pattern builder width', pb_width)
+    //   pb_simulation.force("center", d3.forceCenter(pb_width / 2, pb_height/2))
+      
+    //   if (!("not" in node_link_data)){
+    //     node_link_data.not = false
+
+
+    //   }
+
+    //   var not = node_link_data.not,
+    //       highlight_color = not? 'white': 'black';
+    //       background_color = not? contains_not_bg_color: 'white';
+
+    //   var background = pb_svg.select('.background')
+    //                     .attr('fill', background_color)
+
+    //   if(not) 
+    //     $('#contains_not_button').prop('checked', true); 
+    //   else 
+    //     $('#contains_not_button').prop('checked', false);
+
+    //   pb_node = pb_node.data(node_link_data.nodes, function(d) {return d.id;});
+
+    //   pb_node.exit().remove();
+
+    //   var node_enter = pb_node.enter().append("g")
+    //     .on('click', select_pattern_node)
+    //     .call(d3.drag()
+    //       .on("start", function(d){ return dragstarted(d, pb_simulation);})
+    //       .on("drag", function(d){ return dragged(d, pb_simulation);})
+    //       .on("end", function(d){ return dragended(d, pb_simulation);}))
+        
+    //   node_enter.append('circle')
+    //       .attr("class", 'pattern_node')
+    //       .attr("r", function(d){
+    //         if(d.action == 'start' || d.action == 'exit')
+    //           return end_radius
+    //         else
+    //           return node_radius
+    //       })
+    //       .attr("fill", function(d) { 
+    //         //return color(d.group); 
+    //         return colors[d.action];
+    //       })
+      
+    //   node_enter.append('circle')
+    //       .attr('class', 'many')
+      
+
+    //   node_enter.append('text')
+    //       .attr('class', 'pb_text')
+    //       //.style('fill', highlight_color)
+    //       .style("font-size", "10px")
+    //       .style("text-anchor", "start")
+    //       .attr('dy', 
+    //         //node_radius/2 
+    //         node_radius
+    //         )
+    //       .text(function(d) {return d.action;})
+
+
+    //   node_enter.append("title") 
+    //       .text(function(d) { return d.id; })
+
+    //   pb_node = node_enter.merge(pb_node)
+                
+    //   // pb_node.select('circle')
+    //   //     .attr('stroke', function(d) { return d.selected? 'black' : 'none' })
+
+    //   pb_node.selectAll('.pattern_node')
+    //       .attr('stroke', function(d) { return d.selected? highlight_color : 'none' })
+
+    //   pb_node.selectAll('.many')
+    //       .attr('r', 3)
+    //       .attr('fill', function(d){ return d.many? 'black': 'none'})
+
+    //   pb_node.selectAll('.pb_text')
+    //       .style('fill', highlight_color)
+      
+
+    //   //var strokeScale = d3.scaleLinear().domain([0,100]).range([1,5]);
+
+    //   pb_link = pb_link.data(node_link_data.links);
+    //   pb_link.exit().remove();
+
+
+    //   var link_enter = pb_link.enter().append("line")
+    //       .attr("stroke-width", function(d) { 
+    //         //return Math.sqrt(d.value);
+    //         return 2; 
+
+    //         //return strokeScale(d.value);
+    //       })
+    //       .style("stroke-dasharray", function(d){return d.consecutive? ("1, 0"): ("3,3");})
+    //       .attr("marker-end", "url(#end)");
+
+    //   pb_link = link_enter.merge(pb_link);
+
+
+    //   pb_simulation
+    //       .nodes(node_link_data.nodes)
+    //       .on("tick", ticked);
+
+
+    //   pb_simulation.force("link")
+    //       .links(node_link_data.links)
+
+    //   //pb_simulation.alpha(1).restart();
+    //   pb_simulation.restart();
+
+    //   function ticked() {
+    //     //link_enter
+    //     pb_link
+    //         .attr("x1", function(d) { return d.source.x; })
+    //         .attr("y1", function(d) { return d.source.y; })
+    //         .attr("x2", function(d) { return d.target.x; })
+    //         .attr("y2", function(d) { return d.target.y; });
+
+    //     //node_enter.selectAll('circle')
+    //     pb_node.selectAll('circle')
+    //         .attr("cx", function(d) { return d.x; })
+    //         .attr("cy", function(d) { return d.y; });
+
+    //     //node_enter.selectAll('text')
+    //     pb_node.selectAll('text')
+    //         .attr("x", function(d) { return d.x; })
+    //         .attr("y", function(d) { return d.y; });
+    //   }
+
+      
+
+    // }
     
 
     //========================== Detailed View ==================================//
@@ -2130,15 +2273,25 @@ d3.csv(csv_file, function(error, data) {
     //=========================== Builder Views ====================================//
     var active_builder_view = null,
         active_view = null;
+    // function update_builder_view(view_id){
+    //   view_id = view_id || null;
+    //   active_builder_view = view_id;
+    //   d3.selectAll(".builder")
+    //     .style('display', function(d) {
+    //       var id = d3.select(this).attr('id');
+    //       if (id != active_builder_view)
+    //         return 'none';
+    //     });
+    // }
+
     function update_builder_view(view_id){
-      view_id = view_id || null;
-      active_builder_view = view_id;
-      d3.selectAll(".builder")
-        .style('display', function(d) {
-          var id = d3.select(this).attr('id');
-          if (id != active_builder_view)
-            return 'none';
-        });
+      var id = '.nav-tabs a[href="#' + view_id + '"]';
+      
+      $(id).tab('show')
+
+      resize_builder();
+
+
     }
 
      function update_range_builder_view(view_id){
@@ -2214,29 +2367,33 @@ d3.csv(csv_file, function(error, data) {
 
     function show_builder(o){
       console.log('SHOWING BUILDER of ', selected)
+
+
    
       if (o.value != 1){
 
         if (o.value == 0){
           if (o.type == 'contains'){
-            update_builder_view("pattern_builder");
+            update_builder_view("contains");
             
             clear_contains_builder()
             pattern_data = o.pattern_data
             console.log('drawing builder for following pattern data', pattern_data)
             draw_pattern_graph(pattern_data)
           }if (o.type == 'range'){
-            update_builder_view("range_builder")
+            update_builder_view("range")
             update_range_builder_view("filter_builder");
             update_filter_data(o)
 
           }
         } else {
-          update_builder_view("range_builder")
+          update_builder_view("range")
           update_range_builder_view("partition_builder");
           var thresholds = o.thresholds;
-          update_partition_data(thresholds.slice(0, thresholds.length -1))
+          update_partitions_data(thresholds.slice(0, thresholds.length -1))
         }
+
+        
 
       }
     }
@@ -2247,6 +2404,8 @@ d3.csv(csv_file, function(error, data) {
         infoRange = [0,infoLength]
         infoScale = d3.scaleLinear().range(infoRange)
 
+    var info_height = 150;
+
     var rLength = infoLength,
         rRange = [1, rLength]
 
@@ -2254,7 +2413,9 @@ d3.csv(csv_file, function(error, data) {
                   .domain([0, original_size])
                   .range(rRange)
 
-    var nv_svg = d3.select("#info_view")
+    var infoDiv = d3.select('#info_view')
+
+    var nv_svg = infoDiv
                     .append("svg")
                     // .attr("width", nv_width + nv_margin.left + nv_margin.right)
                     // .attr("height", nv_height + nv_margin.top + nv_margin.bottom)
@@ -2437,7 +2598,8 @@ d3.csv(csv_file, function(error, data) {
           chart = operation.chart,
           show_all_text = true;
 
-      update_selected_chart(chart);
+      // update_selected_chart(chart);
+      select_chart(chart)
       info_data.partition_data = [] 
       info_data = update_node_info_data([operation], show_all_text)
 
@@ -2456,7 +2618,8 @@ d3.csv(csv_file, function(error, data) {
           threshold_ranges = operation.threshold_ranges,
           sep = 40;
 
-      update_selected_chart(chart);
+      //update_selected_chart(chart);
+      select_chart(chart)
 
       info_data = update_node_info_data(operations, show_all_text)
 
@@ -2514,7 +2677,11 @@ d3.csv(csv_file, function(error, data) {
       var sep = sep |1;
 
 
+      var max_height = (data.operation_data.length +1)*(oWidth+sep),
+          svg_height = max_height > info_height? max_height : 150;
 
+
+      nv_svg.attr('height', svg_height)
       //Results View
 
       if (data.partition_data.length>0){
@@ -2857,7 +3024,7 @@ d3.csv(csv_file, function(error, data) {
       //update_info_view("create_partition_view");
       //toggle_range_buttons('#build_partition_button')
       //update_range_builder_view("partition_builder");
-      update_partition_view();
+      update_partitions_data();
     }
 
     function show_filter_builder(){
@@ -2927,6 +3094,7 @@ d3.csv(csv_file, function(error, data) {
       b_range= [0, b_width],
       builder_range,
       partitions =[],
+      partitions_data =[], 
       range_axis,
       rangeHeight = partition_height/2;
 
@@ -3004,21 +3172,25 @@ d3.csv(csv_file, function(error, data) {
       
       //o.not
 
-      active_range = selected_chart? selected_chart.data()[0].active_range(): null;
+      if (selected_chart && selected_chart.data()[0]){
 
-      
+        active_range = selected_chart? selected_chart.data()[0].active_range(): null;
 
-      if (builder_range){
-        var extents = o? o.extents: active_range
+        
 
-        var not = o? o.not: $('#range_not_button').is(':checked')? true: false;
+        if (builder_range){
+          var extents = o? o.extents: active_range
 
-        create_filter_data(builder_range, extents, not)
+          var not = o? o.not: $('#range_not_button').is(':checked')? true: false;
 
-      
+          create_filter_data(builder_range, extents, not)
+
+        
+        }
+
+        update_filter_view()
+
       }
-
-      update_filter_view()
       
 
     } 
@@ -3431,34 +3603,43 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    function update_partition_data(thresholds){
-      partitions = []
+    // function update_partitions_data(thresholds){
+    //   partitions = []
       
 
-      var current_range = selected_chart.data()[0].current_range();
+    //   var current_range = selected_chart.data()[0].current_range();
 
 
-      update_builder_range(current_range)
-      var thresholds = thresholds? thresholds: [builder_range.invert(b_width/3), builder_range.invert(b_width*2/3)]
+    //   update_builder_range(current_range)
+    //   var thresholds = thresholds? thresholds: [builder_range.invert(b_width/3), builder_range.invert(b_width*2/3)]
 
-      if (builder_range){
-        thresholds.forEach(function(p){
-          add_partition_bar(builder_range(p))
-        })
-  
-      
-      }
+    //   if (builder_range){
+    //     thresholds.forEach(function(p){
+    //       add_partition_bar(builder_range(p))
+    //     })
+    //   }
 
       
 
-    } 
-    
+    // } 
     
 
-    function update_partition_view(){
+    function update_partition_view(thresholds){
+
+      partitions =[]
+
+      partitions_data.forEach(function(p){
+              add_partition_bar(builder_range(p))
+            })
+
+    }
+
+
+
+    function update_partitions_data(thresholds){
 
      //render selected chart
- 
+      partitions_data = []
 
      if (selected_chart && selected_chart.data()[0]){
 
@@ -3468,23 +3649,30 @@ d3.csv(csv_file, function(error, data) {
 
         if (current_range){
 
-          // builder_range = update_scale(current_range, b_range)
-
-          // range_axis = d3.axisBottom(builder_range)
-          //             .ticks(5)  
-
-          
-
           update_builder_range(current_range)
 
           range_bar_axis.call(range_axis);
 
-          partitions =[];
-          
-          add_partition_bar(b_width*0.25);
-          add_partition_bar(b_width*0.75);
 
-          //partition_bars = d3.selectAll(".partition");
+          if (builder_range){
+            partitions_data = thresholds? thresholds: [builder_range.invert(b_width/3), builder_range.invert(b_width*2/3)]
+            
+            update_partition_view()
+          }
+
+
+          // partitions =[];
+
+          // var thresholds = thresholds? thresholds: [builder_range.invert(b_width/3), builder_range.invert(b_width*2/3)]
+
+          // if (builder_range){
+          //   thresholds.forEach(function(p){
+          //     add_partition_bar(builder_range(p))
+          //   })
+          // }
+          
+          
+
 
 
         }
@@ -3500,16 +3688,17 @@ d3.csv(csv_file, function(error, data) {
       fullRange = initialRange;
 
      
-      if (selected_chart)
-        selected_chart.style("background-color", "white" );
-      selected_chart = div;
-      selected_chart.style("background-color", "lightyellow" );
+      // if (selected_chart)
+      //   selected_chart.style("background-color", "white" );
+      // selected_chart = div;
+      // selected_chart.style("background-color", "lightyellow" );
+      select_chart(div)
       if( $("#build_filter_view").is(':visible')){
         update_filter_data()
         $('#range_not_button').prop('checked', false);
       }
       else
-        update_partition_view()
+        update_partitions_data()
 
 
       // if (active_builder_view == 'partition_builder')
@@ -3517,6 +3706,13 @@ d3.csv(csv_file, function(error, data) {
       // else if (active_builder_view =='filter_builder')
       //   update_filter_data();
 
+    }
+
+    function select_chart(div){
+      if (selected_chart)
+        selected_chart.style("background-color", "white" );
+      selected_chart = div;
+      selected_chart.style("background-color", "lightyellow" );
     }
 
     function render(method) {
@@ -4227,17 +4423,19 @@ d3.csv(csv_file, function(error, data) {
       nv_svg
           .attr("width", width)
 
-      pb_svg
-          .attr("width", p_width)
+
+      console.log('resize patter builder width to:', p_width);
+      $('#pb_graph').css('width', p_width);
+
+      // pb_svg
+      //     .attr("width", p_width)
 
 
-      if( $("#build_filter_view").is(':visible'))
-        update_filter_data()
-      else
-        update_partition_view()
+      
 
       infoLength = width*(3/7),
-      translation = width*(4/7);
+      separation = width/7 - 20,
+      translation = infoLength + separation;
 
       infoRange = [0,infoLength]
       rScale.range([1,infoLength])
@@ -4250,6 +4448,11 @@ d3.csv(csv_file, function(error, data) {
 
       show_node_view(selected)
       draw_pattern_graph(pattern_data)
+
+      if( $("#build_filter_view").is(':visible'))
+        update_filter_data()
+      else
+        update_partition_view()
       
     }
 
@@ -4832,11 +5035,12 @@ d3.csv(csv_file, function(error, data) {
 
 
     //******** horizontal chart ***********
-    var char;
+    var char,
+        axis_translate = node_radius*2;
     var margin_hc = {top: 20, right: 20, bottom: 30, left: 100},
       width_hc = 300 - margin_hc.left - margin_hc.right,
       height_hc = 175 - margin_hc.top - margin_hc.bottom,
-      horizontal_chart = d3.select("#contains_action_chart").append('svg').append("g").attr("transform", "translate(" + margin_hc.left + "," + margin_hc.top + ")");
+      horizontal_chart = d3.select("#contains_action_chart").append('svg').append("g").attr("transform", "translate(" + (margin_hc.left-axis_translate) + "," + margin_hc.top + ")");
 
       
       console.log('svg width', width_hc);
@@ -4964,11 +5168,11 @@ d3.csv(csv_file, function(error, data) {
               
 
       var row_enter = row.enter().append("g")
-              .attr("transform", function (d) { return "translate(0," + y_hc(d.action) + ")"; })
+              .attr("transform", function (d) { return "translate(" + axis_translate + "," + y_hc(d.action) + ")"; })
 
 
       var node = row_enter.append('circle')
-              .attr("transform", function (d) { return "translate("+ (-30) +"," + y_hc.bandwidth()/2 + ")"; })
+              .attr("transform", function (d) { return "translate("+ -((axis_translate + 8)/2) +"," + y_hc.bandwidth()/2 + ")"; })
               .attr("r", node_radius)
               .attr("fill", function(d){ return colors[d.action]})
               .on('click', select_horizontal_action)
@@ -4980,6 +5184,7 @@ d3.csv(csv_file, function(error, data) {
             .exit()
             .data(d => d.percents)
             .enter();
+
 
       bar_enter.append("rect")
             .attr("x", function(d){
