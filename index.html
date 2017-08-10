@@ -1792,6 +1792,8 @@ d3.csv(csv_file, function(error, data) {
           if (i < (nodes.length-1)){
             var match = all.reduce(reduceAdd,reduceRemove, reduceInitial).value();
 
+
+
             if (match){
               var size = match.count,
                   filter = {},
@@ -1800,6 +1802,9 @@ d3.csv(csv_file, function(error, data) {
 
               if (not)
                 size = total_size - size;
+
+              if(links[i].consecutive)
+                pattern.push(any_node)
 
               console.log('Regex used for sizing,' , regex)
               selectedFilter.chart = selected_chart;
@@ -1813,6 +1818,8 @@ d3.csv(csv_file, function(error, data) {
 
               selectedFilter.pattern_data = {nodes: nodes_copy.slice(), links:links_copy.slice(), not:not};
 
+
+
               console.log('pattern created', pattern);
               console.log('creating filter:', selectedFilter);
 
@@ -1820,6 +1827,9 @@ d3.csv(csv_file, function(error, data) {
 
               var filter = create_filter(parent);
               parent = filter.children[0];
+
+              if(links[i].consecutive)
+                pattern.pop()
 
             }
           }
@@ -2023,140 +2033,7 @@ d3.csv(csv_file, function(error, data) {
       cy.zoomingEnabled(false);
       cy.resize();
     }
-    // function draw_pattern_graph(node_link_data){
-    //   console.log('pattern builder width', pb_width)
-    //   pb_simulation.force("center", d3.forceCenter(pb_width / 2, pb_height/2))
-      
-    //   if (!("not" in node_link_data)){
-    //     node_link_data.not = false
 
-
-    //   }
-
-    //   var not = node_link_data.not,
-    //       highlight_color = not? 'white': 'black';
-    //       background_color = not? contains_not_bg_color: 'white';
-
-    //   var background = pb_svg.select('.background')
-    //                     .attr('fill', background_color)
-
-    //   if(not) 
-    //     $('#contains_not_button').prop('checked', true); 
-    //   else 
-    //     $('#contains_not_button').prop('checked', false);
-
-    //   pb_node = pb_node.data(node_link_data.nodes, function(d) {return d.id;});
-
-    //   pb_node.exit().remove();
-
-    //   var node_enter = pb_node.enter().append("g")
-    //     .on('click', select_pattern_node)
-    //     .call(d3.drag()
-    //       .on("start", function(d){ return dragstarted(d, pb_simulation);})
-    //       .on("drag", function(d){ return dragged(d, pb_simulation);})
-    //       .on("end", function(d){ return dragended(d, pb_simulation);}))
-        
-    //   node_enter.append('circle')
-    //       .attr("class", 'pattern_node')
-    //       .attr("r", function(d){
-    //         if(d.action == 'start' || d.action == 'exit')
-    //           return end_radius
-    //         else
-    //           return node_radius
-    //       })
-    //       .attr("fill", function(d) { 
-    //         //return color(d.group); 
-    //         return colors[d.action];
-    //       })
-      
-    //   node_enter.append('circle')
-    //       .attr('class', 'many')
-      
-
-    //   node_enter.append('text')
-    //       .attr('class', 'pb_text')
-    //       //.style('fill', highlight_color)
-    //       .style("font-size", "10px")
-    //       .style("text-anchor", "start")
-    //       .attr('dy', 
-    //         //node_radius/2 
-    //         node_radius
-    //         )
-    //       .text(function(d) {return d.action;})
-
-
-    //   node_enter.append("title") 
-    //       .text(function(d) { return d.id; })
-
-    //   pb_node = node_enter.merge(pb_node)
-                
-    //   // pb_node.select('circle')
-    //   //     .attr('stroke', function(d) { return d.selected? 'black' : 'none' })
-
-    //   pb_node.selectAll('.pattern_node')
-    //       .attr('stroke', function(d) { return d.selected? highlight_color : 'none' })
-
-    //   pb_node.selectAll('.many')
-    //       .attr('r', 3)
-    //       .attr('fill', function(d){ return d.many? 'black': 'none'})
-
-    //   pb_node.selectAll('.pb_text')
-    //       .style('fill', highlight_color)
-      
-
-    //   //var strokeScale = d3.scaleLinear().domain([0,100]).range([1,5]);
-
-    //   pb_link = pb_link.data(node_link_data.links);
-    //   pb_link.exit().remove();
-
-
-    //   var link_enter = pb_link.enter().append("line")
-    //       .attr("stroke-width", function(d) { 
-    //         //return Math.sqrt(d.value);
-    //         return 2; 
-
-    //         //return strokeScale(d.value);
-    //       })
-    //       .style("stroke-dasharray", function(d){return d.consecutive? ("1, 0"): ("3,3");})
-    //       .attr("marker-end", "url(#end)");
-
-    //   pb_link = link_enter.merge(pb_link);
-
-
-    //   pb_simulation
-    //       .nodes(node_link_data.nodes)
-    //       .on("tick", ticked);
-
-
-    //   pb_simulation.force("link")
-    //       .links(node_link_data.links)
-
-    //   //pb_simulation.alpha(1).restart();
-    //   pb_simulation.restart();
-
-    //   function ticked() {
-    //     //link_enter
-    //     pb_link
-    //         .attr("x1", function(d) { return d.source.x; })
-    //         .attr("y1", function(d) { return d.source.y; })
-    //         .attr("x2", function(d) { return d.target.x; })
-    //         .attr("y2", function(d) { return d.target.y; });
-
-    //     //node_enter.selectAll('circle')
-    //     pb_node.selectAll('circle')
-    //         .attr("cx", function(d) { return d.x; })
-    //         .attr("cy", function(d) { return d.y; });
-
-    //     //node_enter.selectAll('text')
-    //     pb_node.selectAll('text')
-    //         .attr("x", function(d) { return d.x; })
-    //         .attr("y", function(d) { return d.y; });
-    //   }
-
-      
-
-    // }
-    
 
     //========================== Detailed View ==================================//
     var patterns = {};
