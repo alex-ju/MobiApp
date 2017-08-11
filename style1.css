@@ -81,6 +81,12 @@
   margin-bottom: 20px;
 }
 
+.chart1 {
+  display: inline-block;
+  position: relative;
+/*  height: 151px;*/
+  margin-bottom: 20px;
+}
 
 .reset {
   padding-left: 1em;

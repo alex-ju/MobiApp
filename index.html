@@ -243,21 +243,9 @@
                   
 
                     <div class="panel-group" id="range_attributes">
-                      <div class="panel panel-default">
-                        <div class="panel-heading">
-                          <h4 class="panel-title">
-                            <a data-toggle="collapse" class="info-toggle" href="#collapse_count"></a>
-                            # Count-Related
-                          </h4>
-                        </div>
-                        <div id="collapse_count" class="panel-collapse collapse in">
-                          <div class="panel-body">
-                            <div class="chart" id="len_chart"> 
-                              <div class="title"> Number of Actions </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+
+                      
+
                       <div class="panel panel-default">
                         <div class="panel-heading">
                           <h4 class="panel-title">
@@ -279,7 +267,27 @@
                             </div>
                           </div>
                         </div>
-                      </div>  
+                      </div>
+
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <h4 class="panel-title">
+                            <a data-toggle="collapse" class="info-toggle" href="#collapse_count"></a>
+                            # Count-Related
+                          </h4>
+                        </div>
+                        <div id="collapse_count" class="panel-collapse collapse in">
+                          <div class="panel-body">
+                            <div class="chart" id="len_chart"> 
+                              <div class="title"> Number of Actions </div>
+                            </div>
+                            <div class="chart" id="a_count_chart"> 
+                              <div class="title"> Number of AddToCart </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div> 
+
                     </div>
                   </div>
                   
@@ -294,14 +302,14 @@
                   </div>
                   <div id="collapse_contains" class="panel-collapse collapse in">
                     <div class="panel-body">
-                      <div class= "chart" id="contains_action_chart">
+                      <div class= "chart1" id="contains_action_chart">
                         <div class="title"> Number of Sequences that Contains Action </div>
                       </div>
 
-                      <div class ="chart" id="node_link">
+                      <div class ="chart1" id="node_link">
                         <div id="cy"></div>
                       </div>
-                      <div class="chart" id="adjacency_chart">
+                      <div class="chart1" id="adjacency_chart">
                         <div id="tooltip" class="hidden">
                           <p><span id="value">100</span></p>
                         </div>
@@ -367,17 +375,6 @@
 $(document).ready(function(){
 
 
-  chart_data = {},
-  hour_chart ={},
-  start_chart = {},
-  duration_chart = {},
-  len_chart = {};
-
-  chart_data['hour_chart'] = hour_chart;
-  chart_data['date_chart'] = start_chart;
-  chart_data['duration_chart'] = duration_chart;
-  chart_data['len_chart'] = len_chart;
-
 
   var selectedFilter ={},
       selectedDiv,
@@ -433,17 +430,22 @@ d3.csv(csv_file, function(error, data) {
       console.log('Alphabet: ', alphabet);
       console.log(data[0])
 
+      var action_counted = 'search'
 
       var seqs = crossfilter(data),
           all = seqs.groupAll(),
+
+
           len = seqs.dimension(function(d) {return d.len;}),
           l = seqs.dimension(function(d) {return d.len;}),
-          //lens = len.group(Math.floor),
-          lens = len.group(function(d) {
-            //return group_count(d);
-            return d;
-          }),
-
+          lens = len.group(Math.floor),
+          // lens = len.group(function(d) {
+          //   //return group_count(d);
+          //   return d;
+          // }),
+          a_count = seqs.dimension(function(d) {return action_count(d, action_counted)}),
+          a_count_filter = seqs.dimension(function(d) {return action_count(d, action_counted)}),
+          a_counts = a_count.group(Math.floor),
           
           hour = seqs.dimension(function(d) {return d.start.getHours() + d.start.getMinutes()/60;}),
           h = seqs.dimension(function(d) {return d.start.getHours() + d.start.getMinutes()/60;}),
@@ -468,27 +470,18 @@ d3.csv(csv_file, function(error, data) {
           trans_grouped = trans_strings.group()
 
     //console.log(lens.top(Number.POSITIVE_INFINITY).length);
-
-
-
-    len_chart.dim = l;
-    len_chart.dim1 = len;
-
-    hour_chart.dim = h;
-    hour_chart.dim1 = hour;
-
-    start_chart.dim = start_filter;
-    start_chart.dim1 = start;
-
-    duration_chart.dim = dur_filter;
-    duration_chart.dim1= duration;
-
-    len_chart.dims = lens.all();
     
-    hour_chart.dims = hours.all();
-    start_chart.dims = starts.all();
-    duration_chart.dims = durations.all();
-    
+
+    function action_count(d, action){
+      var c = alphabet[action],
+          re = new RegExp(c,'g'),
+          str = d.general_actions,
+          matches = str.match(re);
+
+      return matches? matches.length: 0
+    }
+
+
     d3.selectAll("#sequence_details")
       .on("click", print_sequences);
 
@@ -566,15 +559,6 @@ d3.csv(csv_file, function(error, data) {
 
     var charts = [
 
-          barChart()
-          .dimension(len)
-          .filter_dimension(l)
-          .dim_name('# of actions')
-          .category('count')
-          .group(lens)
-          .x(d3.scaleLinear()
-          .domain([0, 30])
-          .rangeRound([0, 140])),
 
           barChart()
           .dimension(duration)
@@ -605,8 +589,29 @@ d3.csv(csv_file, function(error, data) {
           .round(d3.timeDay.round)
         .x(d3.scaleTime()
           .domain([new Date(2017, 0, 24), new Date(2017, 3, 3)])
-           .rangeRound([0, 225]))
+           .rangeRound([0, 225])),
           //.rangeRound([0, 300]))
+
+        barChart()
+          .dimension(len)
+          .filter_dimension(l)
+          .dim_name('# of actions')
+          .category('count')
+          .group(lens)
+          .x(d3.scaleLinear()
+          .domain([0, 30])
+          .rangeRound([0, 140])),
+
+
+        barChart()
+          .dimension(a_count)
+          .filter_dimension(a_count_filter)
+          .dim_name('# of addToCarts')
+          .category('count')
+          .group(a_counts)
+          .x(d3.scaleLinear()
+          .domain([0, 30])
+          .rangeRound([0, 140]))
 
 
     ]
@@ -1957,9 +1962,6 @@ d3.csv(csv_file, function(error, data) {
       //var current_width = d3.select('#pb_graph').node().clientWidth,
       var current_width = $('#pb_graph').width()
 
-
-      console.log('current width for pattern builder', current_width)
-
       $('#pb_graph').css('height', 400);
       $('#pb_graph').css('width', current_width);
       pb_graph.resize()
@@ -2059,6 +2061,7 @@ d3.csv(csv_file, function(error, data) {
     function remove_duplicates(str){
       return str.replace(/[^\w\s]|(.)(?=\1)/g, "");
     }
+
 
 
     function find_patterns(str, patterns){
@@ -3749,6 +3752,7 @@ d3.csv(csv_file, function(error, data) {
     return [range[0], range_max]
   }
 
+  var max_id;
 
   function barChart() {
       if (!barChart.id) barChart.id = 0;
@@ -3775,6 +3779,7 @@ d3.csv(csv_file, function(error, data) {
           group,
           round;
       
+      max_id = id;
 
       function chart(div) {
         var width = x.range()[1],
@@ -3794,7 +3799,7 @@ d3.csv(csv_file, function(error, data) {
           if (g.empty()) {
             
             
-            chart_data[div.attr('id')].id = id;
+            //chart_data[div.attr('id')].id = id;
             y.domain([0, group.top(1)[0].value]);
 
             x_domain_max = get_x_limit(group.all(), y);
@@ -4165,6 +4170,8 @@ d3.csv(csv_file, function(error, data) {
         category = _;
         return chart;
       };
+
+      chart.id = id;
 
       chart.dimension = function(_) {
         if (!arguments.length) return dimension;
@@ -4838,17 +4845,19 @@ d3.csv(csv_file, function(error, data) {
       // h.filterAll();
       // hour.filterAll();
       // len.filterAll();
-      action_strings.filterAll();
 
-      max_id = 3
+      //action_strings.filterAll();
+
+      //max_id = 3
+      console.log('MAX RESET ID', max_id)
       if (!arguments.length)
         exception = -1;
 
       for(var i=0; i<= max_id; i++){
         if (i != exception){
           reset(i);
-          charts[i].dimension().filterAll();
-          charts[i].filter_dimension().filterAll();
+          //charts[i].dimension().filterAll();
+          //charts[i].filter_dimension().filterAll();
 
 
         }   
@@ -4879,10 +4888,13 @@ d3.csv(csv_file, function(error, data) {
                 var div = f.div;
                 var extents = f.extents;
 
-                current_chart = chart_data[div];
-                dim = current_chart.dim;
-                reset(current_chart.id);
+                // current_chart = chart_data[div];
+                // dim = current_chart.dim;
+                // reset(current_chart.id);
 
+                current_chart = f.chart.data()[0];
+                dim = current_chart.filter_dimension();
+                reset(current_chart.id);
 
                 if (extents){
                   console.log('extents to filter', extents)
@@ -5259,8 +5271,12 @@ d3.csv(csv_file, function(error, data) {
             dims;
 
         chart_id = selected_chart.attr('id');
-        range = selected_chart.data()[0].range()
-        current_range =selected_chart.data()[0].current_range()
+        var selected_chart_data = selected_chart.data()[0],
+            range = selected_chart_data.range(),
+            current_range =selected_chart_data.current_range(),
+            dim = selected_chart_data.dimension()
+            //dims = selected_chart_data.group()
+
         update_oScale(range);
 
         var info_range = range, //range used for info view
@@ -5293,9 +5309,9 @@ d3.csv(csv_file, function(error, data) {
 
         
 
-        chart_div = chart_data[chart_id];
-        dim = chart_div.dim1;
-        dims = chart_div.dims;
+        // chart_div = chart_data[chart_id];
+        // dim = chart_div.dim1;
+        // dims = chart_div.dims;
 
 
 
