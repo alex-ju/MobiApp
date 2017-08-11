@@ -568,6 +568,7 @@ d3.csv(csv_file, function(error, data) {
 
           barChart()
           .dimension(len)
+          .filter_dimension(l)
           .dim_name('# of actions')
           .category('count')
           .group(lens)
@@ -577,6 +578,7 @@ d3.csv(csv_file, function(error, data) {
 
           barChart()
           .dimension(duration)
+          .filter_dimension(dur_filter)
           .dim_name('Duration (hours)')
           .category('time')
           .group(durations)
@@ -586,6 +588,7 @@ d3.csv(csv_file, function(error, data) {
 
           barChart()
           .dimension(hour)
+          .filter_dimension(h)
           .dim_name('Hour of the day')
           .category('time')
           .group(hours)
@@ -595,6 +598,7 @@ d3.csv(csv_file, function(error, data) {
 
         barChart()
           .dimension(start)
+          .filter_dimension(start_filter)
           .dim_name('Date')
           .category('time')
           .group(starts)
@@ -1467,17 +1471,7 @@ d3.csv(csv_file, function(error, data) {
       }
       selected_pattern_node = d;
       d.selected = true;
-      
 
-      // var links = pattern_data.links,
-      //     before_links =[],
-      //     after_links = [];
-
-
-      
-
-
-      //draw_pattern_graph(pattern_data);
 
 
     }
@@ -1713,6 +1707,8 @@ d3.csv(csv_file, function(error, data) {
 
     function create_contains_filter(funnelize){
 
+      reset_filters()
+
       var nodes = pattern_data.nodes,
           links = pattern_data.links,
           not = ("not" in pattern_data)? pattern_data.not: false;
@@ -1877,6 +1873,11 @@ d3.csv(csv_file, function(error, data) {
 
 
 
+    }
+
+    function copy_pattern_data(data){
+      pattern_data = {nodes:data.nodes.slice(), links:data.links.slice(), not:data.not}
+      return pattern_data
     }
 
     //var contains_not_color = '#54575b'
@@ -2294,7 +2295,8 @@ d3.csv(csv_file, function(error, data) {
             clear_contains_builder()
             pattern_data = o.pattern_data
             console.log('drawing builder for following pattern data', pattern_data)
-            draw_pattern_graph(pattern_data) 
+            var copy = copy_pattern_data(pattern_data)
+            draw_pattern_graph(copy) 
               
             
           }if (o.type == 'range'){
@@ -3601,6 +3603,7 @@ d3.csv(csv_file, function(error, data) {
 
     function update_selected_chart(div) {
 
+
       fullRange = initialRange;
 
      
@@ -3756,6 +3759,7 @@ d3.csv(csv_file, function(error, data) {
           range,
           current_range,
           dimension,
+          filter_dimension,
           group,
           round;
       
@@ -4106,9 +4110,12 @@ d3.csv(csv_file, function(error, data) {
        brush.on('end.chart', function () {
         // reset corresponding filter if the brush selection was cleared
         // (e.g. user "clicked off" the active range)
+        console.log('all ids but', id)
+        reset_filters(id);
         if (!d3.brushSelection(this)) {
           reset(id);
           selectedFilter = {};
+
           active_range= current_range;
           update_filter_data()
         }
@@ -4150,6 +4157,12 @@ d3.csv(csv_file, function(error, data) {
       chart.dimension = function(_) {
         if (!arguments.length) return dimension;
         dimension = _;
+        return chart;
+      };
+
+      chart.filter_dimension = function(_) {
+        if (!arguments.length) return filter_dimension;
+        filter_dimension = _;
         return chart;
       };
 
@@ -4768,17 +4781,22 @@ d3.csv(csv_file, function(error, data) {
 
     function reset_filters(exception) {
 
-      l.filterAll();
-      h.filterAll();
-      hour.filterAll();
-      len.filterAll();
+      // l.filterAll();
+      // h.filterAll();
+      // hour.filterAll();
+      // len.filterAll();
       action_strings.filterAll();
 
       max_id = 3
       exception = exception || -1;
       for(var i=0; i<= max_id; i++){
-        if (i != exception)
+        if (i != exception){
           reset(i);
+          charts[i].dimension().filterAll();
+          charts[i].filter_dimension().filterAll();
+
+
+        }   
 
 
       }
