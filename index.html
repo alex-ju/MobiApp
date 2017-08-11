@@ -871,7 +871,7 @@ d3.csv(csv_file, function(error, data) {
       });
 
       nl_graph.on('tap', function(e){
-        if( e.target === cy ){
+        if( e.target === nl_graph ){
           nl_graph.elements().removeClass('faded');
         }
       });
@@ -1123,6 +1123,25 @@ d3.csv(csv_file, function(error, data) {
       selected_action_node = d;
       d.selected = true;
 
+      
+
+
+      update_action_list()
+      update_adjacency_chart_data(links);
+      update_horizontal_chart(all_matches)
+      console.log("Selected action node: ", selected_action_node);
+
+
+      //draw_action_transition_graph(nl_graph_data);
+      
+      
+
+    }
+
+    function select_pattern_action_node(d){
+
+      select_action_node(d)
+
       if (pressed){
         
         if(pattern_data.nodes.length>0){
@@ -1141,16 +1160,6 @@ d3.csv(csv_file, function(error, data) {
 
       }
 
-
-      update_action_list()
-      update_adjacency_chart_data(links);
-      update_horizontal_chart(all_matches)
-      console.log("Selected action node: ", selected_action_node);
-
-
-      //draw_action_transition_graph(nl_graph_data);
-      
-      
 
     }
     
@@ -1515,7 +1524,7 @@ d3.csv(csv_file, function(error, data) {
       var action_enter = action.enter().append('g')
                           .attr('class', 'action')
                           .attr("transform", function(d, i){return "translate(" + 0 + "," + (node_radius*3)*i + ")" })
-                          .on("click", select_action_node)
+                          .on("click", select_pattern_action_node)
 
       action_enter.append('circle')
             .attr("r", function(d){
@@ -2346,12 +2355,15 @@ d3.csv(csv_file, function(error, data) {
 
     var operation_result_view  = info_view.append("g")
                                 .attr('class', "operation_result_view")
+                                .attr("transform", "translate(" + 5  + "," + 0 + ")")
 
     var partition_results_view = info_view.append('g')
                     .attr('class', 'partition_results_view')
+                    .attr("transform", "translate(" + 5  + "," + 0 + ")")
 
     var operation_view = operation_result_view.append('g')
                     .attr('class', 'operation_view')
+                    
 
     var results_view = operation_result_view.append('g')
                     .attr("class", "results_view")
@@ -2789,7 +2801,7 @@ d3.csv(csv_file, function(error, data) {
       var range_nodes = operationEnter.selectAll(".range")
 
       range_nodes.append("path")
-              .attr("transform", function(d) { return "translate(" + (-oWidth/2 -1) + "," + oWidth/2 + ")"; })
+              .attr("transform", function(d) { return "translate(" + (-oWidth -1) + "," + oWidth/2 + ")"; })
               .attr('d', function(d){ 
 
                     var category = d.category;
@@ -4505,7 +4517,7 @@ d3.csv(csv_file, function(error, data) {
       var range_nodes = operation_nodes.selectAll(".range")
 
       range_nodes.append("path")
-              .attr("transform", function(d) { return "translate(" + (-oWidth/2 -1) + "," + oWidth/2 + ")"; })
+              .attr("transform", function(d) { return "translate(" + (-oWidth -1) + "," + oWidth/2 + ")"; })
               .attr('d', function(d){ 
 
                     var category = d.data.operation.category;
@@ -4671,7 +4683,7 @@ d3.csv(csv_file, function(error, data) {
       var size = oWidth*0.75;
 
       //return 'M' + (-size/2) + ',' + (-size/2) +
-      return 'M' + 0 + ',' + (-size/2) +
+      return 'M' + oWidth/2 + ',' + (-size/2) +
       'l' + (-size/4) + ',' + size +
       'm0' + size/3 + ',' + 0 +
       'l' + size/4 + ',' + -size +
@@ -4684,15 +4696,61 @@ d3.csv(csv_file, function(error, data) {
 
 
 
+    // function clock_symbol(o){
+      
+    //   var size = oWidth*0.75,
+    //       r = size/2,
+    //       pad = r/4,
+    //       len = r - pad,
+    //       sym_len = r,
+    //       sym_y = (r-sym_len + pad);
+    //       //sym_y = -(r + pad);
+
+    //   var clock = 'M' + 0 + ',' + 0 +
+    //   ' m' + (-r) + ',0' +
+    //   ' a' + r + ',' + r + ' 0 1,0' + (r * 2) + ',0' +
+    //   ' a' + r + ',' + r + ' 0 1,0' + (-(r * 2)) + ',0'+
+        
+    //   'M' + 0 + ',' + (-len) +
+    //   'l' + 0 + ',' + len + ' ' + len + ',0';
+
+    //   if (o.div.includes('hour'))
+    //     return clock + 
+    //     'M' + -(r + pad + sym_len/2) + ',' + sym_y +
+    //     'l' + 0 + ',' + sym_len +
+    //     'm0' + 0 + ',' + -sym_len/2 +
+    //     'l' + sym_len/2 + ',' + 0 +
+    //     'm0' + 0 + -sym_len/2 +
+    //     'l' + 0 + ',' + sym_len  ;
+    //   else if(o.div.includes('date'))
+    //     return clock +
+    //     'M' + -(r + pad + sym_len/2) + ',' + sym_y +
+    //     'l' + 0 + ',' + sym_len +
+    //     'q' + (pad*4) + ',' + -(sym_len/4) + ' ' + 0 + ',' + -sym_len;
+    //   else if (o.div.includes('duration'))
+    //     return clock +
+    //     'M' + -(r + pad + sym_len/2) + ',' + sym_y +
+    //     'l' + (-sym_len/4) + ',' + sym_len +
+    //     'm0' + sym_len/3 + ',' + 0 +
+    //     'l' + sym_len/4 + ',' + -sym_len +
+    //     'm0' + sym_len/5 + ',' + sym_len/3 +
+    //     'l' + -sym_len + ',0' +
+    //     'm0' + 0 + ',' + sym_len/3 +
+    //     'l' + sym_len + ',0';
+    //   else
+    //     return clock; 
+    // }
+
     function clock_symbol(o){
       
       var size = oWidth*0.75,
           r = size/2,
           pad = r/4,
           len = r - pad,
-          sym_len = r,
-          sym_y = (r-sym_len + pad);
-          //sym_y = -(r + pad);
+          sym_len = r*1.5,
+          sym_y = -sym_len/2;
+          t = r+pad*2
+          //t = -(r + pad + sym_len/2)
 
       var clock = 'M' + 0 + ',' + 0 +
       ' m' + (-r) + ',0' +
@@ -4704,7 +4762,7 @@ d3.csv(csv_file, function(error, data) {
 
       if (o.div.includes('hour'))
         return clock + 
-        'M' + -(r + pad + sym_len/2) + ',' + sym_y +
+        'M' + t + ',' + sym_y +
         'l' + 0 + ',' + sym_len +
         'm0' + 0 + ',' + -sym_len/2 +
         'l' + sym_len/2 + ',' + 0 +
@@ -4712,19 +4770,14 @@ d3.csv(csv_file, function(error, data) {
         'l' + 0 + ',' + sym_len  ;
       else if(o.div.includes('date'))
         return clock +
-        'M' + -(r + pad + sym_len/2) + ',' + sym_y +
+        'M' + t + ',' + sym_y +
         'l' + 0 + ',' + sym_len +
-        'q' + (pad*4) + ',' + -(sym_len/4) + ' ' + 0 + ',' + -sym_len;
+        'q' + (pad*6.5) + ',' + -(sym_len/4) + ' ' + 0 + ',' + -sym_len;
       else if (o.div.includes('duration'))
         return clock +
-        'M' + -(r + pad + sym_len/2) + ',' + sym_y +
-        'l' + (-sym_len/4) + ',' + sym_len +
-        'm0' + sym_len/3 + ',' + 0 +
-        'l' + sym_len/4 + ',' + -sym_len +
-        'm0' + sym_len/5 + ',' + sym_len/3 +
-        'l' + -sym_len + ',0' +
-        'm0' + 0 + ',' + sym_len/3 +
-        'l' + sym_len + ',0';
+        'M' + t + ',' + sym_y +
+        'l' + 0 + ',' + sym_len +
+        'l' + sym_len/2 + ',' + 0;
       else
         return clock; 
     }
@@ -4788,7 +4841,9 @@ d3.csv(csv_file, function(error, data) {
       action_strings.filterAll();
 
       max_id = 3
-      exception = exception || -1;
+      if (!arguments.length)
+        exception = -1;
+
       for(var i=0; i<= max_id; i++){
         if (i != exception){
           reset(i);
@@ -5064,23 +5119,7 @@ d3.csv(csv_file, function(error, data) {
 
       }
     }
-   
-      
 
-    // var selected_bar;
-
-    // function update_selected_bar(rect){
-    //   //box = d3.select(rect).select(".outer_box")
-    //   var box = rect;
-                            
-    //   if (selected_bar)
-    //     selected_bar.style('stroke', "none");
-
-    //   selected_bar = box;
-    //   selected_bar.style("stroke", "black");
-
-
-    // }
     function select_horizontal_action(d){
       select_action_node(d);
       clear_contains_builder();
