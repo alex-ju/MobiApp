@@ -290,6 +290,18 @@ input {
 
 }
 
+.inline-center-center {
+  /*position: relative;
+  display: inline-flex;*/
+  display: flex;
+  text-align: center;
+  /*justify-content: space-around;*/
+  flex-wrap: wrap;
+  padding: 0 3%;
+
+}
+
+
 .panel
 {
     position: relative;
@@ -380,8 +392,30 @@ input {
 }
 
 
+.title{
+  /*margin-top:18px;*/
+  font-size: 12px;
+}
 
-
+.close{
+  position:absolute;
+  top:0;
+  right:0;
+  /*margin-top: -5px;*/
+}
+.circle {
+/*    position: absolute;
+    top:2;
+    left:0;
+    opacity: 0.5;*/
+      margin-left:3px;
+      /*margin-top: 18px;*/
+      width: 14px;
+      height: 14px;
+      -webkit-border-radius: 7px;
+      -moz-border-radius: 7px;
+      border-radius: 7px;
+    }
 
 /*----------*/
 

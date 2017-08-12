@@ -28,8 +28,9 @@
             </div>
             <div class="panel-body">
               <div class="btn-group">
-                <button type="button" id="path_button" class="btn btn-primary">Show only path</button>
-                <button type="button" id="remove_button" class="btn btn-primary">Remove Operation</button>
+                <button type="button" id="path_button" class="btn btn-md btn-primary">Show only path</button>
+                <button type="button" id="remove_button" class="btn btn-md btn-primary">Remove Operation</button>
+                <button type="button" id="demo_button" class="btn btn-md btn-primary">Demo</button>
               </div>
               <div class="panel-group" id="operation_info">
                 <div class="panel panel-default">
@@ -278,11 +279,15 @@
                         </div>
                         <div id="collapse_count" class="panel-collapse collapse in">
                           <div class="panel-body">
-                            <div class="chart" id="len_chart"> 
-                              <div class="title"> Number of Actions </div>
-                            </div>
-                            <div class="chart" id="a_count_chart"> 
-                              <div class="title"> Number of AddToCart </div>
+                            <div id="count_charts">
+                              <div class="chart" id="len_chart"> 
+                                <div class="title"> Number of Actions 
+                                
+                                </div>
+                              </div>
+                              <!-- <div class="chart" id="a_count_chart"> 
+                                <div class="title"> Number of AddToCart </div>
+                              </div> -->
                             </div>
                           </div>
                         </div>
@@ -430,6 +435,29 @@ d3.csv(csv_file, function(error, data) {
       console.log('Alphabet: ', alphabet);
       console.log(data[0])
 
+
+
+
+    var colors = {
+
+      "addToCart": "#79EA85",
+      "removeFromCart": "#EA0000",
+      "purchase": "#00AC22",
+      "search": "#FF7100",
+      "pageview": "#0073B9",
+      "start": "#999",
+      "exit": "#999"
+
+
+    }
+
+      function color(action){
+        if (action in colors)
+          return colors[action]
+        else
+          return 'none'
+      }
+
       var action_counted = 'search'
 
       var seqs = crossfilter(data),
@@ -443,9 +471,7 @@ d3.csv(csv_file, function(error, data) {
           //   //return group_count(d);
           //   return d;
           // }),
-          a_count = seqs.dimension(function(d) {return action_count(d, action_counted)}),
-          a_count_filter = seqs.dimension(function(d) {return action_count(d, action_counted)}),
-          a_counts = a_count.group(Math.floor),
+          
           
           hour = seqs.dimension(function(d) {return d.start.getHours() + d.start.getMinutes()/60;}),
           h = seqs.dimension(function(d) {return d.start.getHours() + d.start.getMinutes()/60;}),
@@ -553,8 +579,15 @@ d3.csv(csv_file, function(error, data) {
       .on("click", transitionize_sequences);
     d3.select("#close_detailed_view")
       .on("click", close_detailed_view);
+
+    // d3.selectAll("#close_chart")
+    //   .on("click", close_chart);
+    
+    
+
     d3.select("#demo_button")
-      .on("click", show_not_filter);
+      .on("click", add_action_count_chart);
+      
 
 
     var charts = [
@@ -600,18 +633,10 @@ d3.csv(csv_file, function(error, data) {
           .group(lens)
           .x(d3.scaleLinear()
           .domain([0, 30])
-          .rangeRound([0, 140])),
-
-
-        barChart()
-          .dimension(a_count)
-          .filter_dimension(a_count_filter)
-          .dim_name('# of addToCarts')
-          .category('count')
-          .group(a_counts)
-          .x(d3.scaleLinear()
-          .domain([0, 30])
           .rangeRound([0, 140]))
+
+
+
 
 
     ]
@@ -637,8 +662,93 @@ d3.csv(csv_file, function(error, data) {
                  
     renderAll();
 
-    //=========================== Node Link =====================================//
+    var action_i = 0;
 
+    function add_action_count_chart(){
+
+      action_counted = current_level[action_i]
+
+      var chart_div = d3.select('#count_charts').append('div')
+                          .attr('class', 'chart')
+                          .attr('id', action_counted + '_count_chart')
+
+      chart_div.append('button').attr('type','button').attr('class', 'close').attr('id','close_chart').attr('aria-hidden',true).html('&times;')
+      var title_div = chart_div.append('div').attr('class', 'inline-center-center').style("margin-top", '18px')
+
+      title_div.append('div').attr('class', 'title')
+          .text('# of ' + action_counted)
+
+      title_div.append('div').attr('class', 'circle').style('background-color', color(action_counted))
+      
+     
+      d3.selectAll("#close_chart")
+      .on("click", close_chart);
+      
+
+      a_count = seqs.dimension(function(d) {return action_count(d, action_counted)}),
+      a_count_filter = seqs.dimension(function(d) {return action_count(d, action_counted)}),
+      a_counts = a_count.group(Math.floor)
+
+      charts.push(
+        barChart()
+          .dimension(a_count)
+          .filter_dimension(a_count_filter)
+          .dim_name('# of '+ action_counted)
+          .category('count')
+          .group(a_counts)
+          .x(d3.scaleLinear()
+          .domain([0, 30])
+          .rangeRound([0, 140]))
+
+        )
+
+      // chart = d3.selectAll(".chart")
+      //      .data(charts)
+
+      // chart.exit().remove()
+
+
+      // renderAll();
+      rerender_charts()
+
+      action_i++;
+
+
+    }
+
+    function rerender_charts(){
+      chart = d3.selectAll(".chart")
+           .data(charts)
+
+      chart.exit().remove()
+
+
+      renderAll();
+
+    }
+
+    function close_chart(){
+      var chart = d3.select(this.parentNode)
+      var div = chart.data()[0].div_id()
+      console.log('chart-data', div )
+      var remove_index;
+      for(var i =4; i <charts.length; i++){
+        var c = charts[i]
+        if (c.div_id()== div)
+          remove_index= i;
+      }
+
+      charts.splice(remove_index, 1)
+      chart.remove()
+
+      rerender_charts()
+
+
+
+    }
+
+    //=========================== Node Link =====================================//
+    var nl_graph_data = {nodes:[], links: []};
     var nl_margin = {top: 20, right:20, bottom: 20, left: 20},
         nl_svg = d3.select("#node_link").append("svg")
                     .attr("width", 400)
@@ -650,21 +760,6 @@ d3.csv(csv_file, function(error, data) {
     var strokeScale = d3.scaleLinear().domain([0,100]).range([1,6]).clamp(true);
 
 
-    var color = d3.scaleOrdinal(d3.schemeCategory20),
-        nl_graph_data = {nodes:[], links: []};
-
-    var colors = {
-
-      "addToCart": "#79EA85",
-      "removeFromCart": "#EA0000",
-      "purchase": "#00AC22",
-      "search": "#FF7100",
-      "pageview": "#0073B9",
-      "start": "#999",
-      "exit": "#999"
-
-
-    }
 
     var nl_graph= cytoscape({
         container: document.querySelector('#cy'),
@@ -746,7 +841,7 @@ d3.csv(csv_file, function(error, data) {
       })
 
       var nodes = node_link_data.nodes.map(function(n){
-        n.color = colors[n.action]
+        n.color = color(n.action)
         var node ={group:"nodes", data:n}
 
         if (n.fx){
@@ -1338,7 +1433,7 @@ d3.csv(csv_file, function(error, data) {
               })
               .attr("fill", function(d) {
                 //return color(d.group);
-                return colors[d.action];
+                return color(d.action);
               });
 
         var bar_update = bar_enter.merge(bar);
@@ -1383,7 +1478,7 @@ d3.csv(csv_file, function(error, data) {
           })
           .style("fill", 
             //color(selected_action_node.group)
-            colors[selected_action_node.action]
+            color(selected_action_node.action)
           )
 
       adj_node.append('text')
@@ -1424,7 +1519,7 @@ d3.csv(csv_file, function(error, data) {
             })
             .style("fill", function(d){ 
               //return color(d.group)
-              return colors[d.action];
+              return color(d.action);
             })
 
       node_enter.append('text')
@@ -1538,7 +1633,7 @@ d3.csv(csv_file, function(error, data) {
               else
                 return node_radius
             })
-            .attr('fill', function(d){return colors[d.action];})
+            .attr('fill', function(d){return color(d.action);})
 
       action_enter.append('text')
           .style('fill', 'black')
@@ -1980,7 +2075,7 @@ d3.csv(csv_file, function(error, data) {
       })
 
       node_link_data.nodes.forEach(function(n){
-        n.color = colors[n.action]
+        n.color = color(n.action)
 
         var node ={group:"nodes", data:n}
 
@@ -2640,26 +2735,7 @@ d3.csv(csv_file, function(error, data) {
           .attr("fill", 'none')
           .attr("stroke", "black")
 
-      //range nodes
-
-      // var range_nodes = operationEnter.selectAll(".range")
-
-      // range_nodes.append("path")
-      //         .attr("transform", function(d) { return "translate(" + (-oWidth/2 -1) + "," + oWidth/2 + ")"; })
-      //         .attr('d', function(d){ 
-
-      //               var category = d.category;
-      //               if (category == 'time')
-      //                 return clock_symbol(d);
-      //               else if (category == 'count')
-      //                 return hash_symbol(d);
-
-      //             })
-      //         .attr('fill', 'white')
-      //         .attr('stroke', '#5c616b')
-
-
-
+    
       var bar =  presultEnter.selectAll("rect")
                 .remove()
                 .exit()
@@ -2803,8 +2879,24 @@ d3.csv(csv_file, function(error, data) {
 
       var range_nodes = operationEnter.selectAll(".range")
 
-      range_nodes.append("path")
-              .attr("transform", function(d) { return "translate(" + (-oWidth -1) + "," + oWidth/2 + ")"; })
+      var range_symbol = range_nodes.append('g')
+              .attr("transform", function(d) { return "translate(" + (-oWidth -3) + "," + oWidth/2 + ")"; })
+
+      range_symbol.append('circle')
+              .attr('cx', oWidth/2)
+              .attr('r', oWidth/2 + 1)
+              .attr('fill', function(d){
+                if (d.category =='count'){
+                  var div = d.div;
+                  var action = div.substring(0, div.indexOf('_'))
+                  console.log(action)
+                  return color(action)
+                }else{
+                  return 'none'
+                }
+              })
+
+      range_symbol.append("path")
               .attr('d', function(d){ 
 
                     var category = d.category;
@@ -2872,7 +2964,7 @@ d3.csv(csv_file, function(error, data) {
           //.attr('cx', function(d,i){return i*oRadius*2})
           .attr('cx', function(d){return d.x})
           .attr('fill', function(d){
-            return colors[d.action]? colors[d.action] : "none";
+            return color(d.action);
             //return d.group? color(d.group): "none"
           })
 
@@ -2990,15 +3082,15 @@ d3.csv(csv_file, function(error, data) {
 
         size = not? (prev_size - size): size
         //matches = all.reduce(reduceAdd, reduceRemove, reduceInitial).value()
-
+        var selected_chart_data = selected_chart.data()[0];
         selectedFilter.size = size;
         selectedFilter.extents = extents;
         selectedFilter.not = not;
         selectedFilter.chart = selected_chart;
-        selectedFilter.div = selectedDiv;
-        selectedFilter.current_range = selected_chart.data()[0].current_range();
-        selectedFilter.range = selected_chart.data()[0].range();
-        selectedFilter.category = selected_chart.data()[0].category();
+        selectedFilter.div = selected_chart_data.div_id();
+        selectedFilter.current_range = selected_chart_data.current_range();
+        selectedFilter.range = selected_chart_data.range();
+        selectedFilter.category = selected_chart_data.category();
         selectedFilter.type = 'range';
 
         create_filter()
@@ -3616,16 +3708,21 @@ d3.csv(csv_file, function(error, data) {
 
     //----------- end of partition view ----------//
 
+    var selected_leftover_bar;
+
+    function update_selected_leftover(div){
+
+      if (selected_leftover_bar)
+        selected_leftover_bar.style("stroke", 'none' );
+      selected_leftover_bar = div;
+      selected_leftover_bar.style("stroke", "black" );
+    }
+
     function update_selected_chart(div) {
 
 
       fullRange = initialRange;
 
-     
-      // if (selected_chart)
-      //   selected_chart.style("background-color", "white" );
-      // selected_chart = div;
-      // selected_chart.style("background-color", "lightyellow" );
       select_chart(div)
       if( $("#build_filter_view").is(':visible')){
         update_filter_data()
@@ -3633,12 +3730,6 @@ d3.csv(csv_file, function(error, data) {
       }
       else
         update_partitions_data()
-
-
-      // if (active_builder_view == 'partition_builder')
-      //   update_partition_view();
-      // else if (active_builder_view =='filter_builder')
-      //   update_filter_data();
 
     }
 
@@ -3767,6 +3858,7 @@ d3.csv(csv_file, function(error, data) {
           x_domain_max,
           x_max,
           x_min,
+          div_id,
           brushDirty,
           leftover_count,
           dim_name,
@@ -3792,14 +3884,11 @@ d3.csv(csv_file, function(error, data) {
           var div = d3.select(this),
               g = div.select("g");
 
-          
-          
-
           // Create the skeletal chart.
           if (g.empty()) {
+
             
             
-            //chart_data[div.attr('id')].id = id;
             y.domain([0, group.top(1)[0].value]);
 
             x_domain_max = get_x_limit(group.all(), y);
@@ -3807,13 +3896,6 @@ d3.csv(csv_file, function(error, data) {
             x_min = group.all()[0].key;
             range = add_one([x_min,x_max]);
 
-
-            //remove if change date chart range back to 300
-            if (typeof(x_min) != 'number'){
-              axis.ticks(4)
-              axis.scale(x)
-
-            }
       
             if (x_domain_max){
               x.domain([x.domain()[0], x_domain_max]);
@@ -3829,6 +3911,14 @@ d3.csv(csv_file, function(error, data) {
               axis.scale(x);
             }
             
+
+
+            //remove if change date chart range back to 300
+            if (typeof(x_min) != 'number'){
+              axis.ticks(4)
+              axis.scale(x)
+
+            }
 
             div.select(".title").append("a")
                 .attr("href", "javascript:reset(" + id + ")")
@@ -3847,33 +3937,29 @@ d3.csv(csv_file, function(error, data) {
             
 
             leftover_x = width + margin.right - 18
-            g.append("rect")
+            var leftover_bar = g.append('g')
+                                .attr('transform','translate('+ 0 + ",0)")
+            leftover_bar.append("rect")
                     .attr("class", "leftovers")
                     .attr("id", "leftovers")
-                    .attr("x", leftover_x)
+                    .attr('x', leftover_x)
                     // .attr("y", height - leftover_height)
                     // .attr("height", leftover_height)
                     .attr("width", 9)
                     .on("click", function(d) {
 
-                       var extents = [x_domain_max, x_max+1];
-                       update_selected_chart(div);
+                      update_selected_chart(div);
+                      update_selected_leftover(d3.select(this))
 
-                       selectedFilter.chart = selected_chart;
-                       selectedFilter.div = div.attr('id');
-                       selectedFilter.extents = extents;
-                       selectedFilter.current_range = selected_chart.data()[0].current_range();
-                       selectedFilter.range = selected_chart.data()[0].range();
-                       selectedFilter.category = selected_chart.data()[0].category();
-                       selectedFilter.type = 'range';
-                       
-                       leftover_count = reduce_leftover_count(x_domain_max, group.all());
-                       selectedFilter.size = leftover_count
-                      update_selected_bar(d3.select(this));
+                      var extents = [x_domain_max, x_max+1];
+  
+                      active_range= extents;
+                      update_filter_data();
                     })
-            g.append("text")
+            leftover_bar.append("text")
+              .attr("class", "leftover_text")
               .attr("y", height+2)
-              .attr("x", leftover_x+1)
+              .attr("x", leftover_x + 1)
               .attr("dy", "1em")
               .style("text-anchor", "left")
               .style("font-size", "10px")
@@ -3964,10 +4050,15 @@ d3.csv(csv_file, function(error, data) {
             }
           }
 
+
+
+
+
           var leftover_count = reduce_leftover_count(x_domain_max, group.all());
           
 
           current_range = add_one(get_current_range(group.all()));
+          div_id = div.attr("id");
 
 
           if (new_selection){
@@ -3984,15 +4075,11 @@ d3.csv(csv_file, function(error, data) {
               if (x_domain_max){
                 t1.select('#leftovers')
                   .attr("height", height - y(leftover_count))
-                  .attr("y", y(leftover_count));
+                  .attr("y", y(leftover_count))
+
               }
 
-
-              
-
             } else {
-
-
 
               g.selectAll(".bar").attr("d", barPath);
               if (x_domain_max){
@@ -4172,6 +4259,7 @@ d3.csv(csv_file, function(error, data) {
       };
 
       chart.id = id;
+      //chart.div_id = div_id;
 
       chart.dimension = function(_) {
         if (!arguments.length) return dimension;
@@ -4206,6 +4294,9 @@ d3.csv(csv_file, function(error, data) {
       chart.gBrush = () => gBrush;
 
       chart.range = () => range;
+
+      chart.div_id = () => div_id;
+      
 
       chart.current_range = function(_) {
         if (!arguments.length) return current_range;
@@ -4523,8 +4614,26 @@ d3.csv(csv_file, function(error, data) {
 
       var range_nodes = operation_nodes.selectAll(".range")
 
-      range_nodes.append("path")
-              .attr("transform", function(d) { return "translate(" + (-oWidth -1) + "," + oWidth/2 + ")"; })
+      var range_symbol = range_nodes.append('g')
+              .attr("transform", function(d) { return "translate(" + (-oWidth -3) + "," + oWidth/2 + ")"; })
+
+      range_symbol.append('circle')
+              .attr('cx', oWidth/2)
+              .attr('r', oWidth/2 + 1)
+              .attr('fill', function(d){
+                var data = d.data.operation;
+                if (data.category =='count'){
+                  var div = data.div;
+                  var action = div.substring(0, div.indexOf('_'))
+                  console.log(action)
+                  return color(action)
+                }else{
+                  return 'none'
+                }
+              })
+
+      range_symbol.append("path")
+              //.attr("transform", function(d) { return "translate(" + (-oWidth -1) + "," + oWidth/2 + ")"; })
               .attr('d', function(d){ 
 
                     var category = d.data.operation.category;
@@ -4584,7 +4693,7 @@ d3.csv(csv_file, function(error, data) {
           //.attr('cx', function(d,i){return i*oRadius*2})
           .attr('cx', function(d){return d.x})
           .attr('fill', function(d){
-            return colors[d.action]? colors[d.action] : "none";
+            return color(d.action);
             //return d.group? color(d.group): "none"
           })
           //.attr('stroke', 'gray')
@@ -5157,7 +5266,7 @@ d3.csv(csv_file, function(error, data) {
       var node = row_enter.append('circle')
               .attr("transform", function (d) { return "translate("+ -((axis_translate + 8)/2) +"," + y_hc.bandwidth()/2 + ")"; })
               .attr("r", node_radius)
-              .attr("fill", function(d){ return colors[d.action]})
+              .attr("fill", function(d){ return color(d.action)})
               .on('click', select_horizontal_action)
 
 
