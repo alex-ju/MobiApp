@@ -2855,13 +2855,18 @@ d3.csv(csv_file, function(error, data) {
                       nv_svg.style("width")
                       )
                     .attr('height', function(d,i){ 
-                      var h = d.text_data[1].show? ((2 + d.text_data[1].text.length)*oWidth) : 0;
+
+                      var text_height = d.text_data[1].text.length
+                      if(text_height < 3) text_height = 3;
+
+                      var h = d.text_data[1].show? ((2 + text_height)*oWidth) : 0;
 
                       return h;
                     })
                     .attr('fill', 
                       //'#edf3ff'
-                     ' #f2f6ff'
+                     '#f2f6ff'
+                     //'#f4f8ff'
                       )
 
 
