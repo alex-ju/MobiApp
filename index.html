@@ -588,11 +588,6 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#close_detailed_view")
       .on("click", close_detailed_view);
 
-    // d3.selectAll("#close_chart")
-    //   .on("click", close_chart);
-    
-    
-
     d3.select("#demo_button")
       .on("click", add_action_count_chart);
       
@@ -673,6 +668,12 @@ d3.csv(csv_file, function(error, data) {
     var action_i = 0;
     populate_action_count_dropdown()
 
+    var action_count_n = 2,
+        action_radius= 7;
+    for(var i= 0; i<2;i++){
+      add_chart(current_level[i])
+    }
+
     function populate_action_count_dropdown(){
       var action_radius = 7;
       var dropdown = d3.select('#action_dropdown').selectAll('li').data(current_level).enter()
@@ -721,13 +722,26 @@ d3.csv(csv_file, function(error, data) {
                           .attr('class', 'chart')
                           .attr('id', action_counted + '_count_chart')
 
-      chart_div.append('button').attr('type','button').attr('class', 'close').attr('id','close_chart').attr('aria-hidden',true).html('&times;')
-      var title_div = chart_div.append('div').attr('class', 'inline-center-center').style("margin-top", '18px')
+      chart_div.append('button')
+            .attr('type','button')
+            .attr('class', 'close')
+            .attr('id','close_chart')
+            .attr('aria-hidden',true)
+            .html('&times;')
+            .style('display', 'none')
 
-      title_div.append('div').attr('class', 'title')
-          .text('# of ' + action_counted)
 
-      title_div.append('div').attr('class', 'circle').style('background-color', color(action_counted))
+      var title_div = chart_div.append('div').style('margin-top', '18px').attr('class', 'action-icon')
+      title_div.append('span')
+              .style('font-size', '11px')
+              .text('# of ' +action_counted)
+
+      title_div.append('svg')
+            .attr("transform", "translate(" + 2 + "," + action_radius/2 + ")")
+            .append('circle')
+              .attr('r', action_radius)
+              .attr("transform", "translate(" + (action_radius+1) + "," + (action_radius+1) + ")")
+              .attr('fill', color(action_counted))
       
      
       d3.selectAll("#close_chart")
@@ -751,13 +765,6 @@ d3.csv(csv_file, function(error, data) {
 
         )
 
-      // chart = d3.selectAll(".chart")
-      //      .data(charts)
-
-      // chart.exit().remove()
-
-
-      // renderAll();
       rerender_charts()
 
       action_i++;
@@ -3779,10 +3786,15 @@ d3.csv(csv_file, function(error, data) {
     }
 
     function select_chart(div){
-      if (selected_chart)
+      if (selected_chart){
         selected_chart.style("background-color", "white" );
+        selected_chart.select('button').style('display', 'none')
+      }
       selected_chart = div;
       selected_chart.style("background-color", "lightyellow" );
+
+
+      selected_chart.select('button').style('display', null)
     }
 
     function render(method) {
