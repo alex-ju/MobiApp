@@ -279,15 +279,18 @@
                         </div>
                         <div id="collapse_count" class="panel-collapse collapse in">
                           <div class="panel-body">
+                            <div class="dropdown" id="dropdown">
+                              <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown"> <span class="glyphicon glyphicon-plus"></span> Count Chart
+                                    <span class="caret"></span></button>
+                              <ul class="dropdown-menu" id="action_dropdown">
+                              </ul>
+                            </div>
                             <div id="count_charts">
                               <div class="chart" id="len_chart"> 
                                 <div class="title"> Number of Actions 
-                                
                                 </div>
                               </div>
-                              <!-- <div class="chart" id="a_count_chart"> 
-                                <div class="title"> Number of AddToCart </div>
-                              </div> -->
+                              
                             </div>
                           </div>
                         </div>
@@ -507,6 +510,11 @@ d3.csv(csv_file, function(error, data) {
       return matches? matches.length: 0
     }
 
+    $('#dropdown .dropdown-menu').on({
+        "click":function(e){
+          e.stopPropagation();
+        }
+    });
 
     d3.selectAll("#sequence_details")
       .on("click", print_sequences);
@@ -663,10 +671,51 @@ d3.csv(csv_file, function(error, data) {
     renderAll();
 
     var action_i = 0;
+    populate_action_count_dropdown()
 
-    function add_action_count_chart(){
+    function populate_action_count_dropdown(){
+      var action_radius = 7;
+      var dropdown = d3.select('#action_dropdown').selectAll('li').data(current_level).enter()
+      //current_level.forEach(function(action){
+      var button = dropdown.append('li').append('button')
+              .attr('id', function(d){return d;})
+              .attr('class', 'btn btn-sm btn-default btn-block action-icon action_count_button')
+              .on('click', add_chart)
+              
+          button.append('span')
+              .style('font-size', '11px')
+              .text(function(d){return d;})
 
-      action_counted = current_level[action_i]
+          button.append('svg')
+                .attr("transform", "translate(" + 2 + "," + action_radius/2 + ")")
+                .append('circle')
+                  .attr('r', action_radius)
+                  .attr("transform", "translate(" + (action_radius+1) + "," + (action_radius+1) + ")")
+                  .attr('fill', function(d) { 
+                    //return color(action)
+                    return color(d);
+                  })
+
+      //})
+      
+    }
+
+
+    
+
+    function add_chart(d){
+      console.log('adding action chart')
+      console.log(d)
+      var id = '#'+d;
+      $(id).prop('disabled',true)
+      add_action_count_chart(d);
+    }
+
+
+
+    function add_action_count_chart(action_counted){
+
+      //action_counted = current_level[action_i]
 
       var chart_div = d3.select('#count_charts').append('div')
                           .attr('class', 'chart')
@@ -752,7 +801,10 @@ d3.csv(csv_file, function(error, data) {
       chart_data.filter_dimension().dispose()
       chart.remove()
 
+      var action = div.substring(0, div.indexOf('_')),
+          id = '#' + action;
 
+      $(id).prop('disabled', false)
 
       rerender_charts()
 
@@ -1611,8 +1663,14 @@ d3.csv(csv_file, function(error, data) {
 
 
 
-
     var al_actions = al_svg.append('g')
+                      .attr("transform", "translate(" + 50 + "," + ((node_radius*2)+2) + ")")
+
+    var acl_svg = d3.select("#action_count_list").append('svg')
+                  .attr('width', 100)
+                  .attr('height', 175)
+
+    var acl_actions = acl_svg.append('g')
                       .attr("transform", "translate(" + 50 + "," + ((node_radius*2)+2) + ")")
     
     update_action_list_data()
@@ -1629,7 +1687,7 @@ d3.csv(csv_file, function(error, data) {
       // var data = current_level.map(function (action) { return { action: action, id: action}; });
       var data = al_data;
 
-      var action = al_actions.selectAll('.action')
+      var action = acl_actions.selectAll('.action')
                           .remove()
                           .exit()
                           .data(data)
@@ -4458,12 +4516,6 @@ d3.csv(csv_file, function(error, data) {
 
 
       $('#pb_graph').css('width', p_width).css('height', 400);
-
-      // pb_svg
-      //     .attr("width", p_width)
-
-
-      
 
       infoLength = width*(3/7),
       separation = width/7 - 20,

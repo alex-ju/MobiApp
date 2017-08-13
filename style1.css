@@ -416,7 +416,18 @@ input {
       -moz-border-radius: 7px;
       border-radius: 7px;
     }
+.dropdown-menu {
+  min-width:120px !important;
+  max-width:150px !important;
+  width: 110px !important;
+  height: 200px !important;
 
+}
+
+.action-icon svg {
+  width:16px;
+  height:16px;
+}
 /*----------*/
 
 /*body {
