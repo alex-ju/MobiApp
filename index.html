@@ -2117,7 +2117,7 @@ d3.csv(csv_file, function(error, data) {
 
     // var pb_svg = d3.select('#pb_svg').append('svg')
     //               .attr('height', 400)
-
+    var pb_height = 350;
     var pb_graph = cytoscape({
         container: document.querySelector('#pb_graph'),
         boxSelectionEnabled: false,
@@ -2182,7 +2182,7 @@ d3.csv(csv_file, function(error, data) {
       //var current_width = d3.select('#pb_graph').node().clientWidth,
       var current_width = $('#pb_graph').width()
 
-      $('#pb_graph').css('height', 400);
+      $('#pb_graph').css('height', pb_height);
       $('#pb_graph').css('width', current_width);
       pb_graph.resize()
 
@@ -2219,7 +2219,7 @@ d3.csv(csv_file, function(error, data) {
 
 
 
-      $('#pb_graph').css('height',400);
+      $('#pb_graph').css('height',pb_height);
 
       if(node_link_data.not)
         $('#pb_graph').css('background-color',contains_not_bg_color);
@@ -4622,7 +4622,7 @@ d3.csv(csv_file, function(error, data) {
           .attr("width", width)
 
 
-      $('#pb_graph').css('width', p_width).css('height', 400);
+      $('#pb_graph').css('width', p_width).css('height', pb_height);
 
       infoLength = width*(3/7),
       separation = width/7 - 20,
