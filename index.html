@@ -140,8 +140,10 @@
                       
                       <div id="contains" class = "tab-pane fade in">
                         <h5>Contains Operation Builder</h5>
-                        <div class="inline border">
-                          <div  class="graph" id="pb_graph"></div>
+                        <div class="inline">
+                          <div class= "border">
+                            <div  class="graph" id="pb_graph"></div>
+                          </div>
                           <div style="width:140px;" >
                             <div class="text-center">
                               <button type="button" id="clear_pb_button" class="btn btn-sm btn-default btn-block">Clear All</button>
@@ -225,20 +227,20 @@
       <div class ="col-md-7" id="sequence_attributes">
         <div class="panel-group" id="segment_info">
           <div class="panel panel-info">
-            <div class="panel-heading">
-              <h4 class="panel-title">
-                <a data-toggle="collapse" href="#collapse0"> Selected Segment Attributes</a>
-              </h4>
+            <div class="panel-heading text-center" style="font-size:13px">
+             
+                <a data-toggle="collapse" href="#collapse_segment"> Selected Segment Attributes</a>
+              
             </div>
             <div id="collapse_segment" class="panel-body collapse in">
               <div class="panel-group" id="accordion">
                 <div class="panel panel-success">
                   <div class="panel-heading">
-                    <h4 class="panel-title"> 
+                    <!-- <h4 class="panel-title">  -->
                       <a data-toggle="collapse" class="info-toggle" href="#collapse1"></a>
-                      Range Attributes
+                      <!-- Range Attributes -->
                       
-                    </h4>
+                    <!-- </h4> -->
                   </div>
                   <div id="collapse1" class="panel-body collapse in">
                   
@@ -248,50 +250,56 @@
                       
 
                       <div class="panel panel-default">
-                        <div class="panel-heading">
+                        <!-- <div class="panel-heading">
                           <h4 class="panel-title">
                             <a data-toggle="collapse" class="info-toggle" href="#collapse_time"></a>
                             <span class="glyphicon glyphicon-time"></span>
                             Time-Related
                           </h4>
-                        </div>
+                        </div> -->
+                        
+                        <div class="panel-icon"><span class="glyphicon glyphicon-time"></span></div>
                         <div id="collapse_time" class="panel-collapse collapse in">
                           <div class="panel-body">
-                            <div class="chart" id="duration_chart"> 
-                              <div class="title"> Duration chart </div>
-                            </div>
-                            <div class="chart" id="hour_chart"> 
-                                <div class="title"> Start hour chart </div>
-                            </div>
-                            <div class="chart" id="date_chart"> 
-                                <div class="title"> Start Date </div>
+                            <div class="charts">
+                              <div class="chart range_chart" id="duration_chart"> 
+                                <div class="title"> Duration chart </div>
+                              </div>
+                              <div class="chart range_chart" id="hour_chart"> 
+                                  <div class="title"> Start hour chart </div>
+                              </div>
+                              <div class="chart range_chart" id="date_chart"> 
+                                  <div class="title"> Start Date </div>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
 
                       <div class="panel panel-default">
-                        <div class="panel-heading">
+                        <!-- <div class="panel-heading">
                           <h4 class="panel-title">
                             <a data-toggle="collapse" class="info-toggle" href="#collapse_count"></a>
                             # Count-Related
                           </h4>
-                        </div>
+                        </div> -->
+                        <div class='panel-icon'> # </div>
                         <div id="collapse_count" class="panel-collapse collapse in">
                           <div class="panel-body">
                             <div class="dropdown" id="dropdown">
-                              <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-toggle="dropdown"> <span class="glyphicon glyphicon-plus"></span> Count Chart
+                              <button class="btn btn-xs btn-success dropdown-toggle" type="button" data-toggle="dropdown"> <span class="glyphicon glyphicon-plus"></span>
                                     <span class="caret"></span></button>
                               <ul class="dropdown-menu" id="action_dropdown">
                               </ul>
                             </div>
-                            <div id="count_charts">
-                              <div class="chart" id="len_chart"> 
+                            <div id="count_charts" class="charts">
+                              <div class="chart range_chart" id="len_chart"> 
                                 <div class="title"> Number of Actions 
                                 </div>
                               </div>
                               
                             </div>
+                            
                           </div>
                         </div>
                       </div> 
@@ -303,23 +311,25 @@
                 </div>
                 <div class="panel panel-danger">
                   <div class="panel-heading">
-                    <h4 class="panel-title">
+                    <!-- <h4 class="panel-title"> -->
                       <a data-toggle="collapse" class="info-toggle" href="#collapse_contains"></a>
-                      Contains Attributes
-                    </h4>
+                      <!-- Contains Attributes -->
+                    <!-- </h4> -->
                   </div>
                   <div id="collapse_contains" class="panel-collapse collapse in">
                     <div class="panel-body">
-                      <div class= "chart1" id="contains_action_chart">
-                        <div class="title"> Number of Sequences that Contains Action </div>
-                      </div>
+                      <div class="charts">
+                        <div class= "chart" id="contains_action_chart">
+                          <div class="title"> Number of Sequences that Contains Action </div>
+                        </div>
 
-                      <div class ="chart1" id="node_link">
-                        <div id="cy"></div>
-                      </div>
-                      <div class="chart1" id="adjacency_chart">
-                        <div id="tooltip" class="hidden">
-                          <p><span id="value">100</span></p>
+                        <div class ="chart" id="node_link">
+                          <div id="cy"></div>
+                        </div>
+                        <div class="chart" id="adjacency_chart">
+                          <div id="tooltip" class="hidden">
+                            <p><span id="value">100</span></p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -645,10 +655,10 @@ d3.csv(csv_file, function(error, data) {
     ]
 
 
-    var chart = d3.selectAll(".chart")
+    var chart = d3.selectAll(".range_chart")
                   .data(charts)
     
-    var all_charts = d3.selectAll(".chart")
+    var all_charts = d3.selectAll(".range_chart")
                   .on('click', function(d) {
                
                     update_selected_chart(d3.select(this));
@@ -719,7 +729,7 @@ d3.csv(csv_file, function(error, data) {
       //action_counted = current_level[action_i]
 
       var chart_div = d3.select('#count_charts').append('div')
-                          .attr('class', 'chart')
+                          .attr('class', 'range_chart chart')
                           .attr('id', action_counted + '_count_chart')
 
       chart_div.append('button')
@@ -731,7 +741,7 @@ d3.csv(csv_file, function(error, data) {
             .style('display', 'none')
 
 
-      var title_div = chart_div.append('div').style('margin-top', '18px').attr('class', 'action-icon')
+      var title_div = chart_div.append('div').attr('class', 'action-icon')
       title_div.append('span')
               .style('font-size', '11px')
               .text('# of ' +action_counted)
@@ -774,7 +784,7 @@ d3.csv(csv_file, function(error, data) {
 
     function rerender_charts(){
 
-      chart = d3.selectAll(".chart")
+      chart = d3.selectAll(".range_chart")
            .data(charts)
 
 
@@ -820,13 +830,13 @@ d3.csv(csv_file, function(error, data) {
     }
 
     //=========================== Node Link =====================================//
-    var nl_graph_data = {nodes:[], links: []};
-    var nl_margin = {top: 20, right:20, bottom: 20, left: 20},
-        nl_svg = d3.select("#node_link").append("svg")
-                    .attr("width", 400)
-                    .attr("height", 250),
-        nl_width = 400 - nl_margin.right - nl_margin.left,
-        nl_height = 250 - nl_margin.top - nl_margin.bottom;
+    var nl_graph_data = {nodes:[], links: []},
+        nl_width = 250,
+        nl_height= 250;
+
+    var nl_svg = d3.select("#node_link").append("svg")
+                    .attr("width", nl_width)
+                    .attr("height", nl_height)
 
 
     var strokeScale = d3.scaleLinear().domain([0,100]).range([1,6]).clamp(true);
@@ -896,8 +906,8 @@ d3.csv(csv_file, function(error, data) {
 
       console.log('NODE LINK DATA', node_link_data)
       nl_graph.zoomingEnabled(true);
-      $('#cy').css('height',250);
-      $('#cy').css('width', 400);
+      $('#cy').css('height',nl_height);
+      $('#cy').css('width', nl_width);
 
       nl_graph.elements().remove()
 
@@ -1339,9 +1349,13 @@ d3.csv(csv_file, function(error, data) {
     
 
     var margin_ac = {top: 15, right: 15, bottom: 15, left: 15},
-      width_ac = 300 - margin_ac.left - margin_ac.right,
+      width_ac = 240 - margin_ac.left - margin_ac.right,
       height_ac = 165 - margin_ac.top - margin_ac.bottom,
-      adjacency_chart = d3.select("#adjacency_chart").append('svg').append("g").attr("transform", "translate(" + margin_ac.left + "," + margin_ac.top + ")");
+      adj_svg = d3.select("#adjacency_chart").append('svg')
+                  .attr('width', 240)
+                  .attr('height', 165)
+      adjacency_chart = adj_svg.append("g")
+                          .attr("transform", "translate(" + margin_ac.left + "," + margin_ac.top + ")");
 
 
 
@@ -5234,10 +5248,15 @@ d3.csv(csv_file, function(error, data) {
     //******** horizontal chart ***********
     var char,
         axis_translate = node_radius*2;
-    var margin_hc = {top: 20, right: 20, bottom: 30, left: 100},
-      width_hc = 300 - margin_hc.left - margin_hc.right,
+    var margin_hc = {top: 20, right: 0, bottom: 30, left: 100},
+      width_hc = 240 - margin_hc.left - margin_hc.right,
       height_hc = 175 - margin_hc.top - margin_hc.bottom,
-      horizontal_chart = d3.select("#contains_action_chart").append('svg').append("g").attr("transform", "translate(" + (margin_hc.left-axis_translate) + "," + margin_hc.top + ")");
+      
+      hc_svg = d3.select("#contains_action_chart").append('svg')
+                  .attr('width',240)
+                  .attr('height', 175)
+      horizontal_chart = hc_svg.append("g")
+                          .attr("transform", "translate(" + (margin_hc.left-axis_translate) + "," + margin_hc.top + ")");
 
       
       console.log('svg width', width_hc);
@@ -5380,6 +5399,7 @@ d3.csv(csv_file, function(error, data) {
             .attr("fill", function(d) {return z_hc(d.name);});
 
       bar_enter.append("text")
+          .attr('class', 'title')
           .text(function(d) {
                 abs = d.value;
                value = d.x1 - d.x0;
