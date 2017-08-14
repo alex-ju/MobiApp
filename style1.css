@@ -77,6 +77,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-around;
+  /*margin-right:25px;*/
 
 }
 
@@ -131,8 +132,9 @@
 }
 
 html, body {
-    width: 100%;
+    /*width: 100%;*/
     height: 100%;
+    overflow: auto;
 }
 
 #svg_container {
@@ -220,17 +222,51 @@ top: 1em;
 }
 
 
-.panel-heading .info-toggle:after {
+.panel-heading .info-toggle .icon:after {
     /* symbol for "opening" panels */
-    font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
-    content: "\e114";    /* adjust as needed, taken from bootstrap.css */
-    float: right;        /* adjust as needed */
-    margin-top: -9px;
+    font-family: 'Glyphicons Halflings';  
+    content: "\e114";    
+    position: absolute;
+    right:5px;
+    /*float: right;*/
+            /* adjust as needed */
+    /*margin-top: -9px;*/
+
 }
-.panel-heading .info-toggle.collapsed:after {
+.panel-heading .info-toggle.collapsed .icon:after {
     /* symbol for "collapsed" panels */
     content: "\e080";    /* adjust as needed, taken from bootstrap.css */
 }
+
+/*.panel-heading .info-toggle .text-toggle{
+    visibility: hidden;
+    height: 0px !important;
+}
+.panel-heading .info-toggle.collapsed div {
+    visibility: visible;
+    height: 15px;
+    font-size: 12px;
+}
+*/
+
+
+
+.panel-resizable {
+            resize: horizontal;
+          overflow: auto
+        }
+.no-font{
+  font-size: 0px;
+}
+
+.icon-adjust{
+  position:absolute;
+  top:0;
+  right:5px;
+}
+
+
+
 
 .range_radio {
 
@@ -307,10 +343,124 @@ input {
 
 .panel
 {
-    position: relative;
+  position: relative;
+  margin-bottom:0;
+  padding:0;
 }
 
-.panel-default > .panel-leftheading
+/**/
+
+
+.title{
+  /*margin-top:18px;*/
+  font-size: 12px;
+}
+
+.close{
+  position:absolute;
+  top:0;
+  right:0;
+  /*margin-top: -5px;*/
+}
+
+.dropdown-menu {
+  min-width:120px !important;
+
+}
+
+.action-icon svg {
+  width:16px;
+  height:16px;
+}
+
+.panel-icon{
+  position: absolute;
+  right:0;
+  top:0;
+  text-align: right;
+  padding-right: 10px;
+  padding-top: 5px;
+  font-size: 24px;
+}
+
+.panel-group{
+  margin-bottom:0 !important;
+}
+
+
+.panel-group .panel + .panel {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.panel .panel-body{
+  padding:5px;
+  margin-bottom: 0 !important;
+}
+
+
+.panel-heading{
+  padding-top:7px !important;
+  padding-bottom: 7px !important;
+
+}
+
+/*RESIZING*/
+.page-container {
+  margin: 20px;
+}
+
+.panel-container {
+  display: flex;
+  flex-direction: row;
+/*   border: 1px solid silver; */
+  overflow: hidden;
+  
+  /* avoid browser level touch actions */
+  xtouch-action: none;
+}
+
+.panel-left {
+  flex: 0 0 auto;
+  /* only manually resize */
+/*   padding: 10px; */
+  /*width: 300px;*/
+  /*width:40%;*/
+/*   min-height: 200px; */
+  width:500px;
+  min-width: 150px;
+  white-space: nowrap;
+/*   background: #838383; */
+/*   color: white; */
+}
+
+.splitter {
+  flex: 0 0 auto;
+  width: 10px;  
+  background: url(https://raw.githubusercontent.com/RickStrahl/jquery-resizable/master/assets/vsizegrip.png) center center no-repeat lightgrey;
+  min-height: 200px;
+  cursor: col-resize;  
+}
+
+.panel-right {
+  flex: 1 1 auto;
+  /* resizable */
+/*   padding: 10px; */
+  width: 100%;
+/*   min-height: 200px; */
+   min-width: 350px; 
+/*   background: #eee; */
+}
+
+
+.panel-zero{
+  width:0;
+}
+
+
+/*----------*/
+
+/*.panel-default > .panel-leftheading
 {
     color: #333;
     background-color: #f5f5f5;
@@ -392,70 +542,8 @@ input {
     float: left;
     margin-left: 45px;
     padding: 15px;
-}
+}*/
 
-
-.title{
-  /*margin-top:18px;*/
-  font-size: 12px;
-}
-
-.close{
-  position:absolute;
-  top:0;
-  right:0;
-  /*margin-top: -5px;*/
-}
-
-.dropdown-menu {
-  min-width:120px !important;
-
-}
-
-.action-icon svg {
-  width:16px;
-  height:16px;
-}
-
-.panel-icon{
-  position: absolute;
-  right:0;
-  top:0;
-  text-align: right;
-  padding-right: 10px;
-  padding-top: 5px;
-  font-size: 24px;
-}
-
-.panel-group{
-  margin-bottom:0 !important;
-}
-
-
-.panel-group .panel + .panel {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
-.panel .panel-body{
-  padding:5px;
-  margin-bottom: 0 !important;
-}
-
-.panel{
-  margin-bottom:0;
-  padding:0;
-}
-
-.panel-heading{
-  padding-top:7px !important;
-  padding-bottom: 7px !important;
-
-}
-
-
-
-/*----------*/
 
 /*body {
   font-family: "Helvetica Neue";

@@ -7,354 +7,375 @@
     <title>Tree Example</title>
     <link rel="stylesheet" href="style1.css" />
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <meta http-equiv="content-type" content="text/html; charset=UTF8"> 
 
   </head>
 
   <body>
 
-    <div>
-      <div class="col-md-4 hidden" id="operation_manager">
-        <div class="panel-group" id="operation_info">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">
+    <div class=page-container>
+      <div class=panel-container>
+        <!-- <div class="col-md-4 hidden" id="operation_manager"> -->
+        <div class="panel-right hidden" id="operation_manager">
+          <div class="panel-group" id="operation_info">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
 
-                <a data-toggle="collapse" href="#collapse0"><span class="glyphicon glyphicon-cog"></span> Operation Manager</a>
-                <button type="button" class="close" id="close_oManager"> <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
-                </button>
-              </h4>
+                  <a data-toggle="collapse" href="#collapse0"><span class="glyphicon glyphicon-cog"></span> Operation Manager</a>
+                  <button type="button" class="close" id="close_oManager"> <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                  </button>
+                </h4>
 
-            </div>
-            <div class="panel-body">
-              <div class="btn-group">
-                <button type="button" id="path_button" class="btn btn-md btn-primary">Show only path</button>
-                <button type="button" id="remove_button" class="btn btn-md btn-primary">Remove Operation</button>
-                <button type="button" id="demo_button" class="btn btn-md btn-primary">Demo</button>
               </div>
-              <div class="panel-group" id="operation_info">
-                <div class="panel panel-default">
-                  <div class="panel-heading">
-                    <h4 class="panel-title">
-                      <a data-toggle="collapse" class="info-toggle" href="#collapse_node"> Node View</a>
-                    </h4>
-                  </div>
-                  <div id=collapse_node class="panel-body collapse in"> 
-                    <div class="info scroll" id="info_view"></div>
-                  </div>
+              <div class="panel-body">
+                <div class="btn-group">
+                  <button type="button" id="path_button" class="btn btn-md btn-primary">Show only path</button>
+                  <button type="button" id="remove_button" class="btn btn-md btn-primary">Remove Operation</button>
+                  <button type="button" id="demo_button" class="btn btn-md btn-primary">Demo</button>
                 </div>
-                <div class="panel panel-default">
-                  <div class="panel-heading">
-                    <h4 class="panel-title">
-                      <a data-toggle="collapse" class="info-toggle" href="#collapse_builder"> Operation Builder</a>
-
-                    </h4>
-                  </div>
-                  <div id=collapse_builder class="panel-body collapse in"> 
-                    <ul class="nav nav-tabs" id="operation_types" style="margin-bottom:1px">
-                      <li class="active"><a style="background-color:#f4fff5;" id="range_button" data-toggle="tab" href="#range">Range</a></li>
-                      <li><a style="background-color:#fff7f7" data-toggle="tab" id="contains_button" href="#contains">Contains</a></li>
-                    </ul>
-                    <div class="tab-content">
-                      <div id="range" class = "tab-pane fade in active">
-                        <h5>Range Operation Builder</h5>
-                        <!-- <button type="button" id="toggle_range_button" class="btn btn-primary">Toggle current/full range</button> -->
-                        
-                        <ul class="nav nav-pills nav-fill">
-                          <li class="nav-item active">
-                            <a class="nav-link" data-toggle="tab" id="filter_view" href="#r_filter" role="tab">Filter</a>
-                          </li>
-                          <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" id="partition_view" href="#r_partition" role="tab">Partition</a>
-                          </li>
-                        </ul>
-                        <div class="tab-content">
-                          <div id="r_filter" class = "tab-pane fade in active panel-background" role="tabpanel">
-                            <h6>Range Filter Builder</h6>
-                            <div class="text-center">
-                              
-                              <div class="radio-inline">
-                                <label class="range_radio"><input checked type="radio" id= "current_range_opt" name="optradio">Current Range</label>
-                              </div>
-                              <div class="radio-inline">
-                                <label class="range_radio"><input type="radio" id="full_range_opt" name="optradio">Full Range</label>
-                              </div>
-                                <!-- <label class="btn btn-default center-block"><input type="radio">All</label>
-                                <label class="btn btn-default active center-block"><input type="radio">Filtered</label> -->
-                            </div>
-                            <div  class="graph" id="build_filter_view"></div>
-          
-                            <div class="range_radio inline-center" id="input_filter_value">
-                              <div>
-                              Start: 
-                              <!-- <input type="text" size="6" id="partition_value"> -->
-                              <input type="text" size="6" id="range_start_value">
-                              </div>
-                              <div class="left-buffer">
-                              End:
-                              <input type="text" size="6" id="range_end_value">
-                              </div>
-                            </div>
-                            <div class="text-right top-buffer">
-                              <label class="checkbox-inline right-buffer"><input id="range_not_button" type="checkbox" value="">NOT</label>
-                              <div class="btn-group">
-                                <button type="button" id="applyFilter_button" class="btn btn-primary">Apply</button>
-                              </div>
-                            </div>
-                          </div>
-                          <div id="r_partition" class="tab-pane fade in panel-background" role="tabpanel">
-                            <h6>Range Partition Builder</h6>
-                            <div class="text-center">
-                              <div class="radio-inline">
-                                <label class="range_radio"><input checked type="radio" id= "current_range_opt2" name="optradio2">Current Range</label>
-                              </div>
-                              <div class="radio-inline">
-                                <label class="range_radio"><input type="radio" id="full_range_opt2" name="optradio2">Full Range</label>
-                              </div>
-                            </div>
-                            <div  class="graph" id="create_partition_view"></div>
-                            <div class="inline">
-                              <div class="btn-toolbar">
-                                <!-- <button type="button" id="addPartition_button" class="btn btn-primary">Add Partition</button>
-
-                                <button type="button" id="removePartition_button" class="btn btn-primary">Remove Partition</button> -->
-                                <button class="btn btn-sm btn-success" id=addPartition_button type="button">
-                                  <span class="glyphicon glyphicon-plus"></span>
-                                </button>
-                                <button class="btn btn-sm btn-danger" disabled id=removePartition_button type="button">
-                                  <span class="glyphicon glyphicon-minus"></span>
-                                </button>
-                              </div>
-                              <div class="left-buffer" id="input_partition_value">
-                                <input type="text" size="10" id="partition_value">
-                              </div>
-                            </div>
-                            <div class="text-right top-buffer">
-                              <div class="btn-group">
-                                <button type="button" id="applyPartition_button" class="btn btn-primary">Apply</button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div id="contains" class = "tab-pane fade in">
-                        <h5>Contains Operation Builder</h5>
-                        <div class="inline">
-                          <div class= "border">
-                            <div  class="graph" id="pb_graph"></div>
-                          </div>
-                          <div style="width:140px;" >
-                            <div class="text-center">
-                              <button type="button" id="clear_pb_button" class="btn btn-sm btn-default btn-block">Clear All</button>
-                            </div>
-                            <div class="panel-group top-buffer-sm" id="operation_info">
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  Actions
-                                  <a data-toggle="collapse" class="info-toggle" href="#collapse_actions"></a>
-                                </div>
-                                <div id=collapse_actions class="panel-body collapse in">
-
-                                  
-                                  <div class="btn-toolbar">
-                                    <button class="btn btn-xs btn-success" id="add_node_button" type="button">
-                                      <span class="glyphicon glyphicon-plus"></span>
-                                    </button>
-                                    <button class="btn btn-xs btn-danger" id="remove_node_button" type="button">
-                                      <span class="glyphicon glyphicon-minus"></span>
-                                    </button>
-                                    <button class="btn btn-xs btn-default" id="toggle_many_button" type="button">
-                                      1/+
-                                    </button>
-                                  </div>
-                                  <div class='top-buffer-sm'>
-                                    Actions:
-                                    <div class="graph scroll border" style=" height: 110px; width: 100px;" id ="action_list"> </div>
-                                  </div>
-                                </div>
-
-                              </div>
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  Links
-                                  <a data-toggle="collapse" class="info-toggle" href="#collapse_links"></a>
-                                </div>
-                                <div id=collapse_links class="panel-body collapse in">
-                                  <div class=btn-group-vertical data-toggle="buttons">
-                                    <label class="btn btn-sm btn-default" id="add_cons_link_button"><input  name="link_radio" type="radio" >Consecutive</label>
-                                    <label class="btn btn-sm btn-default" id="create_funnel_button"><input name="link_radio" type="radio" >Non-Consecutive</label>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-
-                          </div>
-                          <!-- <div class="graph" id ="action_list"> </div> -->
-                        </div>
-                        <!-- <div class="btn-group-vertical">
-                          
-                          <button type="button" id="add_cons_link_button" class="btn 
-                          btn-primary">Add Consecutive Links</button>
-                          <button type="button" id="create_funnel_button" class="btn btn-primary">Add Non-Consecutive Links</button>
-                     
-                        </div> -->
-                        <div class="text-right top-buffer">
-                          <label class="checkbox-inline right-buffer"><input id="contains_not_button" type="checkbox" value="">NOT</label>
-                          <div class="btn-group">
-                            <button type="button" id="apply_contains_operation" class="btn btn-primary">Apply</button>
-                            <button type="button" id="apply_funnel_button" class="btn btn-primary">Apply as Funnel</button>
-                          </div>
-                        </div>
-                      </div>
+                <div class="panel-group" id="operation_info">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h4 class="panel-title">
+                        <a data-toggle="collapse" class="info-toggle" href="#collapse_node"> Node View</a>
+                      </h4>
                     </div>
-                  </div>  
+                    <div id=collapse_node class="panel-body collapse in"> 
+                      <div class="info scroll" id="info_view"></div>
+                    </div>
+                  </div>
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h4 class="panel-title">
+                        <a data-toggle="collapse" class="info-toggle" href="#collapse_builder"> Operation Builder</a>
+
+                      </h4>
+                    </div>
+                    <div id=collapse_builder class="panel-body collapse in"> 
+                      <ul class="nav nav-tabs" id="operation_types" style="margin-bottom:1px">
+                        <li class="active"><a style="background-color:#f4fff5;" id="range_button" data-toggle="tab" href="#range">Range</a></li>
+                        <li><a style="background-color:#fff7f7" data-toggle="tab" id="contains_button" href="#contains">Contains</a></li>
+                      </ul>
+                      <div class="tab-content">
+                        <div id="range" class = "tab-pane fade in active">
+                          <h5>Range Operation Builder</h5>
+                          <!-- <button type="button" id="toggle_range_button" class="btn btn-primary">Toggle current/full range</button> -->
+                          
+                          <ul class="nav nav-pills nav-fill">
+                            <li class="nav-item active">
+                              <a class="nav-link" data-toggle="tab" id="filter_view" href="#r_filter" role="tab">Filter</a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link" data-toggle="tab" id="partition_view" href="#r_partition" role="tab">Partition</a>
+                            </li>
+                          </ul>
+                          <div class="tab-content">
+                            <div id="r_filter" class = "tab-pane fade in active panel-background" role="tabpanel">
+                              <h6>Range Filter Builder</h6>
+                              <div class="text-center">
+                                
+                                <div class="radio-inline">
+                                  <label class="range_radio"><input checked type="radio" id= "current_range_opt" name="optradio">Current Range</label>
+                                </div>
+                                <div class="radio-inline">
+                                  <label class="range_radio"><input type="radio" id="full_range_opt" name="optradio">Full Range</label>
+                                </div>
+                                  <!-- <label class="btn btn-default center-block"><input type="radio">All</label>
+                                  <label class="btn btn-default active center-block"><input type="radio">Filtered</label> -->
+                              </div>
+                              <div  class="graph" id="build_filter_view"></div>
+            
+                              <div class="range_radio inline-center" id="input_filter_value">
+                                <div>
+                                Start: 
+                                <!-- <input type="text" size="6" id="partition_value"> -->
+                                <input type="text" size="6" id="range_start_value">
+                                </div>
+                                <div class="left-buffer">
+                                End:
+                                <input type="text" size="6" id="range_end_value">
+                                </div>
+                              </div>
+                              <div class="text-right top-buffer">
+                                <label class="checkbox-inline right-buffer"><input id="range_not_button" type="checkbox" value="">NOT</label>
+                                <div class="btn-group">
+                                  <button type="button" id="applyFilter_button" class="btn btn-primary">Apply</button>
+                                </div>
+                              </div>
+                            </div>
+                            <div id="r_partition" class="tab-pane fade in panel-background" role="tabpanel">
+                              <h6>Range Partition Builder</h6>
+                              <div class="text-center">
+                                <div class="radio-inline">
+                                  <label class="range_radio"><input checked type="radio" id= "current_range_opt2" name="optradio2">Current Range</label>
+                                </div>
+                                <div class="radio-inline">
+                                  <label class="range_radio"><input type="radio" id="full_range_opt2" name="optradio2">Full Range</label>
+                                </div>
+                              </div>
+                              <div  class="graph" id="create_partition_view"></div>
+                              <div class="inline">
+                                <div class="btn-toolbar">
+                                  <!-- <button type="button" id="addPartition_button" class="btn btn-primary">Add Partition</button>
+
+                                  <button type="button" id="removePartition_button" class="btn btn-primary">Remove Partition</button> -->
+                                  <button class="btn btn-sm btn-success" id=addPartition_button type="button">
+                                    <span class="glyphicon glyphicon-plus"></span>
+                                  </button>
+                                  <button class="btn btn-sm btn-danger" disabled id=removePartition_button type="button">
+                                    <span class="glyphicon glyphicon-minus"></span>
+                                  </button>
+                                </div>
+                                <div class="left-buffer" id="input_partition_value">
+                                  <input type="text" size="10" id="partition_value">
+                                </div>
+                              </div>
+                              <div class="text-right top-buffer">
+                                <div class="btn-group">
+                                  <button type="button" id="applyPartition_button" class="btn btn-primary">Apply</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div id="contains" class = "tab-pane fade in">
+                          <h5>Contains Operation Builder</h5>
+                          <div class="inline">
+                            <div class= "border">
+                              <!-- <div class="graph" id="pb_svg">
+                                <div id="pb_graph"></div>
+                              </div> -->
+                              <div  class="graph" id="pb_graph"></div>
+                            </div>
+                            <div style="width:140px;" >
+                              <div class="text-center">
+                                <button type="button" id="clear_pb_button" class="btn btn-sm btn-default btn-block">Clear All</button>
+                              </div>
+                              <div class="panel-group top-buffer-sm" id="operation_info">
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    Actions
+                                    <a data-toggle="collapse" class="info-toggle" href="#collapse_actions"></a>
+                                  </div>
+                                  <div id=collapse_actions class="panel-body collapse in">
+
+                                    
+                                    <div class="btn-toolbar">
+                                      <button class="btn btn-xs btn-success" id="add_node_button" type="button">
+                                        <span class="glyphicon glyphicon-plus"></span>
+                                      </button>
+                                      <button class="btn btn-xs btn-danger" id="remove_node_button" type="button">
+                                        <span class="glyphicon glyphicon-minus"></span>
+                                      </button>
+                                      <button class="btn btn-xs btn-default" id="toggle_many_button" type="button">
+                                        1/+
+                                      </button>
+                                    </div>
+                                    <div class='top-buffer-sm'>
+                                      Actions:
+                                      <div class="graph scroll border" style=" height: 110px; width: 100px;" id ="action_list"> </div>
+                                    </div>
+                                  </div>
+
+                                </div>
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    Links
+                                    <a data-toggle="collapse" class="info-toggle" href="#collapse_links"></a>
+                                  </div>
+                                  <div id=collapse_links class="panel-body collapse in">
+                                    <div class=btn-group-vertical data-toggle="buttons">
+                                      <label class="btn btn-sm btn-default" id="add_cons_link_button"><input  name="link_radio" type="radio" >Consecutive</label>
+                                      <label class="btn btn-sm btn-default" id="create_funnel_button"><input name="link_radio" type="radio" >Non-Consecutive</label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+
+                            </div>
+                            <!-- <div class="graph" id ="action_list"> </div> -->
+                          </div>
+                          <!-- <div class="btn-group-vertical">
+                            
+                            <button type="button" id="add_cons_link_button" class="btn 
+                            btn-primary">Add Consecutive Links</button>
+                            <button type="button" id="create_funnel_button" class="btn btn-primary">Add Non-Consecutive Links</button>
+                       
+                          </div> -->
+                          <div class="text-right top-buffer">
+                            <label class="checkbox-inline right-buffer"><input id="contains_not_button" type="checkbox" value="">NOT</label>
+                            <div class="btn-group">
+                              <button type="button" id="apply_contains_operation" class="btn btn-primary">Apply</button>
+                              <button type="button" id="apply_funnel_button" class="btn btn-primary">Apply as Funnel</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>  
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class = "col-md-5" id="tree_view">
-        <button type="button" id="toggle_oManager" class="btn btn-default"><span class="glyphicon glyphicon-cog"></span>
-        </button>
-        <h4 class="text-center"> 
-        TREE DIAGRAM 
-        </h4>
-        <div class= "graph" id= "tree"></div>
-      </div>
-      <div class ="col-md-7" id="sequence_attributes">
-        <div class="panel-group" id="segment_info">
-          <div class="panel panel-info">
-            <div class="panel-heading text-center" style="font-size:13px">
-             
-                <a data-toggle="collapse" href="#collapse_segment"> Selected Segment Attributes</a>
-              
-            </div>
-            <div id="collapse_segment" class="panel-body collapse in">
-              <div class="panel-group" id="accordion">
-                <div class="panel panel-success">
-                  <div class="panel-heading">
-                    <!-- <h4 class="panel-title">  -->
-                      <a data-toggle="collapse" class="info-toggle" href="#collapse1"></a>
-                      <!-- Range Attributes -->
-                      
-                    <!-- </h4> -->
-                  </div>
-                  <div id="collapse1" class="panel-body collapse in">
-                  
-
-                    <div class="panel-group" id="range_attributes">
-
-                      
-
-                      <div class="panel panel-default">
-                        <!-- <div class="panel-heading">
-                          <h4 class="panel-title">
-                            <a data-toggle="collapse" class="info-toggle" href="#collapse_time"></a>
-                            <span class="glyphicon glyphicon-time"></span>
-                            Time-Related
-                          </h4>
-                        </div> -->
+        <!-- <div class = "col-md-5 panel-left" id="tree_view"> -->
+        <div class = "panel-left" id="tree_view">
+          <button type="button" id="toggle_oManager" class="btn btn-default"><span class="glyphicon glyphicon-cog"></span>
+          </button>
+          <h4 class="text-center"> 
+          TREE DIAGRAM 
+          </h4>
+          <div class= "graph" id= "tree"></div>
+        </div>
+        <div class='splitter'></div>
+        <!-- <div class ="col-md-7 panel-right" id="sequence_attributes"> -->
+        <div class ="panel-right" id="sequence_attributes">
+          <div class="panel-group" id="segment_info">
+            <div class="panel panel-info">
+              <div class="panel-heading text-center" style="font-size:13px">
+               
+                  <a data-toggle="collapse" href="#collapse_segment"> Selected Segment Attributes</a>
+                
+              </div>
+              <div id="collapse_segment" class="panel-body collapse in">
+                <div class="panel-group" id="accordion">
+                  <div class="panel panel-success">
+                    <div class="panel-heading panel-text">
+                      <!-- <h4 class="panel-title">  -->
+                        <a data-toggle="collapse" class="info-toggle" href="#collapse1">
+                          <div class='icon icon-adjust'></div>
+                          <div class='text-toggle no-font'>Range Attributes</div>
+                        </a>
                         
-                        <div class="panel-icon"><span class="glyphicon glyphicon-time"></span></div>
-                        <div id="collapse_time" class="panel-collapse collapse in">
-                          <div class="panel-body">
-                            <div class="charts">
-                              <div class="chart range_chart" id="duration_chart"> 
-                                <div class="title"> Duration chart </div>
-                              </div>
-                              <div class="chart range_chart" id="hour_chart"> 
-                                  <div class="title"> Start hour chart </div>
-                              </div>
-                              <div class="chart range_chart" id="date_chart"> 
-                                  <div class="title"> Start Date </div>
+                        <!-- <div class="text-toggle hidden">Range Attributes</div> -->
+                        
+                        
+                      <!-- </h4> -->
+                    </div>
+                    <div id="collapse1" class="panel-body collapse in">
+                    
+
+                      <div class="panel-group" id="range_attributes">
+
+                        
+
+                        <div class="panel panel-default">
+                          <!-- <div class="panel-heading">
+                            <h4 class="panel-title">
+                              <a data-toggle="collapse" class="info-toggle" href="#collapse_time"></a>
+                              <span class="glyphicon glyphicon-time"></span>
+                              Time-Related
+                            </h4>
+                          </div> -->
+                          
+                          <div class="panel-icon"><span class="glyphicon glyphicon-time"></span></div>
+                          <div id="collapse_time" class="panel-collapse collapse in">
+                            <div class="panel-body">
+                              <div class="charts">
+                                <div class="chart range_chart" id="duration_chart"> 
+                                  <div class="title"> Duration chart </div>
+                                </div>
+                                <div class="chart range_chart" id="hour_chart"> 
+                                    <div class="title"> Start hour chart </div>
+                                </div>
+                                <div class="chart range_chart" id="date_chart"> 
+                                    <div class="title"> Start Date </div>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div class="panel panel-default">
-                        <!-- <div class="panel-heading">
-                          <h4 class="panel-title">
-                            <a data-toggle="collapse" class="info-toggle" href="#collapse_count"></a>
-                            # Count-Related
-                          </h4>
-                        </div> -->
-                        <div class='panel-icon'> # </div>
-                        <div id="collapse_count" class="panel-collapse collapse in">
-                          <div class="panel-body">
-                            <div class="dropdown" id="dropdown">
-                              <button class="btn btn-xs btn-success dropdown-toggle" type="button" data-toggle="dropdown"> <span class="glyphicon glyphicon-plus"></span>
-                                    <span class="caret"></span></button>
-                              <ul class="dropdown-menu" id="action_dropdown">
-                              </ul>
-                            </div>
-                            <div id="count_charts" class="charts">
-                              <div class="chart range_chart" id="len_chart"> 
-                                <div class="title"> Number of Actions 
+                        <div class="panel panel-default">
+                          <!-- <div class="panel-heading">
+                            <h4 class="panel-title">
+                              <a data-toggle="collapse" class="info-toggle" href="#collapse_count"></a>
+                              # Count-Related
+                            </h4>
+                          </div> -->
+                          <div class='panel-icon'> # </div>
+                          <div id="collapse_count" class="panel-collapse collapse in">
+                            <div class="panel-body">
+                              <div class="dropdown" id="dropdown">
+                                <button class="btn btn-xs btn-success dropdown-toggle" type="button" data-toggle="dropdown"> <span class="glyphicon glyphicon-plus"></span>
+                                      <span class="caret"></span></button>
+                                <ul class="dropdown-menu" id="action_dropdown">
+                                </ul>
+                              </div>
+                              <div id="count_charts" class="charts">
+                                <div class="chart range_chart" id="len_chart"> 
+                                  <div class="title"> Number of Actions 
+                                  </div>
                                 </div>
+                                
                               </div>
                               
                             </div>
-                            
                           </div>
-                        </div>
-                      </div> 
+                        </div> 
 
-                    </div>
-                  </div>
-                  
-
-                </div>
-                <div class="panel panel-danger">
-                  <div class="panel-heading">
-                    <!-- <h4 class="panel-title"> -->
-                      <a data-toggle="collapse" class="info-toggle" href="#collapse_contains"></a>
-                      <!-- Contains Attributes -->
-                    <!-- </h4> -->
-                  </div>
-                  <div id="collapse_contains" class="panel-collapse collapse in">
-                    <div class="panel-body">
-                      <div class="charts">
-                        <div class= "chart" id="contains_action_chart">
-                          <div class="title"> Number of Sequences that Contains Action </div>
-                        </div>
-
-                        <div class ="chart" id="node_link">
-                          <div id="cy"></div>
-                        </div>
-                        <div class="chart" id="adjacency_chart">
-                          <div id="tooltip" class="hidden">
-                            <p><span id="value">100</span></p>
-                          </div>
-                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-                <div class="panel panel-warning">
-                  <div class="panel-heading">
-                    <h4 class="panel-title">
-                      <a data-toggle="collapse" class="info-toggle" href="#collapse3"></a>
-                      Sequence Details
-                    </h4>
-                  </div>
-                  <div id="collapse3" class="panel-collapse collapse in">
-                    <div class="panel-body">
-                      <div id="sequences">
-                        <label class="checkbox-inline"><input id="group_sequences" type="checkbox" value="">Group Sequences</label>
-                        <label class="checkbox-inline"><input id="transitionize_sequences" type="checkbox" value="">Transitionize Sequences</label>
                     
-                        <div id="sequences_text" class="border scroll" style=" height: 200px; width: 500px; margin-left: 20px; margin-top: 20px;"> 
+
+                  </div>
+                  <div class="panel panel-danger">
+                    <div class="panel-heading">
+                      <!-- <h4 class="panel-title"> -->
+                        <a data-toggle="collapse" class="info-toggle" href="#collapse_contains">
+                          <div class='icon icon-adjust'></div>
+                          <div class='text-toggle no-font'>Contains Attributes</div>
+                        </a>
+                        
+                      <!-- </h4> -->
+                    </div>
+                    <div id="collapse_contains" class="panel-collapse collapse in">
+                      <div class="panel-body">
+                        <div class="charts">
+                          <div class= "chart" id="contains_action_chart">
+                            <div class="title"> Number of Sequences that Contains Action </div>
+                          </div>
+
+                          <div class ="chart" id="node_link">
+                            <div id="cy"></div>
+                          </div>
+                          <div class="chart" id="adjacency_chart">
+                            <div id="tooltip" class="hidden">
+                              <p><span id="value">100</span></p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div> 
+                  <div class="panel panel-warning">
+                    <div class="panel-heading">
+                      <!-- <h4 class="panel-title"> -->
+                        <a data-toggle="collapse" class="info-toggle" href="#collapse3">
+                        <div class='icon icon-adjust'></div>
+                          <div class='text-toggle no-font'>Sequence Details</div>
+                        </a>
+                        
+                      <!-- </h4> -->
+                    </div>
+                    <div id="collapse3" class="panel-collapse collapse in">
+                      <div class="panel-body">
+                        <div id="sequences">
+                          <label class="checkbox-inline"><input id="group_sequences" type="checkbox" value="">Group Sequences</label>
+                          <label class="checkbox-inline"><input id="transitionize_sequences" type="checkbox" value="">Transitionize Sequences</label>
+                      
+                          <div id="sequences_text" class="border scroll" style=" height: 200px; width: 500px; margin-left: 20px; margin-top: 20px;"> 
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div> 
+              </div>
             </div>
           </div>
         </div>
@@ -737,11 +758,12 @@ d3.csv(csv_file, function(error, data) {
             .attr('class', 'close')
             .attr('id','close_chart')
             .attr('aria-hidden',true)
+            
             .html('&times;')
             .style('display', 'none')
 
 
-      var title_div = chart_div.append('div').attr('class', 'action-icon')
+      var title_div = chart_div.append('div').style('margin-top','14px').attr('class', 'action-icon')
       title_div.append('span')
               .style('font-size', '11px')
               .text('# of ' +action_counted)
@@ -900,6 +922,21 @@ d3.csv(csv_file, function(error, data) {
         if(node_link_data)
           draw_action_transition_graph(node_link_data)
       });
+
+    $('.info-toggle').click(function(){
+      var panel= $(this)
+      panel.find('.text-toggle').toggleClass('no-font')
+      panel.find('.icon').toggleClass('icon-adjust')
+    })
+     $(".panel-left").resizable({
+       handleSelector: ".splitter",
+       resizeHeight: false,
+       resize:function(event, ui){
+        resize_windows()
+       }
+     });
+
+    //$("#sequence_attributes").resizable()
 
 
     function draw_action_transition_graph(node_link_data){
@@ -2078,6 +2115,9 @@ d3.csv(csv_file, function(error, data) {
     var contains_not_color = '#81858c'
     var contains_not_bg_color = '#c5c8cc'
 
+    // var pb_svg = d3.select('#pb_svg').append('svg')
+    //               .attr('height', 400)
+
     var pb_graph = cytoscape({
         container: document.querySelector('#pb_graph'),
         boxSelectionEnabled: false,
@@ -2351,8 +2391,8 @@ d3.csv(csv_file, function(error, data) {
         }
 
         //$("#sequences").show()
-        var width = d3.select('#sequences').node().clientWidth
-        $("#sequences_text").width(width).height(200)
+        // var width = d3.select('#sequences').node().clientWidth
+        //$("#sequences_text").width(width).height(200)
         $("#sequences_text").html(text)
         $("#sequences_text").css("font-size", "12px");
 
@@ -3098,26 +3138,33 @@ d3.csv(csv_file, function(error, data) {
 
     function toggle_operation_manager(){
       if($('#operation_manager').hasClass('open'))
-      { 
+      {  
+        // $('#operation_manager').removeClass('col-md-4');
+         // $('#tree_view').addClass('col-md-5');
+        // $('#tree_view').removeClass('col-md-2');
+        // $('#sequence_attributes').addClass('col-md-7')
+        // $('#sequence_attributes').removeClass('col-md-6')
         $('#toggle_oManager').removeClass('hidden')
-        $('#operation_manager').removeClass('col-md-4');
         $('#operation_manager').removeClass('open');
         $('#operation_manager').addClass('hidden');
-        $('#tree_view').addClass('col-md-5');
-        $('#tree_view').removeClass('col-md-2');
-        $('#sequence_attributes').addClass('col-md-7')
-        $('#sequence_attributes').removeClass('col-md-6')
+        $('#tree_view').width('40%')
+        $('#sequence_attributes').width('60%')
+
       }
       else
       {
+        
+        // $('#operation_manager').addClass('col-md-4');
+        // $('#tree_view').removeClass('col-md-5');
+        // $('#tree_view').addClass('col-md-2');
+        // $('#sequence_attributes').addClass('col-md-6')
+        // $('#sequence_attributes').removeClass('col-md-7')
         $('#toggle_oManager').addClass('hidden')
-        $('#operation_manager').addClass('col-md-4');
+        $('#operation_manager').width('30%')
         $('#operation_manager').addClass('open');
         $('#operation_manager').removeClass('hidden');
-        $('#tree_view').removeClass('col-md-5');
-        $('#tree_view').addClass('col-md-2');
-        $('#sequence_attributes').addClass('col-md-6')
-        $('#sequence_attributes').removeClass('col-md-7')
+        $('#tree_view').width('20%')
+        $('#sequence_attributes').width('50%')
       }
 
       resize_windows()
@@ -4319,7 +4366,7 @@ d3.csv(csv_file, function(error, data) {
         // reset corresponding filter if the brush selection was cleared
         // (e.g. user "clicked off" the active range)
         console.log('all ids but', id)
-        reset_filters(id);
+        reset_charts(id);
         if (!d3.brushSelection(this)) {
           reset(id);
           selectedFilter = {};
@@ -4383,7 +4430,10 @@ d3.csv(csv_file, function(error, data) {
       };
 
       chart.filter = _ => {
-        if (!_) dimension.filterAll();
+        if (!_) {
+          dimension.filterAll();
+          //filter_dimension.filterAll();
+        }
         brushDirty = _;
         return chart;
       };
@@ -4543,13 +4593,13 @@ d3.csv(csv_file, function(error, data) {
 
     resize_tree()
     resize_builder()
-    resize_sequence_details()
+    //resize_sequence_details()
   }
 
-  function resize_sequence_details(){
-    var width = d3.select('#sequences').node().clientWidth - 40;
-    $("#sequences_text").width(width)
-  }
+  // function resize_sequence_details(){
+  //   //var width = d3.select('#sequences').node().clientWidth - 40;
+  //   //$("#sequences_text").width(width)
+  // }
   function resize_builder(){
       var width = builderDiv.node().clientWidth
 
@@ -4627,10 +4677,10 @@ d3.csv(csv_file, function(error, data) {
 
     
     function resize_tree(){
-      var width = treeDiv.node().clientWidth,
+      var width = d3.select('#tree').node().clientWidth,
           height = 2000
 
-      t_svg.attr("width", width)
+      //t_svg.attr("width", width)
 
       tree.size([width-(oLength/2), height]);
 
@@ -5051,6 +5101,23 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+    function reset_charts(exception){
+
+      if (!arguments.length)
+        exception = -1;
+
+      for(var i=0; i<= max_id; i++){
+        if (i != exception){
+          reset(i);
+          //charts[i].dimension().filterAll();
+          //charts[i].filter_dimension().filterAll();
+
+
+        } 
+      }
+
+    }
+
     function reset_filters(exception) {
 
       // l.filterAll();
@@ -5058,7 +5125,7 @@ d3.csv(csv_file, function(error, data) {
       // hour.filterAll();
       // len.filterAll();
 
-      //action_strings.filterAll();
+      action_strings.filterAll();
 
       //max_id = 3
       console.log('MAX RESET ID', max_id)
@@ -6217,6 +6284,9 @@ d3.csv(csv_file, function(error, data) {
     //make sure first node is selected
     select_node(root.children[0])
     window.addEventListener('resize', resize_windows)
+     $(window).bind('resize', function(){
+        resize_windows()
+     });
     resize_windows()
 
 
