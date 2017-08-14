@@ -1099,8 +1099,8 @@ d3.csv(csv_file, function(error, data) {
       function resize(){
         
         
-        nl_graph.nodes('#start').renderedPosition({x:180, y:20});
-      nl_graph.nodes('#exit').renderedPosition({x:180, y:230});
+        nl_graph.nodes('#start').renderedPosition({x:nl_width/2, y:20});
+      nl_graph.nodes('#exit').renderedPosition({x:nl_width/2, y:230});
 
         
       
@@ -1109,8 +1109,11 @@ d3.csv(csv_file, function(error, data) {
           var data = d.data();
 
           var pos = d.renderedPosition()
-          if (pos.x<0){
-            d.renderedPosition({x:0, y:pos.y})
+          if (pos.x<30){
+            d.renderedPosition({x:30, y:pos.y})
+          }
+          if (pos.x> (nl_width-30)){
+            d.renderedPosition({x:(nl_width-30), y:pos.y})
           }
           if (pos.y<50){
             d.renderedPosition({x:pos.x, y:50})
