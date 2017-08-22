@@ -71,7 +71,9 @@
 }
 */
 
-
+.align-center{
+  align-items: center;
+}
 .charts {
   display: flex;
   flex-wrap: wrap;
