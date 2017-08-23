@@ -246,7 +246,7 @@
                   <div class="panel panel-success">
                     <div class="panel-heading panel-text">
                       <!-- <h4 class="panel-title">  -->
-                        <a data-toggle="collapse" class="info-toggle" href="#collapse1">
+                        <a data-toggle="collapse" class="info-toggle" href="#collapse_range_charts">
                           <div class='icon icon-adjust'></div>
                           <div class='text-toggle no-font'>Range Attributes</div>
                         </a>
@@ -256,7 +256,7 @@
                         
                       <!-- </h4> -->
                     </div>
-                    <div id="collapse1" class="panel-body collapse in">
+                    <div id="collapse_range_charts" class="panel-body collapse in">
                     
 
                       <div class="panel-group" id="range_attributes">
@@ -355,14 +355,14 @@
                   <div class="panel panel-warning">
                     <div class="panel-heading">
                       <!-- <h4 class="panel-title"> -->
-                        <a data-toggle="collapse" class="info-toggle" href="#collapse3">
+                        <a data-toggle="collapse" class="info-toggle" href="#collapse_details">
                         <div class='icon icon-adjust'></div>
                           <div class='text-toggle no-font'>Sequence Details</div>
                         </a>
                         
                       <!-- </h4> -->
                     </div>
-                    <div id="collapse3" class="panel-collapse collapse in">
+                    <div id="collapse_details" class="panel-collapse collapse in">
                       <div class="panel-body">
                         <div id="sequences">
                           <label class="checkbox-inline"><input id="group_sequences" type="checkbox" value="">Group Sequences</label>
@@ -370,7 +370,7 @@
                           <div class="inline align-center">
                             <div id="sequences_text" class="border scroll" style=" height: 200px; width: 500px; padding:10px; margin-left: 20px; margin-top: 20px;"> 
                             </div>
-                            <div id="legend"></div>
+                            <div id="legend" class="scroll" style="width:170px; height:230px"></div>
                           </div>
                         </div>
                       </div>
@@ -428,8 +428,13 @@ $(document).ready(function(){
   var parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S.%L")
   //var parseTimeDelta = d3.timeParse("%d %H:%M:%S.%L")
 
-  var alpha_file = "alpha_1.csv";
-  var csv_file = "sample_table.csv"; //100K new alpha
+  //with grouped
+  var alpha_file = "alphabet1.csv";
+  var csv_file = "sample_table2.csv"; //100K new alpha
+
+
+  // var alpha_file = "alpha_1.csv";
+  // var csv_file = "sample_table1.csv"; //100K new alpha
   //var csv_file = "sample_table3K.csv"; //300K new alpha
   
 
@@ -479,6 +484,25 @@ d3.csv(csv_file, function(error, data) {
       console.log('Alphabet: ', alphabet);
       console.log(data[0])
 
+    var general= 'general_actions',
+        grouped = 'pages_grouped',
+        actions = 'action_strings'
+
+    var action_hierarchy = {},
+        current_level,
+        level = grouped;
+
+
+
+
+    action_hierarchy[general] = ['addToCart', 'removeFromCart', 'purchase', 'search', 'pageview']
+    action_hierarchy[grouped] = ['addToCart', 'removeFromCart', 'purchase', 'search', 'account_group', 'cart_group', 'checkout_group', 'browse_group', 'other_group', 'info_group']
+    action_hierarchy[actions] = Object.keys(alphabet).slice(0,-2);
+
+    console.log(action_hierarchy.actions)
+
+    current_level = action_hierarchy[level];
+      
 
 
 
@@ -490,17 +514,31 @@ d3.csv(csv_file, function(error, data) {
       "search": "#FF7100",
       "pageview": "#0073B9",
       "start": "#999",
-      "exit": "#999"
+      "exit": "#999",
+      "none": 'none'
 
 
     }
 
-      function color(action){
-        if (action in colors)
-          return colors[action]
-        else
-          return 'none'
+    var color_id=7;
+    //var scheme = d3.scaleOrdinal(d3.schemeCategory20);
+    var scheme = d3.schemeCategory20
+
+
+
+    function color(action){
+      if (!action) return 'none'
+      
+      if (!(action in colors)){
+        //colors[action] = scheme(color_id)
+        colors[action] = scheme[color_id]
+        color_id= color_id+1
       }
+
+
+      return colors[action]
+
+    }
 
       var action_counted = 'search'
 
@@ -531,12 +569,12 @@ d3.csv(csv_file, function(error, data) {
           dur_filter = seqs.dimension(function(d) {return (d.end - d.start)/(interval)});
           durations = duration.group(Math.floor);
 
-          action_strings = seqs.dimension(function(d) {return d.general_actions});
-          action_strings2 = seqs.dimension(function(d) {return d.general_actions});
+          action_strings = seqs.dimension(function(d) {return d[level]});
+          action_strings2 = seqs.dimension(function(d) {return d[level]});
           strings_grouped = action_strings2.group()
 
 
-          trans_strings = seqs.dimension(function(d) {return remove_duplicates(d.general_actions)});
+          trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[level])});
           trans_grouped = trans_strings.group()
 
     //console.log(lens.top(Number.POSITIVE_INFINITY).length);
@@ -547,7 +585,7 @@ d3.csv(csv_file, function(error, data) {
     function action_count(d, action){
       var c = alphabet[action],
           re = new RegExp(c,'g'),
-          str = d.general_actions,
+          str = d[level],
           matches = str.match(re);
 
       return matches? matches.length: 0
@@ -559,8 +597,8 @@ d3.csv(csv_file, function(error, data) {
         }
     });
 
-    d3.selectAll("#sequence_details")
-      .on("click", print_sequences);
+    // d3.selectAll("#sequence_details")
+    //   .on("click", print_sequences);
 
 
     d3.select("#range_button")
@@ -622,14 +660,14 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#clear_pb_button")
       .on("click", clear_contains_builder)
 
-    d3.select("#print_sequences")
-      .on("click", show_detailed_view);
+    // d3.select("#print_sequences")
+    //   .on("click", show_detailed_view);
     d3.select("#group_sequences")
       .on("click", group_sequences);
     d3.select("#transitionize_sequences")
       .on("click", transitionize_sequences);
-    d3.select("#close_detailed_view")
-      .on("click", close_detailed_view);
+    // d3.select("#close_detailed_view")
+    //   .on("click", close_detailed_view);
 
     d3.select("#demo_button")
       .on("click", add_action_count_chart);
@@ -697,11 +735,8 @@ d3.csv(csv_file, function(error, data) {
                     update_selected_chart(d3.select(this));
                     
                   });
-    var action_hierarchy = {},
-        current_level;
-
-        action_hierarchy.general_actions = ['addToCart', 'removeFromCart', 'purchase', 'search', 'pageview']
-    current_level = action_hierarchy.general_actions;
+   
+   
 
     var total_size = all.reduceCount().value(),
         original_size = total_size;
@@ -709,13 +744,11 @@ d3.csv(csv_file, function(error, data) {
     renderAll();
 
     var action_i = 0;
-    populate_action_count_dropdown()
+    
 
     var action_count_n = 2,
         action_radius= 7;
-    for(var i= 0; i<2;i++){
-      add_chart(current_level[i])
-    }
+    
 
     function populate_action_count_dropdown(){
       //var action_radius = 7;
@@ -743,69 +776,12 @@ d3.csv(csv_file, function(error, data) {
       //})
       
     }
-    var legend_width = 170
-    var legend_svg = d3.select('#legend').append('svg')
-                          .attr('width', legend_width)
-                          .attr('height', 175)
-                          .append('g')
-                          .attr('transform',  'translate(' + 0 +','+ action_radius*2  +')')
+    
+    populate_action_count_dropdown()
 
-    var legend = legend_svg.append('g')
-                          .attr('transform',  'translate(' + 0 +','+ 15 +')')                   
-        legend_svg.append('text')
-            .attr('x', legend_width/2)
-            .style("text-anchor", "middle")
-            .style('font-size', '11px')
-            .text('Legend')
-
-
-
-
-
-
-    populate_legend()
-
-    function populate_legend(){
-      //var action_radius = 7;
-      var entries = legend.selectAll('g')
-                        .remove()
-                        .exit()
-                        .data(current_level).enter()
-      //current_level.forEach(function(action){
-      var entry = entries.append('g')
-              .attr('transform', function(d,i){return 'translate(' + (action_radius*2) +','+ (action_radius*3)*i  +')'})
-
-      var action = entry.append('g')
-                  .attr('transform', 'translate(' + 30  +','+ 0  +')')
-      
-      var action_text = action.append('g')
-                  .attr('transform', function(d,i){return 'translate(' + (action_radius*2)  +','+  0 +')'})
-
-              
-          action_text.append('text')
-              .style('font-size', '11px')
-              .text(function(d){return d;})
-
-      var node = action.append('g')
-                  .attr('transform', function(d,i){return 'translate(' + 0 +','+ -action_radius/2  +')'})
-              
-
-          node.append('circle')
-              .attr('r', action_radius)
-              .attr('fill', function(d) {
-                return color(d);
-              })
-
-      var char_text = entry.append('g')
-                  .attr('transform',  'translate(' + 0 +','+ 0  +')')
-
-          char_text.append('text')
-              .style('font-size', '11px')
-              .text(function(d){return alphabet[d] + " = " ;})    
-
+    for(var i= 0; i<2;i++){
+      add_chart(current_level[i])
     }
-
-
 
     
 
@@ -939,6 +915,75 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+
+
+    //==========LEGEND ====================//
+
+    var legend_width = 170
+    var legend_svg = d3.select('#legend').append('svg')
+                          .attr('width', legend_width)
+                          // .attr('height', 175)
+    var legend_text = legend_svg.append('g')
+                          .attr('transform',  'translate(' + 0 +','+ action_radius*2  +')')
+
+    var legend = legend_text.append('g')
+                          .attr('transform',  'translate(' + 0 +','+ 15  +')')                   
+    legend_text.append('text')
+        .attr('x', legend_width/2)
+        .style("text-anchor", "middle")
+        .style('font-size', '11px')
+        .text('Legend')
+
+
+
+
+
+
+    populate_legend()
+
+    function populate_legend(){
+      //var action_radius = 7;
+      var spacing = action_radius*3;
+      var height = (current_level.length+1)*spacing
+      legend_svg.attr('height', height )
+      var entries = legend.selectAll('g')
+                        .remove()
+                        .exit()
+                        .data(current_level).enter()
+      //current_level.forEach(function(action){
+      var entry = entries.append('g')
+              .attr('transform', function(d,i){return 'translate(' + (action_radius*2) +','+ (action_radius*3)*i  +')'})
+
+      var action = entry.append('g')
+                  .attr('transform', 'translate(' + 30  +','+ 0  +')')
+      
+      var action_text = action.append('g')
+                  .attr('transform', function(d,i){return 'translate(' + (action_radius*2)  +','+  0 +')'})
+
+              
+          action_text.append('text')
+              .style('font-size', '11px')
+              .text(function(d){return d;})
+
+      var node = action.append('g')
+                  .attr('transform', function(d,i){return 'translate(' + 0 +','+ -action_radius/2  +')'})
+              
+
+          node.append('circle')
+              .attr('r', action_radius)
+              .attr('fill', function(d) {
+                return color(d);
+              })
+
+      var char_text = entry.append('g')
+                  .attr('transform',  'translate(' + 0 +','+ 0  +')')
+
+          char_text.append('text')
+              .style('font-size', '11px')
+              .text(function(d){return alphabet[d] + " = " ;})    
+
+    }
+
     //=========================== Node Link =====================================//
     var nl_graph_data = {nodes:[], links: []},
         nl_width = 250,
@@ -951,6 +996,35 @@ d3.csv(csv_file, function(error, data) {
 
     var strokeScale = d3.scaleLinear().domain([0,100]).range([1,6]).clamp(true);
 
+    // $(document).on('show.bs.collapse', '#collapse_contains', function (e) {
+
+    //     update_action_transition_graph()
+    //   })
+
+    $('#collapse_contains').on('shown.bs.collapse', function () {
+      update_action_transition_graph()
+    });
+
+    $('#collapse_details').on('shown.bs.collapse', function () {
+      print_sequences()
+    });
+
+    $('.info-toggle').click(function(){
+      var panel= $(this)
+      panel.find('.text-toggle').toggleClass('no-font')
+      panel.find('.icon').toggleClass('icon-adjust')
+    })
+    
+    $(".panel-left").resizable({
+      handleSelector: ".splitter",
+      resizeHeight: false,
+      stop:function(event, ui){
+        resize_windows()
+      }
+      // resize:function(event, ui){
+      //   resize_windows()
+      // }
+    });
 
 
     var nl_graph= cytoscape({
@@ -1006,23 +1080,7 @@ d3.csv(csv_file, function(error, data) {
             })
       });;
 
-      $('#collapse_contains').on('shown.bs.collapse', function () {
-        if(node_link_data)
-          draw_action_transition_graph(node_link_data)
-      });
-
-    $('.info-toggle').click(function(){
-      var panel= $(this)
-      panel.find('.text-toggle').toggleClass('no-font')
-      panel.find('.icon').toggleClass('icon-adjust')
-    })
-     $(".panel-left").resizable({
-       handleSelector: ".splitter",
-       resizeHeight: false,
-       resize:function(event, ui){
-        resize_windows()
-       }
-     });
+    
 
     //$("#sequence_attributes").resizable()
 
@@ -1144,7 +1202,9 @@ d3.csv(csv_file, function(error, data) {
       layout.on('layoutstop', function(){
         resize()
       })
-
+      // nl_graph.ready(function(e){
+      //   resize()
+      // })
       
 
       nl_graph.edges().forEach(function(e){
@@ -1250,14 +1310,14 @@ d3.csv(csv_file, function(error, data) {
 
       function reduceAdd_concat(p, v) {
           
-          p.str = p.str + start_c + v.general_actions + exit_c;
+          p.str = p.str + start_c + v[level] + exit_c;
         
         return p;
 
       }
 
       function reduceRemove_concat(p, v) {
-        var index = p.str.length - (v.general_actions.length + 2)
+        var index = p.str.length - (v[level].length + 2)
 
         p.str = p.str.substring(0, index)
         
@@ -2188,7 +2248,7 @@ d3.csv(csv_file, function(error, data) {
       }
 
       function reduceAdd(p, v) {
-        if (v.general_actions.match(regex))
+        if (v[level].match(regex))
           p.count = p.count + 1;
         
         return p;
@@ -2196,7 +2256,7 @@ d3.csv(csv_file, function(error, data) {
       }
 
       function reduceRemove(p, v) {
-        if (v.general_actions.match(regex))
+        if (v[level].match(regex))
           p.count = p.count - 1;
         
         return p;
@@ -2434,7 +2494,7 @@ d3.csv(csv_file, function(error, data) {
       }
 
       function reduceAdd(p, v) {
-          p.patterns = find_patterns(v.general_actions, p.patterns);
+          p.patterns = find_patterns(v[level], p.patterns);
         
         return p;
 
@@ -2452,14 +2512,14 @@ d3.csv(csv_file, function(error, data) {
         grouped_seqs = false;
 
 
-    function show_detailed_view(){
-      $("#sequences").show()
-      print_sequences()
-    }
+    // function show_detailed_view(){
+    //   $("#sequences").show()
+    //   print_sequences()
+    // }
 
-    function close_detailed_view(){
-      $("#sequences").hide()
-    }
+    // function close_detailed_view(){
+    //   $("#sequences").hide()
+    // }
 
     
     function transitionize_sequences(){
@@ -2494,7 +2554,7 @@ d3.csv(csv_file, function(error, data) {
           var dimData = action_strings.top(Infinity)
           var text = "";
           dimData.forEach(function(x){
-            var seq = transitionized? remove_duplicates(x.general_actions): x.general_actions;
+            var seq = transitionized? remove_duplicates(x[level]): x[level];
 
             text += seq + " <br/>";
           })
@@ -3167,7 +3227,7 @@ d3.csv(csv_file, function(error, data) {
           .attr("class", "result")
           .attr("transform", function(d, i) { 
             var x = ((i !=0) && (i == (n_operations-1)))? 10:0;
-            return "translate(" + 0 + "," + (i*(oWidth)+x)  + ")"; 
+            return "translate(" + 0 + "," + (i*(oWidth+sep)+x)  + ")"; 
           })
 
 
@@ -3292,7 +3352,7 @@ d3.csv(csv_file, function(error, data) {
         $('#show_hide_icon').removeClass('glyphicon-chevron-right')
 
       }
-      $
+      
     }
 
     function toggle_tree_info_view(){
@@ -4749,6 +4809,7 @@ d3.csv(csv_file, function(error, data) {
 
       show_node_view(selected)
       draw_pattern_graph(pattern_data)
+      update_action_transition_graph()
 
       if( $("#build_filter_view").is(':visible'))
         update_filter_view()
@@ -5239,7 +5300,7 @@ d3.csv(csv_file, function(error, data) {
         d.filterAll()
       })
 
-      action_strings.filterAll();
+      //action_strings.filterAll();
 
       //max_id = 3
       console.log('MAX RESET ID', max_id)
@@ -5264,7 +5325,7 @@ d3.csv(csv_file, function(error, data) {
     function apply_filters(selected){
 
       var selected_filters = selected.data.filters;
-          reset_filters();
+          //reset_filters();
           if (dim) {
               dim.filterAll();
               reset_filters();
@@ -5516,7 +5577,7 @@ d3.csv(csv_file, function(error, data) {
       }
 
       function reduceAdd(p, v) {
-        if (v.general_actions.includes(char))
+        if (v[level].includes(char))
           p.count = p.count + 1;
         
         return p;
@@ -5524,7 +5585,7 @@ d3.csv(csv_file, function(error, data) {
       }
 
       function reduceRemove(p, v) {
-        if (v.general_actions.includes(char))
+        if (v[level].includes(char))
           p.count = p.count - 1;
         
         return p;

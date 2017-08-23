@@ -71,6 +71,10 @@
 }
 */
 
+.align-top{
+  align-items: top;
+}
+
 .align-center{
   align-items: center;
 }
