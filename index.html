@@ -227,16 +227,50 @@
         </div>
         <!-- <div class = "col-md-5 panel-left" id="tree_view"> -->
         <div class = "panel-left" id="tree_view">
-          <div class="inline">
+          <div class="inline align-center">
             <button type="button" id="toggle_oManager" class="btn btn-default"><span class="glyphicon glyphicon-cog"></span>
             </button>
-            <div class="dropdown" id="dropdown">
+
+            <div>Action Level:</div>
+            <div class="dropdown level" style="margin-left:5px;">
+              
+              <button type="button" 
+                class="btn btn-select"
+                data-toggle="dropdown">General</button>
+              <ul class="dropdown-menu dropdown-menu-select">
+              <li><label class="dropdown-radio" id="general">
+                  <input type="radio" name="level">
+                  <i>General</i>
+                  </label>
+              </li>
+              <li><label class="dropdown-radio" id="grouped">
+                  <input type="radio" name="level">
+                  <i>Grouped</i>
+                  </label>
+              </li>
+              <li><label class="dropdown-radio" id='pages'>
+                  <input type="radio" name="level">
+                  <i>Pages</i>
+                  </label>
+              </li>
+              </ul>
+            </div>
+            <!-- <div class="dropdown" id="dropdown">
               <button class="btn btn-md btn-success dropdown-toggle" type="button" data-toggle="dropdown">  Action Level
                 <span class="caret"></span>
               </button>
-              <ul class="dropdown-menu" id="action_dropdown">
+              <ul class="dropdown-menu">
+                <li> 
+                  <label class="btn btn-sm btn-default" id="general"><input  name="level_radio" type="radio" >General</label>
+                </li>
+                <li>
+                  <label class="btn btn-sm btn-default" id="grouped"><input name="level_radio" type="radio" >Grouped</label>
+                </li>
+                <li>
+                  <label class="btn btn-sm btn-default" id="pages"><input name="level_radio" type="radio" >Pages</label>
+                </li>
               </ul>
-            </div>
+            </div> -->
           </div>
           <h4 class="text-center"> 
           TREE DIAGRAM 
@@ -527,15 +561,12 @@ d3.csv(csv_file, function(error, data) {
 
     current_level = action_hierarchy[level];
 
-    function change_level(level){
-      level = general
+    function change_level(l){
+      color_id =0
+      level = l
       current_level = action_hierarchy[level]
-      populate_legend()
-      populate_action_count_dropdown()
-      update_action_list_data()
-      update_node_link_data()
-      update_horizontal_chart_data()
       n_actions = current_level.length-2
+      
 
       action_strings = seqs.dimension(function(d) {return d[level]});
       action_strings2 = seqs.dimension(function(d) {return d[level]});
@@ -544,7 +575,15 @@ d3.csv(csv_file, function(error, data) {
 
       trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[level])});
       trans_grouped = trans_strings.group()
-      resize_windows()
+
+      populate_legend()
+      populate_action_count_dropdown()
+      update_action_list_data()
+      update_action_transition_graph()
+      update_horizontal_chart_data()
+      print_sequences()
+      
+      //resize_windows()
     }
       
 
@@ -642,6 +681,20 @@ d3.csv(csv_file, function(error, data) {
         }
     });
 
+    $('.dropdown-radio').find('input').change(function() {
+      var dropdown = $(this).closest('.dropdown');
+      var radioname = $(this).attr('name');
+      var checked = 'input[name=' + radioname + ']:checked';
+      
+      //update the text
+      var checkedtext = $(checked).closest('.dropdown-radio').text();
+      dropdown.find('button').text( checkedtext );
+
+      //retrieve the checked value, if needed in page 
+      // var thisvalue = dropdown.find( checked ).val();
+      //alert ( thisvalue  );
+    });
+
     // d3.selectAll("#sequence_details")
     //   .on("click", print_sequences);
 
@@ -715,7 +768,15 @@ d3.csv(csv_file, function(error, data) {
     //   .on("click", close_detailed_view);
 
     d3.select("#demo_button")
-      .on("click", change_level);
+      .on("click", function(d) {return change_level(general)});
+
+    d3.select("#general")
+      .on("click", function(d) {return change_level(general)});
+
+    d3.select("#grouped")
+      .on("click", function(d) {return change_level(grouped)});
+    d3.select("#pages")
+      .on("click", function(d) {return change_level(actions)});
       
 
 
@@ -1954,7 +2015,8 @@ d3.csv(csv_file, function(error, data) {
         var bar_position = d.translate
         //var xPosition = (d.translate == 0)? -65 :d.translate + bar_width;
         var xPosition = (d.translate == 0)? 0 :d.translate + bar_width;
-        var yPosition = bar_len(d.x0 +((d.x1-d.x0)/2)) 
+        // var yPosition = bar_len(d.x0 +((d.x1-d.x0)/2)) 
+
 
         xPosition += margin_ac.left
 
@@ -1973,13 +2035,16 @@ d3.csv(csv_file, function(error, data) {
         
         d3.select("#tooltip")
             .style("left", xPosition + "px")
-            .style("top", yPosition + "px")
+            //.style("top", yPosition + "px")
             .select("#value")
             .html(text);
 
-        $("#tooltip").width()
 
         d3.select("#tooltip").classed("hidden", false);
+        var yPosition = bar_len(d.x1) - $("#tooltip").height()
+        d3.select("#tooltip")
+            .style("top", yPosition + "px")
+
         if (d.translate==0){
           var xPosition = -$("#tooltip").width()
            d3.select("#tooltip")
@@ -5704,6 +5769,11 @@ d3.csv(csv_file, function(error, data) {
 
 
     function update_horizontal_chart_data() {
+
+      hc_svg_height = (n_actions>10)? (n_actions*16 +margin_hc.top +margin_hc.bottom):200
+      height_hc = hc_svg_height - margin_hc.top - margin_hc.bottom
+      hc_svg.attr('height', hc_svg_height)
+      y_hc.rangeRound([0,height_hc])
       total_size = all.reduceCount().value();  
       all_matches = [];
       for(var char_key in alphabet_rev){
