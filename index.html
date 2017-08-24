@@ -490,16 +490,24 @@ d3.csv(csv_file, function(error, data) {
 
     var action_hierarchy = {},
         current_level,
-        level = grouped;
+        level = general;
 
 
 
 
     action_hierarchy[general] = ['addToCart', 'removeFromCart', 'purchase', 'search', 'pageview']
     action_hierarchy[grouped] = ['addToCart', 'removeFromCart', 'purchase', 'search', 'account_group', 'cart_group', 'checkout_group', 'browse_group', 'other_group', 'info_group']
-    action_hierarchy[actions] = Object.keys(alphabet).slice(0,-2);
+    //action_hierarchy[actions] = Object.keys(alphabet).slice(0,-2);
+    var all_actions = ['addToCart', 'removeFromCart', 'purchase', 'search']
+    for (var key in alphabet){
+      if(alphabet.hasOwnProperty(key)){
+        if (key.includes('pageview:')){
+          all_actions.push(key)
+        }
+      }
+    }
+    action_hierarchy[actions] = all_actions
 
-    console.log(action_hierarchy.actions)
 
     current_level = action_hierarchy[level];
       
@@ -520,10 +528,10 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
-    var color_id=7;
+    var color_id=0;
     //var scheme = d3.scaleOrdinal(d3.schemeCategory20);
     var scheme = d3.schemeCategory20
-
+    var taken_colors = [2,4,5,6]
 
 
     function color(action){
@@ -531,6 +539,7 @@ d3.csv(csv_file, function(error, data) {
       
       if (!(action in colors)){
         //colors[action] = scheme(color_id)
+        while(taken_colors.indexOf(color_id)>-1) color_id=color_id+1;
         colors[action] = scheme[color_id]
         color_id= color_id+1
       }
@@ -1537,11 +1546,12 @@ d3.csv(csv_file, function(error, data) {
     
 
     var margin_ac = {top: 15, right: 15, bottom: 15, left: 15},
+      adj_svg_height = 200,
       width_ac = 240 - margin_ac.left - margin_ac.right,
-      height_ac = 165 - margin_ac.top - margin_ac.bottom,
+      height_ac = adj_svg_height - margin_ac.top - margin_ac.bottom,
       adj_svg = d3.select("#adjacency_chart").append('svg')
                   .attr('width', 240)
-                  .attr('height', 165)
+                  .attr('height', adj_svg_height)
       adjacency_chart = adj_svg.append("g")
                           .attr("transform", "translate(" + margin_ac.left + "," + margin_ac.top + ")");
 
@@ -5492,13 +5502,17 @@ d3.csv(csv_file, function(error, data) {
     //******** horizontal chart ***********
     var char,
         axis_translate = node_radius*2;
-    var margin_hc = {top: 20, right: 0, bottom: 30, left: 100},
-      width_hc = 240 - margin_hc.left - margin_hc.right,
-      height_hc = 175 - margin_hc.top - margin_hc.bottom,
+    var n_actions = current_level.length -2
+    //var hc_svg_height = (n_actions>10)? (n_actions*15 +margin_hc.top +margin_hc.bottom):200;
+    var margin_hc = {top: 20, right: 0, bottom: 20, left: 110},
+      hc_svg_height = (n_actions>10)? (n_actions*16 +margin_hc.top +margin_hc.bottom):200,
+      hc_svg_width =  250,
+      width_hc = hc_svg_width - margin_hc.left - margin_hc.right,
+      height_hc = hc_svg_height - margin_hc.top - margin_hc.bottom,
       
       hc_svg = d3.select("#contains_action_chart").append('svg')
-                  .attr('width',240)
-                  .attr('height', 175)
+                  .attr('width', hc_svg_width)
+                  .attr('height', hc_svg_height)
       horizontal_chart = hc_svg.append("g")
                           .attr("transform", "translate(" + (margin_hc.left-axis_translate) + "," + margin_hc.top + ")");
 
