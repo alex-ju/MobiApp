@@ -181,19 +181,34 @@ html, body {
   stroke-width: 1.5px;
 }
 
+.ttip rect{
+  stroke:lightgrey;
+  stroke-width: 1px;
+  fill:white;
+}
+
+.ttip text{
+  font: 8px sans-serif;
+  text-anchor: middle;
+}
+
 #tooltip {
   position: absolute;
-  height: 20px;
-  width: 65px;
+/*  height: 20px;
+  width: 65px;*/
+  display:block;
+  overflow:scroll;
+  max-height: 100px;
   padding: 2px;
   background-color: white;
+  border:1px solid lightgrey;
 /*        -webkit-border-radius: 2px;
   -moz-border-radius: 2px;
   border-radius: 2px;
   -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
   -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
   box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);*/
-  pointer-events: none;
+  /*pointer-events: none;*/
 }
 
 #tooltip.hidden {

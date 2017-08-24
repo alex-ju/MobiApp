@@ -30,10 +30,13 @@
 
               </div>
               <div class="panel-body">
-                <div class="btn-group">
-                  <button type="button" id="path_button" class="btn btn-md btn-primary">Show only path</button>
-                  <button type="button" id="remove_button" class="btn btn-md btn-primary">Remove Operation</button>
-                  <!-- <button type="button" id="demo_button" class="btn btn-md btn-primary">Demo</button> -->
+                <div class="inline">
+                  <div class="btn-group">
+                    <button type="button" id="path_button" class="btn btn-md btn-primary">Show only path</button>
+                    <button type="button" id="remove_button" class="btn btn-md btn-primary">Remove Operation</button>
+                    <button type="button" id="demo_button" class="btn btn-md btn-primary">Demo</button>
+                  </div>
+                  
                 </div>
                 <div class="panel-group" id="operation_info">
                   <div class="panel panel-default">
@@ -224,8 +227,17 @@
         </div>
         <!-- <div class = "col-md-5 panel-left" id="tree_view"> -->
         <div class = "panel-left" id="tree_view">
-          <button type="button" id="toggle_oManager" class="btn btn-default"><span class="glyphicon glyphicon-cog"></span>
-          </button>
+          <div class="inline">
+            <button type="button" id="toggle_oManager" class="btn btn-default"><span class="glyphicon glyphicon-cog"></span>
+            </button>
+            <div class="dropdown" id="dropdown">
+              <button class="btn btn-md btn-success dropdown-toggle" type="button" data-toggle="dropdown">  Action Level
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" id="action_dropdown">
+              </ul>
+            </div>
+          </div>
           <h4 class="text-center"> 
           TREE DIAGRAM 
           </h4>
@@ -428,9 +440,13 @@ $(document).ready(function(){
   var parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S.%L")
   //var parseTimeDelta = d3.timeParse("%d %H:%M:%S.%L")
 
+  //with pv_
+  var alpha_file = "alphabet_pv.csv";
+  var csv_file = "sample_table_pv1.csv"; //100K new alpha
+
   //with grouped
-  var alpha_file = "alphabet1.csv";
-  var csv_file = "sample_table2.csv"; //100K new alpha
+  // var alpha_file = "alphabet1.csv";
+  // var csv_file = "sample_table2.csv"; //100K new alpha
 
 
   // var alpha_file = "alpha_1.csv";
@@ -501,7 +517,7 @@ d3.csv(csv_file, function(error, data) {
     var all_actions = ['addToCart', 'removeFromCart', 'purchase', 'search']
     for (var key in alphabet){
       if(alphabet.hasOwnProperty(key)){
-        if (key.includes('pageview:')){
+        if (key.includes('pv_')){
           all_actions.push(key)
         }
       }
@@ -510,6 +526,26 @@ d3.csv(csv_file, function(error, data) {
 
 
     current_level = action_hierarchy[level];
+
+    function change_level(level){
+      level = general
+      current_level = action_hierarchy[level]
+      populate_legend()
+      populate_action_count_dropdown()
+      update_action_list_data()
+      update_node_link_data()
+      update_horizontal_chart_data()
+      n_actions = current_level.length-2
+
+      action_strings = seqs.dimension(function(d) {return d[level]});
+      action_strings2 = seqs.dimension(function(d) {return d[level]});
+      strings_grouped = action_strings2.group()
+
+
+      trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[level])});
+      trans_grouped = trans_strings.group()
+      resize_windows()
+    }
       
 
 
@@ -523,7 +559,7 @@ d3.csv(csv_file, function(error, data) {
       "pageview": "#0073B9",
       "start": "#999",
       "exit": "#999",
-      "none": 'none'
+      "extra": 'black'
 
 
     }
@@ -679,8 +715,9 @@ d3.csv(csv_file, function(error, data) {
     //   .on("click", close_detailed_view);
 
     d3.select("#demo_button")
-      .on("click", add_action_count_chart);
+      .on("click", change_level);
       
+
 
 
     var charts = [
@@ -761,7 +798,7 @@ d3.csv(csv_file, function(error, data) {
 
     function populate_action_count_dropdown(){
       //var action_radius = 7;
-      var dropdown = d3.select('#action_dropdown').selectAll('li').data(current_level).enter()
+      var dropdown = d3.select('#action_dropdown').selectAll('li').remove().exit().data(current_level).enter()
       //current_level.forEach(function(action){
       var button = dropdown.append('li').append('button')
               .attr('id', function(d){return d;})
@@ -862,7 +899,6 @@ d3.csv(csv_file, function(error, data) {
       rerender_charts()
 
       action_i++;
-      console.log('NUMBER OF DIMENSIONS', dimensions.length)
 
     }
 
@@ -1547,15 +1583,36 @@ d3.csv(csv_file, function(error, data) {
 
     var margin_ac = {top: 15, right: 15, bottom: 15, left: 15},
       adj_svg_height = 200,
-      width_ac = 240 - margin_ac.left - margin_ac.right,
+      adj_svg_width = 240,
+      width_ac = adj_svg_width - margin_ac.left - margin_ac.right,
       height_ac = adj_svg_height - margin_ac.top - margin_ac.bottom,
       adj_svg = d3.select("#adjacency_chart").append('svg')
-                  .attr('width', 240)
+                  .attr('width', adj_svg_width)
                   .attr('height', adj_svg_height)
       adjacency_chart = adj_svg.append("g")
                           .attr("transform", "translate(" + margin_ac.left + "," + margin_ac.top + ")");
 
+    // var tooltip_width = 90,
+    //     tooltip_height = 17;
+    // var ttip = adj_svg.append('g')
+    //                     .attr('class', 'ttip')
+    //                     .attr("transform", "translate(" + ((adj_svg_width -(tooltip_width-9))/2) + "," + (adj_svg_height-(20+margin_ac.bottom + 5)) + ")");
+                        
+    // ttip.append('rect')
+    //             //.attr('class', 'ttip')
+    //             .attr('width', tooltip_width)
+    //             .attr('height', tooltip_height)
+                
+    // ttip_text = ttip.append('g')
+    //         .attr("transform", "translate(" + tooltip_width/2 + "," + 10 + ")")
+            
 
+
+
+                        
+
+   
+                      
 
 
     var center_node = {
@@ -1604,7 +1661,7 @@ d3.csv(csv_file, function(error, data) {
           //node_spacing = 30;
 
 
-
+      //Gather information from node_link graph
       links.forEach(function(l){
 
         if (l.source.id == selected_action_node.id){
@@ -1620,7 +1677,7 @@ d3.csv(csv_file, function(error, data) {
       })
 
 
-
+      //create data for After and Before
       node_data.forEach(function(bar_data){
 
         var x0 = 0,
@@ -1629,7 +1686,27 @@ d3.csv(csv_file, function(error, data) {
           data = bar_data.actions;
 
 
+        //create data for nodes and bar
         data = data.sort(function(a,b) {return b.count - a.count});
+
+        if (data.length>6) {
+          var extra ={action:'extra', count:0, percent:0, actions:[]};
+
+          for (var i=5; i<data.length; i++){
+            var d = data[i];
+            extra.count += d.count;
+            extra.percent += d.percent;
+            extra.actions.push(d)
+
+          }
+
+
+          data.length = 5
+          data.push(extra)
+
+        }
+
+
         data.forEach(function(d, i){
           //bar coordinates
           d.translate = translate;
@@ -1724,6 +1801,7 @@ d3.csv(csv_file, function(error, data) {
 
         bar_update.selectAll('rect')
                 .attr('stroke', function(d){ return d.selected? "black": "none"})
+                // .each(populate_tooltip)
                 .each(tooltip)
 
 
@@ -1832,31 +1910,121 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+    // function populate_tooltip(d){
+
+    //   if (d.selected){
+    //   //var ttip = d3.selectAll(".ttip")
+    //     var data =[d]
+
+    //     if (d.action == 'extra'){
+    //       data =data.concat(d.actions)
+    //       ttip.select('rect').attr('height', (d.actions.length+1)*10)
+    //     }else(
+    //       ttip.select('rect').attr('height', tooltip_height)
+    //     )
+
+    //     //var text = d3.format(".1%")(d.percent/100) + ', ' + d3.format(",")(d.count);
+    //     t_text = ttip_text.selectAll('text')
+    //                 .remove()
+    //                 .exit()
+    //                 .data(data)
+
+    //     t_text_enter = t_text.enter()
+    //                     .append('text')
+    //                     //.attr('class', 'ttip_text')
+    //                     .attr('dy', function(d,i){return (i)*10})
+    //                     .text(function(d, i){
+    //                       var text = d3.format(".1%")(d.percent/100) + ', ' + d3.format(",")(d.count)
+    //                       if (i>0) text = d.action + ': ' + text;
+    //                       return text
+    //                     })
+
+                      
+
+
+    //   }
+
+
+
+    // }
+
     function tooltip(d){
       
       if (d.selected){
         var bar_position = d.translate
-        var xPosition = (d.translate == 0)? -65 :d.translate + bar_width;
+        //var xPosition = (d.translate == 0)? -65 :d.translate + bar_width;
+        var xPosition = (d.translate == 0)? 0 :d.translate + bar_width;
         var yPosition = bar_len(d.x0 +((d.x1-d.x0)/2)) 
 
         xPosition += margin_ac.left
 
-        console.log('xposition', d.translate)
+        var data =[d]
 
-        var text = d3.format(".1%")(d.percent/100) + ', ' + d3.format(",")(d.count);
+        if (d.action == 'extra') data =data.concat(d.actions)
+        
+        var text = ''
 
+        data.forEach(function(d, i){
+          var t = d3.format(".1%")(d.percent/100) + ', ' + d3.format(",")(d.count);
+          if (i>0) t = d.action + ': ' + t;
+          text = text + t + '<br/>'
+        })
+
+        
         d3.select("#tooltip")
             .style("left", xPosition + "px")
             .style("top", yPosition + "px")
             .select("#value")
-            .text(text);
+            .html(text);
+
+        $("#tooltip").width()
 
         d3.select("#tooltip").classed("hidden", false);
+        if (d.translate==0){
+          var xPosition = -$("#tooltip").width()
+           d3.select("#tooltip")
+            .style("left", xPosition + "px")
+        }
 
       }
       
       
     }
+
+    // function tooltip(d){
+      
+    //   if (d.selected){
+    //     var bar_position = d.translate
+    //     var xPosition = (d.translate == 0)? -65 :d.translate + bar_width;
+    //     var yPosition = bar_len(d.x0 +((d.x1-d.x0)/2)) 
+
+    //     xPosition += margin_ac.left
+
+    //     console.log('xposition', d.translate)
+
+
+    //     var text = d3.format(".1%")(d.percent/100) + ', ' + d3.format(",")(d.count);
+
+    //     if (d.action =='extra'){
+    //       d.actions.forEach(function(a){
+
+    //       })
+    //     }
+
+    //     d3.select("#tooltip")
+    //         .style("left", xPosition + "px")
+    //         .style("top", yPosition + "px")
+    //         .select("#value")
+    //         .text(text);
+
+        
+
+    //     d3.select("#tooltip").classed("hidden", false);
+
+    //   }
+      
+      
+    // }
 
     function select_pattern_node(d){
       if (selected_pattern_node){
@@ -1894,6 +2062,8 @@ d3.csv(csv_file, function(error, data) {
       data.push({action:'start', id:'start'})
       data.push({action:'exit', id:'exit'})
       al_data = data;
+
+      update_action_list()
     }
 
     function update_action_list(){
