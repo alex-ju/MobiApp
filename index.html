@@ -13,7 +13,7 @@
   </head>
 
   <body>
-
+  <div id="load" style="display: none"></div>
     <div class=page-container>
       <div class=panel-container>
         <!-- <div class="col-md-4 hidden" id="operation_manager"> -->
@@ -32,9 +32,10 @@
               <div class="panel-body">
                 <div class="inline">
                   <div class="btn-group">
-                    <button type="button" id="path_button" class="btn btn-md btn-primary">Show only path</button>
-                    <button type="button" id="remove_button" class="btn btn-md btn-primary">Remove Operation</button>
-                    <button type="button" id="demo_button" class="btn btn-md btn-primary">Demo</button>
+                    <button type="button" id="path_button" class="btn btn-sm btn-primary">Show only path</button>
+                    <button type="button" id="remove_button" class="btn btn-sm btn-primary">Remove Operation</button>
+                    <button type="button" id="clear_button" class="btn btn-sm btn-primary">Clear All</button>
+                    <button type="button" id="demo_button" class="btn btn-sm btn-primary">Demo</button>
                   </div>
                   
                 </div>
@@ -228,7 +229,7 @@
         <!-- <div class = "col-md-5 panel-left" id="tree_view"> -->
         <div class = "panel-left" id="tree_view">
           <div class="inline align-center">
-            <button type="button" id="toggle_oManager" class="btn btn-default"><span class="glyphicon glyphicon-cog"></span>
+            <button type="button" id="toggle_oManager" class="btn btn-default right-buffer"><span class="glyphicon glyphicon-cog"></span>
             </button>
 
             <div>Action Level:</div>
@@ -460,7 +461,7 @@
 <script>
 
 $(document).ready(function(){
-
+  $('#load').hide()
 
 
   var selectedFilter ={},
@@ -543,6 +544,11 @@ d3.csv(csv_file, function(error, data) {
         level = general;
 
 
+    var small = {}
+
+    small[general] =0
+    small[grouped]= 3
+    small[actions] = 5
 
 
     action_hierarchy[general] = ['addToCart', 'removeFromCart', 'purchase', 'search', 'pageview']
@@ -562,6 +568,7 @@ d3.csv(csv_file, function(error, data) {
     current_level = action_hierarchy[level];
 
     function change_level(l){
+      //$('#load').show()
       color_id =0
       level = l
       current_level = action_hierarchy[level]
@@ -575,14 +582,15 @@ d3.csv(csv_file, function(error, data) {
 
       trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[level])});
       trans_grouped = trans_strings.group()
-
+      update_action_transition_graph()
+      
       populate_legend()
       populate_action_count_dropdown()
       update_action_list_data()
-      update_action_transition_graph()
+      clear_adjacency_chart_data()
       update_horizontal_chart_data()
       print_sequences()
-      
+      //$('#load').hide()
       //resize_windows()
     }
       
@@ -710,8 +718,10 @@ d3.csv(csv_file, function(error, data) {
       .on("click", show_contains_builder);
     d3.select("#remove_button")
       .on("click", remove_filter);
-    d3.select("#segment_button")
-      .on("click", toggle_segments);
+    d3.select("#clear_button")
+      .on("click", clear_all);
+    // d3.select("#segment_button")
+    //   .on("click", toggle_segments);
 
     d3.select("#toggle_oManager")
       .on("click", toggle_operation_manager);
@@ -770,13 +780,39 @@ d3.csv(csv_file, function(error, data) {
     d3.select("#demo_button")
       .on("click", function(d) {return change_level(general)});
 
-    d3.select("#general")
-      .on("click", function(d) {return change_level(general)});
+    // d3.select("#general")
+    //   .on("click", function(d) {return change_level(general)});
 
-    d3.select("#grouped")
-      .on("click", function(d) {return change_level(grouped)});
-    d3.select("#pages")
-      .on("click", function(d) {return change_level(actions)});
+
+    // d3.select("#grouped")
+    //   .on("click", function(d) {return change_level(grouped)});
+
+    // d3.select("#pages")
+    //   .on("click", function(d) {return change_level(actions)});
+
+
+    $('#general').click(function() {
+        $('#load').show();
+        setTimeout(function() {
+            change_level(general)
+            $('#load').hide();
+        }, 1000);
+    });
+    $('#grouped').click(function() {
+        $('#load').show();
+        setTimeout(function() {
+            change_level(grouped)
+            $('#load').hide();
+        }, 2000);
+    });
+    $('#pages').click(function() {
+        $('#load').show();
+        setTimeout(function() {
+            change_level(actions)
+            $('#load').hide();
+        }, 3000);
+    });
+
       
 
 
@@ -1319,7 +1355,11 @@ d3.csv(csv_file, function(error, data) {
 
         e.css('width', strokeScale(data.value))
 
-        if (data.invisible){
+
+        if (data.invisible ){
+          e.addClass('invisible')
+        }else if (data.value < small[level]){
+          e.addClass('small')
           e.addClass('invisible')
         }else{
           e.addClass('visible')
@@ -1335,17 +1375,24 @@ d3.csv(csv_file, function(error, data) {
         var neighborhood = node.neighborhood().add(node);
 
         select_action_node(node.data())
+        nl_graph.edges('.small').removeClass('visible')
+        nl_graph.edges('.small').addClass('invisible')
 
         nl_graph.elements().removeClass('selected')
         nl_graph.nodes().addClass('faded');
         nl_graph.edges('.visible').addClass('faded')
+
         neighborhood.removeClass('faded');
         node.addClass('selected')
+        node.connectedEdges('.small').addClass('visible')
+        node.connectedEdges('.small').removeClass('invisible')
       });
 
       nl_graph.on('tap', function(e){
         if( e.target === nl_graph ){
           nl_graph.elements().removeClass('faded');
+          nl_graph.edges('.small').removeClass('visible')
+          nl_graph.edges('.small').addClass('invisible')
         }
       });
 
@@ -1559,12 +1606,12 @@ d3.csv(csv_file, function(error, data) {
 
        action_string = all.reduce(reduceAdd_concat, reduceRemove_concat, reduceInitial_concat).value().str;    
       //create nodes
-      nodes.push({id:"start", action:"start", group:1, fx: nl_width/2, fy: 0});
-      nodes.push({id:"exit", action: "exit", group:0, fx: nl_width/2, fy: nl_height});
+      nodes.push({id:"start", action:"start",  fx: nl_width/2, fy: 0});
+      nodes.push({id:"exit", action: "exit",  fx: nl_width/2, fy: nl_height});
 
       for ( var i =0; i < current_level.length; i++){
         var action = current_level[i];
-        nodes.push({id:action, action:action, group:i+2});
+        nodes.push({id:action, action:action});
       }
 
       current_level.push("start");
@@ -1599,18 +1646,10 @@ d3.csv(csv_file, function(error, data) {
       selected_action_node = d;
       d.selected = true;
 
-      
-
-
       update_action_list()
       update_adjacency_chart_data(links);
       update_horizontal_chart(all_matches)
       console.log("Selected action node: ", selected_action_node);
-
-
-      //draw_action_transition_graph(nl_graph_data);
-      
-      
 
     }
 
@@ -1709,6 +1748,13 @@ d3.csv(csv_file, function(error, data) {
                       
     var node_spacing = 30;
 
+    function clear_adjacency_chart_data(){
+      if (selected_action_node)
+        selected_action_node.selected =false;
+      selected_action_node = null;
+      adj_chart_data = {nodes:[], links:[]};
+      update_adjacency_chart(adj_chart_data);
+    }
 
     function update_adjacency_chart_data(links){
 
@@ -1727,11 +1773,11 @@ d3.csv(csv_file, function(error, data) {
 
         if (l.source.id == selected_action_node.id){
           //after_links.push(l);
-          after_data.actions.push({action: l.target.action, group: l.target.group, count:l.count, percent: l.percent});
+          after_data.actions.push({action: l.target.action,  count:l.count, percent: l.percent});
 
         }else if (l.target.id == selected_action_node.id){
           //before_links.push(l);
-          before_data.actions.push({action: l.source.action, group: l.source.group, count:l.count, percent: l.into_target_percent});
+          before_data.actions.push({action: l.source.action, count:l.count, percent: l.into_target_percent});
         }
         
 
@@ -1813,156 +1859,161 @@ d3.csv(csv_file, function(error, data) {
 
 
     function update_adjacency_chart(chart_data){
-      d3.select("#tooltip").classed("hidden", true);
 
-     
-      var link_data = chart_data.links,
-        node_data = chart_data.nodes;
-      
+      // if (selected_action_node){
+        d3.select("#tooltip").classed("hidden", true);
 
-
-      bar_len.domain([0,100]);
-
-         var bars = adjacency_chart
-          .selectAll(".adjbar")
-              .remove()
-              .exit()
-              .data(node_data)
-              .enter().append("g")
-              .attr("class", "adjbar")
-              .attr("transform", function (d) { return "translate(" + d.translate + ",0)"; })
-
-
-              
-      var bar= bars.selectAll("rect")
-          .remove()
-          .exit()
-          .data(d =>d.actions)
        
-       var bar_enter = bar.enter().append('g')
-                        .on("click", select_adj_node);
+        var link_data = chart_data.links,
+          node_data = chart_data.nodes;
+        
 
 
-        bar_enter.append("rect")
-              .attr("y", function(d){
-                  return bar_len(d.x0);
-              })
-              .attr("width", function(d){
-                  return bar_width;
-              })
-              .attr("height", function(d){
-                  return bar_len(d.x1) - bar_len(d.x0);
-              })
-              .attr("fill", function(d) {
-                //return color(d.group);
-                return color(d.action);
-              });
+        bar_len.domain([0,100]);
 
-        var bar_update = bar_enter.merge(bar);
-
-        bar_update.selectAll('rect')
-                .attr('stroke', function(d){ return d.selected? "black": "none"})
-                // .each(populate_tooltip)
-                .each(tooltip)
+           var bars = adjacency_chart
+            .selectAll(".adjbar")
+                .remove()
+                .exit()
+                .data(node_data)
+                .enter().append("g")
+                .attr("class", "adjbar")
+                .attr("transform", function (d) { return "translate(" + d.translate + ",0)"; })
 
 
-      var links = adjacency_chart.selectAll(".adjlinks")
-                  .remove()
-                  .exit()
-                  .data(link_data)
-                  .enter()
-                  .append("g")
-                  .attr("class", "adjlinks")
- 
-        links.append("line")
-           .attr("class", "link")
-           .attr("x1", function(l) {return l.source.x})
-           .attr("y1", function(l){return l.source.y})
-           .attr("x2", function(l) {return l.target.x})
-           .attr("y2", function(l){return l.target.y})
-           .attr("marker-end", "url(#end)");
-
-      adjacency_chart.selectAll('.center_node')
-                      .remove()
-                      .exit()
-
-      var adj_node = adjacency_chart.append("g")
-                      .attr("class", "center_node")
-                      .attr("transform", "translate(" + center_node.x + "," + center_node.y  + ")");
-
-      adj_node.append("circle")
-          //.attr("r",node_radius)
-          .attr("r", function(d){
-            d = selected_action_node;
-            if(d.action == 'start' || d.action == 'exit')
-              return end_radius
-            else
-              return node_radius
-          })
-          .style("fill", 
-            //color(selected_action_node.group)
-            color(selected_action_node.action)
-          )
-
-      adj_node.append('text')
-          .attr('dy', -(node_radius+1))
-          .style("font-size", "10px")
-          .style("text-anchor", "middle")
-          .style('fill', 'black')
-          .text(selected_action_node.action)
+                
+        var bar= bars.selectAll("rect")
+            .remove()
+            .exit()
+            .data(d =>d.actions)
+         
+         var bar_enter = bar.enter().append('g')
+                          .on("click", select_adj_node);
 
 
-      
+          bar_enter.append("rect")
+                .attr("y", function(d){
+                    return bar_len(d.x0);
+                })
+                .attr("width", function(d){
+                    return bar_width;
+                })
+                .attr("height", function(d){
+                    return bar_len(d.x1) - bar_len(d.x0);
+                })
+                .attr("fill", function(d) {
+                  //return color(d.group);
+                  return color(d.action);
+                });
 
-     var adj_nodes = adjacency_chart.selectAll(".adjnodes")
+          var bar_update = bar_enter.merge(bar);
+
+          bar_update.selectAll('rect')
+                  .attr('stroke', function(d){ return d.selected? "black": "none"})
+                  // .each(populate_tooltip)
+                  .each(tooltip)
+
+
+        var links = adjacency_chart.selectAll(".adjlinks")
                     .remove()
                     .exit()
-                    .data(node_data)
-                    .enter().append("g")
-                    .attr("class", "adjnodes")
+                    .data(link_data)
+                    .enter()
+                    .append("g")
+                    .attr("class", "adjlinks")
+   
+          links.append("line")
+             .attr("class", "link")
+             .attr("x1", function(l) {return l.source.x})
+             .attr("y1", function(l){return l.source.y})
+             .attr("x2", function(l) {return l.target.x})
+             .attr("y2", function(l){return l.target.y})
+             .attr("marker-end", "url(#end)");
 
-      var node = adj_nodes.selectAll("circle")
+        adjacency_chart.selectAll('.center_node')
                         .remove()
                         .exit()
-                        .data(d =>d.actions)
-      var node_enter =  node.enter()
-                        .append('g')
-                        .attr("transform", function(d){return "translate(" + d.x + "," + d.y + ")"})
-                        .on("click", select_adj_node)
-                        // .on("mouseover", select_adj_node)
-                        // .on("mouseout", function(d){return select_adj_node(null);});
 
-      node_enter.append("circle")
-            //.attr("r",node_radius)
-            .attr("r", function(d){
-              if(d.action == 'start' || d.action == 'exit')
-                return end_radius
-              else
-                return node_radius
-            })
-            .style("fill", function(d){ 
-              //return color(d.group)
-              return color(d.action);
-            })
+        if (selected_action_node){
+          var adj_node = adjacency_chart.append("g")
+                          .attr("class", "center_node")
+                          .attr("transform", "translate(" + center_node.x + "," + center_node.y  + ")");
 
-      node_enter.append('text')
-            .attr('dy', function(d){
-              if(d.action == 'start' || d.action == 'exit')
-                return -(end_radius+1)
-              else
-                return -(node_radius+1)
-            })
-            .style("font-size", "10px")
-            .style("text-anchor", "middle")
-            .style('fill', 'black')
-            .text(function(d){return d.action})
+          adj_node.append("circle")
+              //.attr("r",node_radius)
+              .attr("r", function(d){
 
-      var node_update = node_enter.merge(node);
+                  d = selected_action_node;
+                  if(d.action == 'start' || d.action == 'exit')
+                    return end_radius
+                  else
+                    return node_radius
 
-      node_update.selectAll('circle')
-                .attr('stroke', function(d){ return d.selected? "black": "none"})
+              })
+              .style("fill", 
+                //color(selected_action_node.group)
+                color(selected_action_node.action)
+              )
 
-      
+          adj_node.append('text')
+              .attr('dy', -(node_radius+1))
+              .style("font-size", "10px")
+              .style("text-anchor", "middle")
+              .style('fill', 'black')
+              .text(selected_action_node.action)
+
+
+        }
+
+       var adj_nodes = adjacency_chart.selectAll(".adjnodes")
+                      .remove()
+                      .exit()
+                      .data(node_data)
+                      .enter().append("g")
+                      .attr("class", "adjnodes")
+
+        var node = adj_nodes.selectAll("circle")
+                          .remove()
+                          .exit()
+                          .data(d =>d.actions)
+        var node_enter =  node.enter()
+                          .append('g')
+                          .attr("transform", function(d){return "translate(" + d.x + "," + d.y + ")"})
+                          .on("click", select_adj_node)
+                          // .on("mouseover", select_adj_node)
+                          // .on("mouseout", function(d){return select_adj_node(null);});
+
+        node_enter.append("circle")
+              //.attr("r",node_radius)
+              .attr("r", function(d){
+                if(d.action == 'start' || d.action == 'exit')
+                  return end_radius
+                else
+                  return node_radius
+              })
+              .style("fill", function(d){ 
+                //return color(d.group)
+                return color(d.action);
+              })
+
+        node_enter.append('text')
+              .attr('dy', function(d){
+                if(d.action == 'start' || d.action == 'exit')
+                  return -(end_radius+1)
+                else
+                  return -(node_radius+1)
+              })
+              .style("font-size", "10px")
+              .style("text-anchor", "middle")
+              .style('fill', 'black')
+              .text(function(d){return d.action})
+
+        var node_update = node_enter.merge(node);
+
+        node_update.selectAll('circle')
+                  .attr('stroke', function(d){ return d.selected? "black": "none"})
+
+      // }
 
 
          //drawing chart
@@ -2301,8 +2352,7 @@ d3.csv(csv_file, function(error, data) {
     }
 
     var any_node = {
-        action: null,
-        group: null
+        action: null
     }
 
     function copy_node(node){
@@ -2387,7 +2437,6 @@ d3.csv(csv_file, function(error, data) {
         var pattern_node = {
             action: n.action,
             char: c,
-            group: n.group,
             many: many
         }
         if( (n.action != 'start') && (n.action != 'exit')){
@@ -5109,9 +5158,6 @@ d3.csv(csv_file, function(error, data) {
 
     function update(source) {
 
-
-      
-
       //console.log('UPDATING');
       // Compute the new tree layout.
       var treeData = tree(root);
@@ -5681,7 +5727,7 @@ d3.csv(csv_file, function(error, data) {
           console.log('The current selection has ' + selected.data.size + ' sequences!' );
           update_horizontal_chart_data();
           update_action_transition_graph();
-
+          clear_adjacency_chart_data();
           print_sequences();
 
         } else {
@@ -6599,6 +6645,13 @@ d3.csv(csv_file, function(error, data) {
       update(root);
     }
 
+    function clear_all(){
+
+      var segment = root.children[0]
+      segment.children=null;
+
+      update(segment)
+    }
 
 
     function remove_filter(){
