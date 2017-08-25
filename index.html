@@ -35,7 +35,7 @@
                     <button type="button" id="path_button" class="btn btn-sm btn-primary">Show only path</button>
                     <button type="button" id="remove_button" class="btn btn-sm btn-primary">Remove Operation</button>
                     <button type="button" id="clear_button" class="btn btn-sm btn-primary">Clear All</button>
-                    <button type="button" id="demo_button" class="btn btn-sm btn-primary">Demo</button>
+                    <!-- <button type="button" id="demo_button" class="btn btn-sm btn-primary">Demo</button> -->
                   </div>
                   
                 </div>
@@ -231,31 +231,7 @@
           <div class="inline align-center">
             <button type="button" id="toggle_oManager" class="btn btn-default right-buffer"><span class="glyphicon glyphicon-cog"></span>
             </button>
-
-            <div>Action Level:</div>
-            <div class="dropdown level" style="margin-left:5px;">
-              
-              <button type="button" 
-                class="btn btn-select"
-                data-toggle="dropdown">General</button>
-              <ul class="dropdown-menu dropdown-menu-select">
-              <li><label class="dropdown-radio" id="general">
-                  <input type="radio" name="level">
-                  <i>General</i>
-                  </label>
-              </li>
-              <li><label class="dropdown-radio" id="grouped">
-                  <input type="radio" name="level">
-                  <i>Grouped</i>
-                  </label>
-              </li>
-              <li><label class="dropdown-radio" id='pages'>
-                  <input type="radio" name="level">
-                  <i>Pages</i>
-                  </label>
-              </li>
-              </ul>
-            </div>
+            
             <!-- <div class="dropdown" id="dropdown">
               <button class="btn btn-md btn-success dropdown-toggle" type="button" data-toggle="dropdown">  Action Level
                 <span class="caret"></span>
@@ -283,9 +259,35 @@
         <div class ="panel-right" id="sequence_attributes">
           <div class="panel-group" id="segment_info">
             <div class="panel panel-info">
-              <div class="panel-heading text-center" style="font-size:13px">
+              <div class="panel-heading" style="font-size:13px">
                
                   <a data-toggle="collapse" href="#collapse_segment"> Selected Segment Attributes</a>
+                  <div class="inline align-center" style="position: absolute; right: 2px; top:2px;">
+                    <div>Action Level:</div>
+                    <div class="dropdown level" style="margin-left:5px;">
+                      
+                      <button type="button" 
+                        class="btn btn-select"
+                        data-toggle="dropdown">General</button>
+                      <ul class="dropdown-menu dropdown-menu-select">
+                      <li><label class="dropdown-radio" id="general">
+                          <input type="radio" name="level">
+                          <i>General</i>
+                          </label>
+                      </li>
+                      <li><label class="dropdown-radio" id="grouped">
+                          <input type="radio" name="level">
+                          <i>Grouped</i>
+                          </label>
+                      </li>
+                      <li><label class="dropdown-radio" id='pages'>
+                          <input type="radio" name="level">
+                          <i>Pages</i>
+                          </label>
+                      </li>
+                      </ul>
+                    </div>
+                  </div>
                 
               </div>
               <div id="collapse_segment" class="panel-body collapse in">
@@ -384,7 +386,7 @@
                       <div class="panel-body">
                         <div class="charts">
                           <div class= "chart" id="contains_action_chart">
-                            <div class="title"> Number of Sequences that Contains Action </div>
+                            <div class="title"> Number of Sequences that Contain Action </div>
                           </div>
 
                           <div class ="chart" id="node_link">
@@ -412,7 +414,7 @@
                     <div id="collapse_details" class="panel-collapse collapse in">
                       <div class="panel-body">
                         <div id="sequences">
-                          <label class="checkbox-inline"><input id="group_sequences" type="checkbox" value="">Group Sequences</label>
+                          <label class="checkbox-inline"><input id="group_sequences" type="checkbox" checked="checked" value="">Group Sequences</label>
                           <label class="checkbox-inline"><input id="transitionize_sequences" type="checkbox" value="">Transitionize Sequences</label>
                           <div class="inline align-center">
                             <div id="sequences_text" class="border scroll" style=" height: 200px; width: 500px; padding:10px; margin-left: 20px; margin-top: 20px;"> 
@@ -547,8 +549,8 @@ d3.csv(csv_file, function(error, data) {
     var small = {}
 
     small[general] =0
-    small[grouped]= 3
-    small[actions] = 5
+    small[grouped]= 5
+    small[actions] = 8
 
 
     action_hierarchy[general] = ['addToCart', 'removeFromCart', 'purchase', 'search', 'pageview']
@@ -2803,17 +2805,19 @@ d3.csv(csv_file, function(error, data) {
 
     }
     var transitionized = false,
-        grouped_seqs = false;
+        grouped_seqs = true;
 
+    var details_data =[],
+        count_width = 50;
 
-    // function show_detailed_view(){
-    //   $("#sequences").show()
-    //   print_sequences()
-    // }
+    var count_scale = d3.scaleLinear().range([1,count_width])
+    var seq_svg = d3.select('#sequences_text').append('svg')
+    var seq_details = seq_svg.append('g').attr('transform', 'translate(0,' + 20+ ')')
+    var seq_counts = seq_details.append('g')
 
-    // function close_detailed_view(){
-    //   $("#sequences").hide()
-    // }
+    var seqs = seq_details.append('g')
+                  .attr('transform', 'translate(' + (count_width+4) + ',0)')
+
 
     
     function transitionize_sequences(){
@@ -2829,7 +2833,73 @@ d3.csv(csv_file, function(error, data) {
 
     }
 
+    function update_sequences(){
+      
+      var seq_text = seqs.selectAll('.seq_text')
+                        .remove()
+                        .exit()
+                        .data(details_data)
+      var seq_enter = seq_text.enter().append('text')
+                          .attr('class', 'seq_text')
+                          .attr('dy', function(d,i){return 13*i;})
+                          .text(function(d){return d.seq;})
+
+      var count = seq_counts.selectAll('.count')
+                        .remove()
+                        .exit()
+                        .data(details_data)
+
+      var count_enter = count.enter().append('g')
+                            .attr('transform', function(d,i){return 'translate(0,' + (i*13) +')'})
+
+      var bar =  count_enter.selectAll("rect")
+                .remove()
+                .exit()
+                .data(d => d.count.data)
+       
+      var bar_enter = bar.enter().append('g')
+                        .attr('transform', function(d,i){return 'translate(0,' + (-8) +')'})
+
+      
+
+      bar_enter.append("rect")
+            .attr("x", function(d){
+                return count_scale(d.x0);
+            })
+            .attr("width", function(d){
+                return count_scale(d.x1-d.x0);
+            })
+            .attr("height", 9)
+            .attr("fill", function(d,i) {return (i==0)?'lightgray':'steelblue';})
+
+
+
+      
+      var count_text = count_enter.append('text')
+                          .attr('class', 'count')
+                          .text(function(d){return d.count.value;})
+
+      var width =0,
+          h = (details_data.length+1)*13,
+          height = (h <200)? 200: h;
+
+      seq_svg.selectAll('.seq_text')
+                .each(function(){
+                  var w = this.getComputedTextLength();
+                  width = (w>width)? w: width;
+                })
+
+      seq_svg.attr('width', width)
+            .attr('height', height)
+
+
+    }
+
     function print_sequences(){
+      details_data = [];
+      var current_size = all.reduceCount().value()
+      count_scale.domain([0, current_size])
+
       if($("#sequences").is(':visible')){
 
         if (grouped_seqs){
@@ -2842,6 +2912,8 @@ d3.csv(csv_file, function(error, data) {
           grouped.forEach(function(g){
             if(g.value != 0){
               text += ' ' + g.value + "  |  " + g.key + " <br/>"
+              var count = {value: g.value, data: [{x0:0, x1:current_size-g.value}, {x0:current_size-g.value, x1:current_size}]}
+              details_data.push({count:count, seq:g.key})
             }
           })
         }else{
@@ -2849,6 +2921,8 @@ d3.csv(csv_file, function(error, data) {
           var text = "";
           dimData.forEach(function(x){
             var seq = transitionized? remove_duplicates(x[level]): x[level];
+            var count = {value: 1, data: [{x0:0, x1:current_size-1}, {x0:current_size-1, x1:current_size}]}
+            details_data.push({count:count, seq:seq})
 
             text += seq + " <br/>";
           })
@@ -2857,8 +2931,10 @@ d3.csv(csv_file, function(error, data) {
         //$("#sequences").show()
         var width = d3.select('#sequences').node().clientWidth - 200
         $("#sequences_text").width(width).height(200)
-        $("#sequences_text").html(text)
+       
         $("#sequences_text").css("font-size", "12px");
+        //$("#sequences_text").html(text)
+        update_sequences()
 
       }
     }
@@ -5582,18 +5658,7 @@ d3.csv(csv_file, function(error, data) {
 
     function reset_filters(exception) {
 
-      // l.filterAll();
-      // h.filterAll();
-      // hour.filterAll();
-      // len.filterAll();
 
-      dimensions.forEach(function(d){
-        d.filterAll()
-      })
-
-      //action_strings.filterAll();
-
-      //max_id = 3
       console.log('MAX RESET ID', max_id)
       if (!arguments.length)
         exception = -1;
@@ -5601,15 +5666,12 @@ d3.csv(csv_file, function(error, data) {
       for(var i=0; i<= max_id; i++){
         if (i != exception){
           reset(i);
-          //charts[i].dimension().filterAll();
-          //charts[i].filter_dimension().filterAll();
-
-
         }   
-
-
       }
 
+      dimensions.forEach(function(d){
+        d.filterAll()
+      })
 
     }
     var dim;
@@ -5618,7 +5680,7 @@ d3.csv(csv_file, function(error, data) {
       var selected_filters = selected.data.filters;
           //reset_filters();
           if (dim) {
-              dim.filterAll();
+              //dim.filterAll();
               reset_filters();
 
             }
