@@ -580,21 +580,27 @@ d3.csv(csv_file, function(error, data) {
       current_level = action_hierarchy[level]
       n_actions = current_level.length-2
       
-      remove_dimension(action_strings)
-      remove_dimension(action_strings2)
-      remove_dimension(trans_strings)
+      // remove_dimension(action_strings)
+      // remove_dimension(action_strings2)
+      // remove_dimension(trans_strings)
 
-      action_strings = seqs.dimension(function(d) {return d[level]});
-      action_strings2 = seqs.dimension(function(d) {return d[level]});
+      // action_strings = seqs.dimension(function(d) {return d[level]});
+      // action_strings2 = seqs.dimension(function(d) {return d[level]});
+      // trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[level])});
+
+      // dimensions.push(action_strings)
+      // dimensions.push(action_strings2)
+      // dimensions.push(trans_strings)
+
+
+      action_strings = action_filter_dimensions[level].action_strings
+      action_strings2 = action_filter_dimensions[level].action_strings2
+      trans_strings = action_filter_dimensions[level].trans_strings
+
+      trans_grouped = trans_strings.group()
       strings_grouped = action_strings2.group()
 
-
-      trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[level])});
-      trans_grouped = trans_strings.group()
-
-      dimensions.push(action_strings)
-      dimensions.push(action_strings2)
-      dimensions.push(trans_strings)
+      
       update_action_transition_graph()
       
       populate_legend()
@@ -710,15 +716,27 @@ d3.csv(csv_file, function(error, data) {
           trans_strings = general_trans_strings;
 
           action_filter_dimensions = {}
-          action_filter_dimensions[general] = general_strings
-          action_filter_dimensions[grouped]=grouped_strings
-          action_filter_dimensions[pages] = pages_strings
+          action_filter_dimensions[general] = {
+              action_strings: general_strings, 
+              action_strings2: general_strings2, 
+              trans_strings: general_trans_strings
+            }
+          action_filter_dimensions[grouped]={
+              action_strings: grouped_strings, 
+              action_strings2: grouped_strings2, 
+              trans_strings: grouped_trans_strings
+            }
+          action_filter_dimensions[actions] = {
+              action_strings: pages_strings, 
+              action_strings2: pages_strings2, 
+              trans_strings: pages_trans_strings
+            }
 
           strings_grouped = action_strings2.group()
           trans_grouped = trans_strings.group()
     //console.log(lens.top(Number.POSITIVE_INFINITY).length);
     
-    var dimensions = [len, l, hour, h, start, start_filter, duration, dur_filter, action_strings, action_strings2, trans_strings]
+    var dimensions = [len, l, hour, h, start, start_filter, duration, dur_filter, general_strings, general_strings2, general_trans_strings, grouped_strings, grouped_strings2, grouped_trans_strings, pages_strings, pages_strings2, pages_trans_strings ]
 
 
     function action_count(d, action){
@@ -1092,7 +1110,7 @@ d3.csv(csv_file, function(error, data) {
       chart_data.filter_dimension().dispose()
       chart.remove()
 
-      var action = div.substring(0, div.indexOf('_')),
+      var action = div.substring(0, div.indexOf('_', 3)),
           id = '#' + action;
 
       $(id).prop('disabled', false)
@@ -2528,7 +2546,7 @@ d3.csv(csv_file, function(error, data) {
               selectedFilter.not = not;
               selectedFilter.chart = d3.select("#node_link");
               selectedFilter.pattern = pattern;
-              selectedFilter.dim = action_filter_dimensions[level]
+              //selectedFilter.dim = action_filter_dimensions[level]
 
               selectedFilter.pattern_data = {nodes: nodes_copy.slice(), links:links_copy.slice(), not:not};
 
@@ -2537,7 +2555,8 @@ d3.csv(csv_file, function(error, data) {
               console.log('pattern created', pattern);
               console.log('creating filter:', selectedFilter);
 
-              selectedFilter.div = "action_strings";
+              //selectedFilter.div = "action_strings";
+              selectedFilter.div = level;
 
               var filter = create_filter(parent);
               parent = filter.children[0];
@@ -2578,7 +2597,8 @@ d3.csv(csv_file, function(error, data) {
           console.log('pattern created', pattern);
           console.log('creating filter:', selectedFilter);
 
-          selectedFilter.div = "action_strings";
+          // selectedFilter.div = "action_strings";
+          selectedFilter.div = level;
 
           var filter = create_filter(parent);
 
@@ -2902,7 +2922,8 @@ d3.csv(csv_file, function(error, data) {
                         .attr('transform', function(d,i){return 'translate(0,' + (i*13) +')'})
                         .on('click', function(d){console.log(d)})
 
-      if (visify){     
+      if (visify){   
+
 
         var seq_bar =  seq_enter.selectAll("rect")
                   .remove()
@@ -3003,10 +3024,13 @@ d3.csv(csv_file, function(error, data) {
       var current_size = all.reduceCount().value()
       count_scale.domain([0, current_size])
 
+      //var print_n = Infinity;
+      var print_n = 1000;
+
       if($("#sequences").is(':visible')){
 
         if (grouped_seqs){
-          var grouped = transitionized? trans_grouped.top(Infinity): strings_grouped.top(Infinity)
+          var grouped = transitionized? trans_grouped.top(print_n): strings_grouped.top(print_n)
           //var grouped = trans_grouped.top(Infinity),
               text ="  #  | sequence" + " <br/>" + "___________"+ " <br/>";
 
@@ -3021,7 +3045,7 @@ d3.csv(csv_file, function(error, data) {
             }
           })
         }else{
-          var dimData = action_strings.top(Infinity)
+          var dimData = action_strings.top(print_n)
           var text = "";
           dimData.forEach(function(x){
             var seq = transitionized? remove_duplicates(x[level]): x[level];
@@ -3038,6 +3062,16 @@ d3.csv(csv_file, function(error, data) {
        
         $("#sequences_text").css("font-size", "12px");
         //$("#sequences_text").html(text)
+
+        if (details_data.length >5000) details_data.length = 5000;
+        console.log('number of seq details', details_data.length)
+        if (details_data.length >10000){
+          visify = false
+          $('#visify_sequences').prop('checked', false)
+        }else{
+          visify = true
+          $('#visify_sequences').prop('checked', true)
+        }
         update_sequences()
 
       }
@@ -3603,7 +3637,7 @@ d3.csv(csv_file, function(error, data) {
               .attr('fill', function(d){
                 if (d.category =='count'){
                   var div = d.div;
-                  var action = div.substring(0, div.indexOf('_'))
+                  var action = div.substring(0, div.indexOf('_',3))
                   return color(action)
                 }else{
                   return 'none'
@@ -5357,7 +5391,15 @@ d3.csv(csv_file, function(error, data) {
           .attr("class", "node")
           .attr("transform", function(d) { return "translate(" + source.x0 + "," + source.y0 + ")"; })
           //.on("dblclick", hide_children)
-          .on("click", select_node)
+          .on("click", function(d){
+
+            $('#load').show();
+            setTimeout(function() {
+                select_node(d)
+                $('#load').hide();
+            }, 500);
+          })
+
           //.on("dblclick", filter_partition);
 
           
@@ -5419,7 +5461,7 @@ d3.csv(csv_file, function(error, data) {
                 var data = d.data.operation;
                 if (data.category =='count'){
                   var div = data.div;
-                  var action = div.substring(0, div.indexOf('_'))
+                  var action = div.substring(0, div.indexOf('_', 3))
                   console.log(action)
                   return color(action)
                 }else{
@@ -5762,8 +5804,6 @@ d3.csv(csv_file, function(error, data) {
 
     function reset_filters(exception) {
 
-
-      console.log('MAX RESET ID', max_id)
       if (!arguments.length)
         exception = -1;
 
@@ -5848,7 +5888,8 @@ d3.csv(csv_file, function(error, data) {
 
           } else if (type == 'contains'){
 
-            dim = action_strings;
+            //dim = action_strings;
+            dim = action_filter_dimensions[f.div].action_strings
 
 
             char_regex = f.regex;
@@ -5861,7 +5902,11 @@ d3.csv(csv_file, function(error, data) {
             });
             
           }
-          console.log('filtered-size', all.reduceCount().value());
+          var filtered_size = all.reduceCount().value()
+          console.log('filtered-size', filtered_size );
+          if (filtered_size != selected.data.size)  {
+            alert('filtered size is not correct!')
+          }
           renderAll();
 
         })
@@ -5879,8 +5924,8 @@ d3.csv(csv_file, function(error, data) {
     
     function select_node(d){
 
+
       var is_descendant= is_grandchild(selected, d)
-      console.log('is grandchild', is_descendant)
 
        if(!selected){
            selected = d;
@@ -5992,10 +6037,6 @@ d3.csv(csv_file, function(error, data) {
                   .attr('height', hc_svg_height)
       horizontal_chart = hc_svg.append("g")
                           .attr("transform", "translate(" + (margin_hc.left-axis_translate) + "," + margin_hc.top + ")");
-
-      
-      console.log('svg width', width_hc);
-      console.log('svg height', height_hc);
 
       var x_hc = d3.scaleLinear()
               .rangeRound([0, width_hc]);
@@ -6162,13 +6203,14 @@ d3.csv(csv_file, function(error, data) {
           
           //select_action_node(d)
           select_horizontal_action(d)
-          selectedFilter.div = 'action_strings';
+          // selectedFilter.div = 'action_strings';
+          selectedFilter.div = level;
           selectedFilter.chart = d3.select("#contains_action_chart");
           selectedFilter.char = d.char;
           selectedFilter.regex = '.*' + d.char + '.*';
           selectedFilter.size = d.abs;
           selectedFilter.type = 'contains'; 
-          selectedFilter.dim = action_filter_dimensions[level]
+          //selectedFilter.dim = action_filter_dimensions[level]
           selectedFilter.pattern = [any_node, {action:alphabet_rev[d.char], char:d.char, many:false}, any_node]
 
 
@@ -6847,8 +6889,7 @@ d3.csv(csv_file, function(error, data) {
 
       var segment = root.children[0]
       segment.children=null;
-
-      update(segment)
+      select_node(segment);
     }
 
 
