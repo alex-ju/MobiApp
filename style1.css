@@ -20,6 +20,10 @@
   cursor: pointer;
 }
 
+.selection_rect{
+  cursor: pointer;
+}
+
 
 
 
@@ -198,7 +202,7 @@ html, body {
   width: 65px;*/
   display:block;
   overflow:scroll;
-  min-width: 55px;
+  min-width: 60px;
   max-height: 100px;
   padding: 2px;
   background-color: white;
@@ -371,6 +375,19 @@ input {
 }
 
 /**/
+.info-titles{
+  position:absolute;
+  top:0px;
+  width: 50%;
+  text-align: center;
+  /*left:25%;*/
+}
+
+.standard-text{
+  font-size:10px;
+  fill:black;
+  text-anchor: middle;
+}
 
 
 .title{
@@ -529,6 +546,9 @@ input {
     background:url("https://www.creditmutuel.fr/cmne/fr/banques/webservices/nswr/images/loading.gif") no-repeat center center rgba(0,0,0,0.25)
 }
 
+.seq{
+  cursor: pointer;
+}
 .seq text{
   font-size: 10px;
   fill:black;
