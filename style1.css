@@ -198,6 +198,7 @@ html, body {
   width: 65px;*/
   display:block;
   overflow:scroll;
+  min-width: 55px;
   max-height: 100px;
   padding: 2px;
   background-color: white;
@@ -528,12 +529,12 @@ input {
     background:url("https://www.creditmutuel.fr/cmne/fr/banques/webservices/nswr/images/loading.gif") no-repeat center center rgba(0,0,0,0.25)
 }
 
-.seq_text{
-  font-size: 12px;
+.seq text{
+  font-size: 10px;
   fill:black;
 }
 .count{
-  font-size: 12px;
+  font-size: 11px;
   fill:black;
 }
 

@@ -416,6 +416,8 @@
                         <div id="sequences">
                           <label class="checkbox-inline"><input id="group_sequences" type="checkbox" checked="checked" value="">Group Sequences</label>
                           <label class="checkbox-inline"><input id="transitionize_sequences" type="checkbox" value="">Transitionize Sequences</label>
+                          <label class="checkbox-inline"><input id="visify_sequences" type="checkbox" value="">Visify Sequences</label>
+                          
                           <div class="inline align-center">
                             <div id="sequences_text" class="border scroll" style=" height: 200px; width: 500px; padding:10px; margin-left: 20px; margin-top: 20px;"> 
                             </div>
@@ -480,6 +482,8 @@ $(document).ready(function(){
   //with pv_
   var alpha_file = "alphabet_pv.csv";
   var csv_file = "sample_table_pv1.csv"; //100K new alpha
+  // var csv_file = "sample_table300k.csv"; 
+  //var csv_file = "sample_table1M.csv"; 
 
   //with grouped
   // var alpha_file = "alphabet1.csv";
@@ -576,6 +580,9 @@ d3.csv(csv_file, function(error, data) {
       current_level = action_hierarchy[level]
       n_actions = current_level.length-2
       
+      remove_dimension(action_strings)
+      remove_dimension(action_strings2)
+      remove_dimension(trans_strings)
 
       action_strings = seqs.dimension(function(d) {return d[level]});
       action_strings2 = seqs.dimension(function(d) {return d[level]});
@@ -584,6 +591,10 @@ d3.csv(csv_file, function(error, data) {
 
       trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[level])});
       trans_grouped = trans_strings.group()
+
+      dimensions.push(action_strings)
+      dimensions.push(action_strings2)
+      dimensions.push(trans_strings)
       update_action_transition_graph()
       
       populate_legend()
@@ -594,6 +605,18 @@ d3.csv(csv_file, function(error, data) {
       print_sequences()
       //$('#load').hide()
       //resize_windows()
+    }
+
+    function remove_dimension(dim){
+      dimensions.forEach(function(d, i){
+        if (d==dim){
+          remove_index = i
+        }
+      })
+
+      dimensions.splice(remove_index, 1)
+
+      dim.dispose()
     }
       
 
@@ -663,14 +686,36 @@ d3.csv(csv_file, function(error, data) {
           dur_filter = seqs.dimension(function(d) {return (d.end - d.start)/(interval)});
           durations = duration.group(Math.floor);
 
-          action_strings = seqs.dimension(function(d) {return d[level]});
-          action_strings2 = seqs.dimension(function(d) {return d[level]});
+          // action_strings = seqs.dimension(function(d) {return d[level]});
+          // action_strings2 = seqs.dimension(function(d) {return d[level]});
+          
+          // trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[level])});
+
+          general_strings = seqs.dimension(function(d) {return d[general]});
+          general_strings2 = seqs.dimension(function(d) {return d[general]});
+          
+          general_trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[general])});
+          
+
+          grouped_strings = seqs.dimension(function(d) {return d[grouped]});
+          grouped_strings2 = seqs.dimension(function(d) {return d[grouped]});
+          grouped_trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[grouped])});
+
+          pages_strings = seqs.dimension(function(d) {return d[actions]});
+          pages_strings2 = seqs.dimension(function(d) {return d[actions]});
+          pages_trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[actions])});
+
+          action_strings = general_strings;
+          action_strings2 = general_strings2;
+          trans_strings = general_trans_strings;
+
+          action_filter_dimensions = {}
+          action_filter_dimensions[general] = general_strings
+          action_filter_dimensions[grouped]=grouped_strings
+          action_filter_dimensions[pages] = pages_strings
+
           strings_grouped = action_strings2.group()
-
-
-          trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[level])});
           trans_grouped = trans_strings.group()
-
     //console.log(lens.top(Number.POSITIVE_INFINITY).length);
     
     var dimensions = [len, l, hour, h, start, start_filter, duration, dur_filter, action_strings, action_strings2, trans_strings]
@@ -776,6 +821,8 @@ d3.csv(csv_file, function(error, data) {
       .on("click", group_sequences);
     d3.select("#transitionize_sequences")
       .on("click", transitionize_sequences);
+    d3.select("#visify_sequences")
+      .on("click", visify_sequences);
     // d3.select("#close_detailed_view")
     //   .on("click", close_detailed_view);
 
@@ -1231,7 +1278,7 @@ d3.csv(csv_file, function(error, data) {
 
     function draw_action_transition_graph(node_link_data){
 
-      console.log('NODE LINK DATA', node_link_data)
+      //console.log('NODE LINK DATA', node_link_data)
       nl_graph.zoomingEnabled(true);
       $('#cy').css('height',nl_height);
       $('#cy').css('width', nl_width);
@@ -2081,7 +2128,7 @@ d3.csv(csv_file, function(error, data) {
 
         data.forEach(function(d, i){
           var t = d3.format(".1%")(d.percent/100) + ', ' + d3.format(",")(d.count);
-          if (i>0) t = d.action + ': ' + t;
+          if (i>0) t = ' -' + d.action + ': ' + t;
           text = text + t + '<br/>'
         })
 
@@ -2481,6 +2528,7 @@ d3.csv(csv_file, function(error, data) {
               selectedFilter.not = not;
               selectedFilter.chart = d3.select("#node_link");
               selectedFilter.pattern = pattern;
+              selectedFilter.dim = action_filter_dimensions[level]
 
               selectedFilter.pattern_data = {nodes: nodes_copy.slice(), links:links_copy.slice(), not:not};
 
@@ -2806,6 +2854,7 @@ d3.csv(csv_file, function(error, data) {
     }
     var transitionized = false,
         grouped_seqs = true;
+        visify = false;
 
     var details_data =[],
         count_width = 50;
@@ -2815,7 +2864,7 @@ d3.csv(csv_file, function(error, data) {
     var seq_details = seq_svg.append('g').attr('transform', 'translate(0,' + 20+ ')')
     var seq_counts = seq_details.append('g')
 
-    var seqs = seq_details.append('g')
+    var seqs_details = seq_details.append('g')
                   .attr('transform', 'translate(' + (count_width+4) + ',0)')
 
 
@@ -2824,6 +2873,11 @@ d3.csv(csv_file, function(error, data) {
       //toggle_button_color('#transitionize_button')
       transitionized = !transitionized
       print_sequences()
+    }
+    function visify_sequences(){
+      //toggle_button_color('#transitionize_button')
+      visify = !visify
+      update_sequences()
     }
 
     function group_sequences(){
@@ -2834,15 +2888,55 @@ d3.csv(csv_file, function(error, data) {
     }
 
     function update_sequences(){
+
+       var w = transitionized ? 15: 9,
+          h = 9,
+            max_i=0;
       
-      var seq_text = seqs.selectAll('.seq_text')
+      var seq = seqs_details.selectAll('.seq')
                         .remove()
                         .exit()
                         .data(details_data)
-      var seq_enter = seq_text.enter().append('text')
+      var seq_enter = seq.enter().append('g')
+                        .attr('class', 'seq')
+                        .attr('transform', function(d,i){return 'translate(0,' + (i*13) +')'})
+                        .on('click', function(d){console.log(d)})
+
+      if (visify){     
+
+        var seq_bar =  seq_enter.selectAll("rect")
+                  .remove()
+                  .exit()
+                  .data(d => d.chars)
+         
+        var seq_bar_enter = seq_bar.enter().append('g')
+                          .attr('transform', function(d,i){
+                            max_i  = i>max_i? i: max_i;
+                            return 'translate(' + (w+1)*i +',' + 0 +')';
+                          }) 
+
+        seq_bar_enter.append("rect")
+              .attr('y', -8)
+              .attr("width", function(d){
+                  return w;
+              })
+              .attr("height", h)
+              .attr("fill", function(d) {return color(alphabet_rev[d]);})
+              .attr("fill-opacity", '0.6')
+              //.attr('stroke', function(d){return transitionized? 'black': 'none'})
+
+        seq_bar_enter.append('text')
+              .attr('x', w/2)
+              .attr('class', 'seq_text')
+              .style('text-anchor', 'middle')
+              .text(function(d){return transitionized? d + '+':d;}) 
+      } else{
+
+        var seq_text = seq_enter.append('text')
                           .attr('class', 'seq_text')
-                          .attr('dy', function(d,i){return 13*i;})
-                          .text(function(d){return d.seq;})
+                          .text(function(d){return d.seq;})   
+
+      }
 
       var count = seq_counts.selectAll('.count')
                         .remove()
@@ -2850,7 +2944,8 @@ d3.csv(csv_file, function(error, data) {
                         .data(details_data)
 
       var count_enter = count.enter().append('g')
-                            .attr('transform', function(d,i){return 'translate(0,' + (i*13) +')'})
+                          .attr('class', 'count')
+                          .attr('transform', function(d,i){return 'translate(0,' + (i*13) +')'})
 
       var bar =  count_enter.selectAll("rect")
                 .remove()
@@ -2869,25 +2964,33 @@ d3.csv(csv_file, function(error, data) {
             .attr("width", function(d){
                 return count_scale(d.x1-d.x0);
             })
-            .attr("height", 9)
+            .attr("height", h)
             .attr("fill", function(d,i) {return (i==0)?'lightgray':'steelblue';})
 
 
 
       
       var count_text = count_enter.append('text')
-                          .attr('class', 'count')
+                          .attr('class', 'count_text')
                           .text(function(d){return d.count.value;})
 
       var width =0,
           h = (details_data.length+1)*13,
           height = (h <200)? 200: h;
+          //width= max_i*(w+1) +count_width + 50;
+          
+      if (visify){
+        width= max_i*(w+1) +count_width + 50;
 
-      seq_svg.selectAll('.seq_text')
+      }else{
+        seq_svg.selectAll('.seq_text')
                 .each(function(){
                   var w = this.getComputedTextLength();
                   width = (w>width)? w: width;
                 })
+      }
+
+      width = (width < $('#sequences_text').width())? $('#sequences_text').width(): width;
 
       seq_svg.attr('width', width)
             .attr('height', height)
@@ -2913,7 +3016,8 @@ d3.csv(csv_file, function(error, data) {
             if(g.value != 0){
               text += ' ' + g.value + "  |  " + g.key + " <br/>"
               var count = {value: g.value, data: [{x0:0, x1:current_size-g.value}, {x0:current_size-g.value, x1:current_size}]}
-              details_data.push({count:count, seq:g.key})
+              var seq = g.key;
+              details_data.push({count:count, seq:seq, chars: seq.split('') })
             }
           })
         }else{
@@ -2922,7 +3026,7 @@ d3.csv(csv_file, function(error, data) {
           dimData.forEach(function(x){
             var seq = transitionized? remove_duplicates(x[level]): x[level];
             var count = {value: 1, data: [{x0:0, x1:current_size-1}, {x0:current_size-1, x1:current_size}]}
-            details_data.push({count:count, seq:seq})
+            details_data.push({count:count, seq:seq, chars: seq.split('')})
 
             text += seq + " <br/>";
           })
@@ -5675,79 +5779,108 @@ d3.csv(csv_file, function(error, data) {
 
     }
     var dim;
-    function apply_filters(selected){
+    function apply_filters(selected, is_descendant){
+      
+
 
       var selected_filters = selected.data.filters;
           //reset_filters();
-          if (dim) {
-              //dim.filterAll();
-              reset_filters();
+          // if (dim) {
+          //     //dim.filterAll();
+          //     reset_filters();
 
+          //   }
+      var filter_to_update;
+      if(!is_descendant){
+        reset_filters()
+      }
+      else{
+        var operations = selected.data.operations,
+            last_operation = operations[operations.length-1]
+
+        for(var i=0;i<selected_filters.length;i++){
+          var f = selected_filters[i];
+          if (f.type == last_operation.type){
+            filter_to_update = f
+          }
+
+        }
+        selected_filters = [filter_to_update]
+      }
+      if(selected_filters) {
+
+        console.log('SELECTED FILTERS', selected_filters);
+
+        selected_filters.forEach(function(f){
+          type = f.type;
+
+          if (type == 'range') {
+          
+            var div = f.div;
+            var extents = f.extents;
+
+            // current_chart = chart_data[div];
+            // dim = current_chart.dim;
+            // reset(current_chart.id);
+
+            current_chart = f.chart.data()[0];
+            dim = current_chart.filter_dimension();
+            reset(current_chart.id());
+
+            if (extents){
+              console.log('extents to filter', extents)
+
+              dim.filterFunction(function(d){
+                var inRange = true;
+                if (extents.pos)
+                  inRange= inRange && (d >= extents.pos[0]) && (d < extents.pos[1]);
+
+                extents.neg.forEach(function(ext){
+                  inRange = inRange && !((d>=ext[0]) && (d< ext[1]));
+
+                })
+
+                return inRange;
+              })
             }
-          if(selected_filters) {
+            else
+              dim.filterExact(null);
 
-            console.log('SELECTED FILTERS', selected_filters);
+          } else if (type == 'contains'){
 
-            selected_filters.forEach(function(f){
-              type = f.type;
-
-              if (type == 'range') {
-              
-                var div = f.div;
-                var extents = f.extents;
-
-                // current_chart = chart_data[div];
-                // dim = current_chart.dim;
-                // reset(current_chart.id);
-
-                current_chart = f.chart.data()[0];
-                dim = current_chart.filter_dimension();
-                reset(current_chart.id());
-
-                if (extents){
-                  console.log('extents to filter', extents)
-
-                  dim.filterFunction(function(d){
-                    var inRange = true;
-                    if (extents.pos)
-                      inRange= inRange && (d >= extents.pos[0]) && (d < extents.pos[1]);
-
-                    extents.neg.forEach(function(ext){
-                      inRange = inRange && !((d>=ext[0]) && (d< ext[1]));
-
-                    })
-
-                    return inRange;
-                  })
-                }
-                else
-                  dim.filterExact(null);
-
-              } else if (type == 'contains'){
-
-                dim = action_strings;
-
-                char_regex = f.regex;
-                console.log('CHAR REGEX', char_regex);
-                dim.filterFunction(function(d){
+            dim = action_strings;
 
 
-                    return d.match(char_regex);
+            char_regex = f.regex;
+            console.log('CHAR REGEX', char_regex);
+            dim.filterFunction(function(d){
 
-                });
-                
-              }
-              console.log('filtered-size', all.reduceCount().value());
-              renderAll();
 
-            })
+                return d.match(char_regex);
+
+            });
             
           }
+          console.log('filtered-size', all.reduceCount().value());
+          renderAll();
+
+        })
+        
+      }
 
 
     }
+
+    function is_grandchild(prev_selected, selected){
+      if (prev_selected)
+        return (selected.parent.parent == prev_selected)? true: false;
+      else return false;
+    }
     
     function select_node(d){
+
+      var is_descendant= is_grandchild(selected, d)
+      console.log('is grandchild', is_descendant)
 
        if(!selected){
            selected = d;
@@ -5769,6 +5902,7 @@ d3.csv(csv_file, function(error, data) {
         //find_all_patterns();
 
         if (selected.data.value == 1) {
+          // reset_filters();
           $('#remove_button').prop('disabled',true)
           if (!selected_segment){
             selected_segment = selected;
@@ -5783,7 +5917,7 @@ d3.csv(csv_file, function(error, data) {
           update_info_view("info_view");
           new_selection = true;
         
-          apply_filters(selected)
+          apply_filters(selected, is_descendant)
 
           new_selection = false;
           console.log('The current selection has ' + selected.data.size + ' sequences!' );
@@ -5878,7 +6012,7 @@ d3.csv(csv_file, function(error, data) {
 
     function update_horizontal_chart_data() {
 
-      hc_svg_height = (n_actions>10)? (n_actions*16 +margin_hc.top +margin_hc.bottom):200
+      hc_svg_height = (n_actions>10)? (n_actions*((node_radius*2)+3) +margin_hc.top +margin_hc.bottom):200
       height_hc = hc_svg_height - margin_hc.top - margin_hc.bottom
       hc_svg.attr('height', hc_svg_height)
       y_hc.rangeRound([0,height_hc])
@@ -6034,6 +6168,7 @@ d3.csv(csv_file, function(error, data) {
           selectedFilter.regex = '.*' + d.char + '.*';
           selectedFilter.size = d.abs;
           selectedFilter.type = 'contains'; 
+          selectedFilter.dim = action_filter_dimensions[level]
           selectedFilter.pattern = [any_node, {action:alphabet_rev[d.char], char:d.char, many:false}, any_node]
 
 
@@ -6568,6 +6703,7 @@ d3.csv(csv_file, function(error, data) {
 
       filter_copy.not = filter.not | false;
       filter_copy.chart = filter.chart;
+      filter_copy.dim = filter.dim;
 
       if (filter.extents)
         filter_copy.extents = filter.extents.slice()
