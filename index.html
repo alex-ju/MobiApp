@@ -763,6 +763,8 @@ d3.csv(csv_file, function(error, data) {
       
       var dimensions = [len, l, hour, h, start, start_filter, duration, dur_filter, general_strings, general_strings2, general_trans_strings, grouped_strings, grouped_strings2, grouped_trans_strings, pages_strings, pages_strings2, pages_trans_strings ]
 
+      var OG_dimensions = dimensions.length;
+
 
       function action_count(d, action){
         var c = alphabet[action],
@@ -959,6 +961,7 @@ d3.csv(csv_file, function(error, data) {
 
 
       ]
+      var OG_charts = charts.length
 
 
       var chart = d3.selectAll(".range_chart")
@@ -994,19 +997,32 @@ d3.csv(csv_file, function(error, data) {
                 .attr('class', 'btn btn-sm btn-default btn-block action-icon action_count_button')
                 .on('click', add_chart)
                 
-            button.append('span')
-                .style('font-size', '11px')
-                .text(function(d){return d;})
+        button.append('span')
+            .style('font-size', '11px')
+            .text(function(d){return d;})
 
-            button.append('svg')
-                  .attr("transform", "translate(" + 2 + "," + action_radius/2 + ")")
-                  .append('circle')
-                    .attr('r', action_radius)
-                    .attr("transform", "translate(" + (action_radius+1) + "," + (action_radius+1) + ")")
-                    .attr('fill', function(d) { 
-                      //return color(action)
-                      return color(d);
-                    })
+        button.append('svg')
+              .attr("transform", "translate(" + 2 + "," + action_radius/2 + ")")
+              .append('circle')
+                .attr('r', action_radius)
+                .attr("transform", "translate(" + (action_radius+1) + "," + (action_radius+1) + ")")
+                .attr('fill', function(d) { 
+                  //return color(action)
+                  return color(d);
+                })
+
+        if (charts.length > OG_charts){
+          for(var i = OG_charts-1; i <charts.length; i++){
+            var c = charts[i],
+                div = c.div_id()
+
+            var action = div.substring(0, div.indexOf('_', 3)),
+            id = '#' + action;
+
+            $(id).prop('disabled', true)
+
+          }
+        }
 
         //})
         
@@ -1032,62 +1048,66 @@ d3.csv(csv_file, function(error, data) {
 
         //action_counted = current_level[action_i]
 
-        var chart_div = d3.select('#count_charts').append('div')
-                            .attr('class', 'range_chart chart')
-                            .attr('id', action_counted + '_count_chart')
+        if (dimensions.length <= 30){
+          var chart_div = d3.select('#count_charts').append('div')
+                              .attr('class', 'range_chart chart')
+                              .attr('id', action_counted + '_count_chart')
 
-        chart_div.append('button')
-              .attr('type','button')
-              .attr('class', 'close')
-              .attr('id','close_chart')
-              .attr('aria-hidden',true)
-              
-              .html('&times;')
-              .style('display', 'none')
-
-
-        var title_div = chart_div.append('div').style('margin-top','14px').attr('class', 'action-icon')
-        title_div.append('span')
-                .style('font-size', '11px')
-                .text('# of ' +action_counted)
-
-        title_div.append('svg')
-              .attr("transform", "translate(" + 2 + "," + action_radius/2 + ")")
-              .append('circle')
-                .attr('r', action_radius)
-                .attr("transform", "translate(" + (action_radius+1) + "," + (action_radius+1) + ")")
-                .attr('fill', color(action_counted))
-        
-       
-        d3.selectAll("#close_chart")
-        .on("click", close_chart);
-        
-
-        a_count = seqs.dimension(function(d) {return action_count(d, action_counted)}),
-        a_count_filter = seqs.dimension(function(d) {return action_count(d, action_counted)}),
-        a_counts = a_count.group(Math.floor)
-
-        dimensions.push(a_count)
-        dimensions.push(a_count_filter)
+          chart_div.append('button')
+                .attr('type','button')
+                .attr('class', 'close')
+                .attr('id','close_chart')
+                .attr('aria-hidden',true)
+                
+                .html('&times;')
+                .style('display', 'none')
 
 
+          var title_div = chart_div.append('div').style('margin-top','14px').attr('class', 'action-icon')
+          title_div.append('span')
+                  .style('font-size', '11px')
+                  .text('# of ' +action_counted)
 
-        charts.push(
-          barChart()
-            .dimension(a_count)
-            .filter_dimension(a_count_filter)
-            .dim_name('# of '+ action_counted)
-            .category('count')
-            .group(a_counts)
-            .x(d3.scaleLinear()
-            .domain([0, 30])
-            .rangeRound([0, 140]))
+          title_div.append('svg')
+                .attr("transform", "translate(" + 2 + "," + action_radius/2 + ")")
+                .append('circle')
+                  .attr('r', action_radius)
+                  .attr("transform", "translate(" + (action_radius+1) + "," + (action_radius+1) + ")")
+                  .attr('fill', color(action_counted))
+          
+         
+          d3.selectAll("#close_chart")
+          .on("click", close_chart);
+          
 
-          )
+          a_count = seqs.dimension(function(d) {return action_count(d, action_counted)}),
+          a_count_filter = seqs.dimension(function(d) {return action_count(d, action_counted)}),
+          a_counts = a_count.group(Math.floor)
 
-        rerender_charts()
+          dimensions.push(a_count)
+          dimensions.push(a_count_filter)
 
-        action_i++;
+          console.log('there are now ' +dimensions.length + ' dimensions!')
+
+          charts.push(
+            barChart()
+              .dimension(a_count)
+              .filter_dimension(a_count_filter)
+              .dim_name('# of '+ action_counted)
+              .category('count')
+              .group(a_counts)
+              .x(d3.scaleLinear()
+              .domain([0, 30])
+              .rangeRound([0, 140]))
+
+            )
+
+          rerender_charts()
+
+          action_i++;
+        }else{
+          alert('MAX CHART LIMIT! Please remove a chart before adding another ')
+        }
 
       }
 
@@ -1122,14 +1142,15 @@ d3.csv(csv_file, function(error, data) {
         charts.forEach(function(c,i){
           c.id(i);
         })
-
+        var idx = []
         dimensions.forEach(function(d, i){
-          if (d==chart_data.dimension()){
-            remove_index = i
+          if ((d==chart_data.dimension() )||(d==chart_data.filter_dimension() )){
+            idx.push(i)
           }
         })
-
-        dimensions.splice(remove_index, 1)
+        console.log('indices to remove', idx)
+        dimensions.splice(idx[0], 1)
+        dimensions.splice(idx[1], 1)
 
         chart_data.dimension().dispose()
         chart_data.filter_dimension().dispose()
@@ -3596,16 +3617,41 @@ d3.csv(csv_file, function(error, data) {
 
         info_data.partition_data = []
         info_data = update_node_info_data(operations, show_all_text )
+        shown_idx = [info_data.operation_data.length -1]
         update_node_info_view(info_data)
 
 
       }
+
+      var shown_idx =[]
+      function show_operation_text(i){
+        console.log('now show text of operation ' + i + ' with data: ')
+
+        var idx = $.inArray(i, shown_idx)
+        if (idx>-1){
+          shown_idx.splice(idx, 1)
+        }else{
+          shown_idx.push(i)
+          shown_idx.sort();
+        }
+
+        console.log('shown idx', shown_idx)
+
+        info_data.operation_data[i].text_data.forEach(function(t){
+          t.show = !t.show;
+        })
+        info_data.results_data[i].text_data.forEach(function(t){t.show=!t.show})
+        update_node_info_view(info_data)
+
+      }
+
 
       function update_node_info_view(data, sep){
 
         console.log('NODE INFO VIEW DATA', data)
         var n_operations = data.operation_data.length
         var sep = sep |1;
+        var max_vTranslate;
 
 
 
@@ -3684,10 +3730,22 @@ d3.csv(csv_file, function(error, data) {
             })
             .attr("transform", function(d, i) {
                 var x = ((i !=0) && (i == (n_operations-1)))? 10:0;
+                var t = 0;
 
-                return "translate(" + 0 + "," + (i*(oWidth + sep)+x) + ")";
+                shown_idx.forEach(function(idx){
+                  if (i ==idx){ t+= 5}
+                  if (i > idx){
+                    t += 40;
+                  }
                 })
-            .on("click", select_operation_node)
+                max_vTranslate = t;
+
+                return "translate(" + 0 + "," + (i*(oWidth + sep)+x+t) + ")";
+                })
+            .on("click", function(d,i) {
+              select_operation_node(d);
+              show_operation_text(i);
+            })
 
         operationEnter.append('rect')
                       .attr('transform', 'translate(' + (-oWidth - 7) +',' + -4 + ')')
@@ -3844,7 +3902,17 @@ d3.csv(csv_file, function(error, data) {
             .attr("class", "result")
             .attr("transform", function(d, i) { 
               var x = ((i !=0) && (i == (n_operations-1)))? 10:0;
-              return "translate(" + 0 + "," + (i*(oWidth+sep)+x)  + ")"; 
+              var t = 0;
+              shown_idx.forEach(function(idx){
+                  if (i ==idx){ t+= 5}
+                  if (i > idx){
+                    t += 40;
+                  }
+                })
+              return "translate(" + 0 + "," + (i*(oWidth+sep)+x +t)  + ")"; 
+            })
+            .on("click", function(d,i) {
+              show_operation_text(i);
             })
 
 
@@ -3922,9 +3990,10 @@ d3.csv(csv_file, function(error, data) {
           max_tHeight = (h>max_tHeight)? h: max_tHeight;
         })
 
-        var max_height = (n_operations +1)*(oWidth+sep) + max_tHeight +25,
-            svg_height = max_height > info_height? max_height : 150;
+        var max_height = (n_operations +1)*(oWidth+sep) + max_tHeight +25 + max_vTranslate,
+            svg_height = max_height > info_height? max_height : info_height;
 
+        console.log('max v Translate', max_vTranslate)
 
         nv_svg.attr('height', svg_height)
 
@@ -6070,6 +6139,7 @@ d3.csv(csv_file, function(error, data) {
             //find_all_patterns();
 
             if (selected.data.value == 1) {
+
               // reset_filters();
               $('#remove_button').prop('disabled',true)
               if (!selected_segment){
