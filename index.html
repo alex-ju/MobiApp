@@ -92,7 +92,9 @@
                                   <!-- <label class="btn btn-default center-block"><input type="radio">All</label>
                                   <label class="btn btn-default active center-block"><input type="radio">Filtered</label> -->
                               </div>
-                              <div  class="graph" id="build_filter_view"></div>
+                              <div  class="graph" id="build_filter_view">
+                                <div class="warning-text" id="select_chart_warning" style="display: none"> Please select chart! </div>
+                              </div>
             
                               <div class="range_radio inline-center" id="input_filter_value">
                                 <div>
@@ -122,7 +124,9 @@
                                   <label class="range_radio"><input type="radio" id="full_range_opt2" name="optradio2">Full Range</label>
                                 </div>
                               </div>
-                              <div  class="graph" id="create_partition_view"></div>
+                              <div  class="graph" id="build_partition_view">
+                                <div class="warning-text" id="select_chart_warning2" style="display: none"> Please select chart! </div>
+                              </div>
                               <div class="inline">
                                 <div class="btn-toolbar">
                                   <!-- <button type="button" id="addPartition_button" class="btn btn-primary">Add Partition</button>
@@ -577,7 +581,7 @@ d3.csv(csv_file, function(error, data) {
 
       small[general] =0
       small[grouped]= 5
-      small[actions] = 8
+      small[actions] = 10
 
 
       action_hierarchy[general] = ['addToCart', 'removeFromCart', 'purchase', 'search', 'pageview']
@@ -809,7 +813,7 @@ d3.csv(csv_file, function(error, data) {
       d3.select("#contains_button")
         .on("click", show_contains_builder);
       d3.select("#remove_button")
-        .on("click", remove_filter);
+        .on("click", remove_operation);
       d3.select("#clear_button")
         .on("click", clear_all);
       // d3.select("#segment_button")
@@ -1959,11 +1963,17 @@ d3.csv(csv_file, function(error, data) {
       }
 
       function select_adj_node(d){
-        if (selected_adj_node){
-          selected_adj_node.selected = false;
+        if(d != selected_adj_node){
+          if (selected_adj_node ){
+            selected_adj_node.selected = false;
+          }
+
+          selected_adj_node = d;
+          d.selected = true;
+        }else{
+          d.selected = !d.selected;
         }
-        selected_adj_node = d;
-        d.selected = true;
+
 
         console.log('Selected adjacent node', selected_adj_node);
         update_adjacency_chart(adj_chart_data);
@@ -4276,66 +4286,71 @@ d3.csv(csv_file, function(error, data) {
 
 
       function update_filter_view(_){
+
+        if (selected_chart || partitions.length>0){
+          $('#select_chart_warning').hide()
         
-        if(!arguments.length){
-          create_filter_data(builder_range, extents_data.extents, extents_data.not)
-        }
+          if(!arguments.length){
+            create_filter_data(builder_range, extents_data.extents, extents_data.not)
+          }
 
-        get_range_ends_data()
+          get_range_ends_data()
 
-        var end = ranges.selectAll('.end')
-                  .remove()
-                  .exit()
+          var end = ranges.selectAll('.end')
+                    .remove()
+                    .exit()
+              
+        
+
+          var end = ranges.selectAll('.end')
+                    .remove()
+                    .exit()
+                    .data(rangeEnds)
+
+          end.enter().append('rect')
+                  .attr('class', 'end')
+                  .attr('x', function(d){return d;})
+                  .attr('width', end_len)
+                  .attr('height', rangeHeight)
+                  .attr('fill', 'darkgray')
+                  //.on('click', toggle_builder_range)
             
-      
+          data = partitions
 
-        var end = ranges.selectAll('.end')
-                  .remove()
-                  .exit()
-                  .data(rangeEnds)
 
-        end.enter().append('rect')
-                .attr('class', 'end')
-                .attr('x', function(d){return d;})
-                .attr('width', end_len)
-                .attr('height', rangeHeight)
-                .attr('fill', 'darkgray')
-                //.on('click', toggle_builder_range)
+
+
+          // var dimension = selected_chart.data()[0].dimension(),
+          //     extents = [data[2].value, data[1].value]
+
+          // dimension.filterRange(extents);
+
           
-        data = partitions
 
+          var range = ranges.selectAll('.range')
+                        .remove()
+                        .exit()
+                        .data(data)
+          var range_enter = range.enter().append('g')
+                        .attr('class', 'range')
 
+          range_enter.append('rect')
+              .attr('width', function(d) {return d.x})
+              .attr('height', rangeHeight)
+              .attr('stroke', 'black')
+              .attr('fill', function(d){return d.colored? 'steelblue': 'white'})
 
+          var range_update = range_enter.merge(range)
 
-        // var dimension = selected_chart.data()[0].dimension(),
-        //     extents = [data[2].value, data[1].value]
+          range_update.selectAll('rect')
+              .attr('width', function(d){return d.x})
 
-        // dimension.filterRange(extents);
+          update_partition_bars(partitions)
 
-        
-
-        var range = ranges.selectAll('.range')
-                      .remove()
-                      .exit()
-                      .data(data)
-        var range_enter = range.enter().append('g')
-                      .attr('class', 'range')
-
-        range_enter.append('rect')
-            .attr('width', function(d) {return d.x})
-            .attr('height', rangeHeight)
-            .attr('stroke', 'black')
-            .attr('fill', function(d){return d.colored? 'steelblue': 'white'})
-
-        var range_update = range_enter.merge(range)
-
-        range_update.selectAll('rect')
-            .attr('width', function(d){return d.x})
-
-        update_partition_bars(partitions)
-
-        filter_range.call(range_axis);
-
+          filter_range.call(range_axis);
+        }else{
+          $('#select_chart_warning').show()
+        }
         
       }
 
@@ -4346,7 +4361,7 @@ d3.csv(csv_file, function(error, data) {
 
       var builderDiv = d3.select("#info_view")
 
-      var b_svg = d3.select("#create_partition_view")
+      var b_svg = d3.select("#build_partition_view")
                       .append("svg")
                       .attr("height", b_height)
                       // .attr("width", b_width + b_margin.left + b_margin.right)
@@ -4691,7 +4706,9 @@ d3.csv(csv_file, function(error, data) {
        //render selected chart
         partitions_data = []
 
-       if (selected_chart && selected_chart.data()[0]){
+
+       if ((selected_chart && selected_chart.data()[0])|| partitions.length>0){
+        $('#select_chart_warning2').hide()
 
          //selected_chart.call(selected_chart.data()[0]);
          var current_range = selected_chart.data()[0].current_range();
@@ -4712,6 +4729,9 @@ d3.csv(csv_file, function(error, data) {
 
           }
 
+       }else{
+
+        $('#select_chart_warning2').show()
        }
 
       }
@@ -7091,11 +7111,12 @@ d3.csv(csv_file, function(error, data) {
 
         var segment = root.children[0]
         segment.children=null;
+        reset_filters()
         select_node(segment);
       }
 
 
-      function remove_filter(){
+      function remove_operation(){
 
 
         d = selected
@@ -7122,8 +7143,8 @@ d3.csv(csv_file, function(error, data) {
           alert('Please select a filter to be removed!');
         } 
 
-
-        update(d.parent)
+        select_node(d.parent)
+        //update(d.parent)
 
       }
 
