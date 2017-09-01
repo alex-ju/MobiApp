@@ -13,7 +13,7 @@
   </head>
 
   <body>
-  <div id="load" style="display: none"></div>
+  <div id="load" class="load" style="display: none"></div>
     <div class=page-container>
       <div class=panel-container>
         <!-- <div class="col-md-4 hidden" id="operation_manager"> -->
@@ -93,7 +93,7 @@
                                   <label class="btn btn-default active center-block"><input type="radio">Filtered</label> -->
                               </div>
                               <div  class="graph" id="build_filter_view">
-                                <div class="warning-text" id="select_chart_warning" style="display: none"> Please select chart! </div>
+                                <div class="warning-text" id="select_chart_warning" style="display: none"> Please select Range chart! </div>
                               </div>
             
                               <div class="range_radio inline-center" id="input_filter_value">
@@ -395,9 +395,22 @@
                           <div class= "chart" id="contains_action_chart">
                             <div class="title"> Number of Sequences that Contain Action </div>
                           </div>
+                          <div style="display:block">
+                            <div>
+                              <label for="min_percent" class="standard-text"
+                                     style="display: inline-block; width: 250px; text-align: center">
+                                     min visible link % = <span id="min_percent-value">0</span>
+                              </label>
+                              <input type="range" min="0" max="100" id="min_percent">
+                            </div>
+                            <div class ="chart" id="node_link">
+                              
+                              <div id="load_chart" class="load" style="display: none"></div>
+                              
+                              <div id="cy">
 
-                          <div class ="chart" id="node_link">
-                            <div id="cy"></div>
+                               </div>
+                            </div>
                           </div>
                           <div class="chart" id="adjacency_chart">
                             <div id="tooltip" class="hidden">
@@ -1255,6 +1268,23 @@ d3.csv(csv_file, function(error, data) {
 
       var strokeScale = d3.scaleLinear().domain([0,100]).range([1,6]).clamp(true);
 
+      d3.select("#min_percent").on("input", function() {
+        update_min_percent(+this.value);
+      });
+
+      function update_min_percent(d){
+        set_min_percent(d)
+        
+        update_action_transition_edges(d)
+
+      }
+
+      function set_min_percent(d){
+        d3.select("#min_percent-value").text(d);
+        d3.select("#min_percent").property("value", d);
+
+      }
+
       // $(document).on('show.bs.collapse', '#collapse_contains', function (e) {
 
       //     update_action_transition_graph()
@@ -1289,8 +1319,8 @@ d3.csv(csv_file, function(error, data) {
       var nl_graph= cytoscape({
           container: document.querySelector('#cy'),
           boxSelectionEnabled: false,
-          minZoom: 0.75,
-          maxZoom: 1.25,
+          // minZoom: 0.75,
+          // maxZoom: 1.25,
 
           // boxSelectionEnabled: false,
           // autounselectify: true,
@@ -1332,21 +1362,44 @@ d3.csv(csv_file, function(error, data) {
                 'opacity': 0.25,
                 'text-opacity': 0.25
               })
-            .selector('#all_actions')
-              .css({
-                'background-color': 'white',
-                'line-color': 'white'
-              })
+            // .selector('#all_actions')
+            //   .css({
+            //     'background-color': 'white',
+            //     'line-color': 'white'
+            //   })
         });;
 
       
 
       //$("#sequence_attributes").resizable()
+      function update_action_transition_edges(min_percent){
+        nl_graph.edges().addClass('visible')
+        nl_graph.edges().removeClass('invisible')
+        nl_graph.edges().removeClass('small')
+
+        nl_graph.edges().forEach(function(e){
+          var data = e.data()
+
+
+          e.css('width', strokeScale(data.value))
+
+
+
+          if (data.invisible ){
+            e.addClass('invisible')
+          }else if (data.value < min_percent){
+            e.addClass('small')
+            e.addClass('invisible')
+          }else{
+            e.addClass('visible')
+          }
+        })
+      }
 
 
       function draw_action_transition_graph(node_link_data){
 
-        //console.log('NODE LINK DATA', node_link_data)
+        console.log('Drawing action transition graph', node_link_data)
         nl_graph.zoomingEnabled(true);
         $('#cy').css('height',nl_height);
         $('#cy').css('width', nl_width);
@@ -1371,19 +1424,20 @@ d3.csv(csv_file, function(error, data) {
           if (n.fx){
             n.size = 9;
             n.end = true;
-            node.position ={x:n.fx, y:n.fy}
-          }else{
-           // n.parent ='all_actions'
+            if (n.action == 'start')
+              node.position = {x:nl_width/2, y:0}
+            else if (n.action == 'exit')
+              node.position = {x:nl_width/2, y:500}
+            //node.position ={x:n.fx, y:n.fy}
           }
-          nl_graph.add(node)
-          return node})
 
-        //f(nodes.length>0) nodes.push({data:{id:'all_actions', color: 'white'}})
+          nl_graph.add(node)
+          return node
+        })
+
+
         var edges = node_link_data.links.map(function(e){
 
-          
-
-          //e.value = (e.percent >1)? d3.format('.0%')(e.percent/100): 1;
           value = (e.percent >1)? e.percent: 1; 
           var edge = {group:"edges", data:{source: e.source.id, target:e.target.id, value: value}}
 
@@ -1405,66 +1459,9 @@ d3.csv(csv_file, function(error, data) {
 
 
         
-
-        var layout1 = nl_graph.layout({
-                name: 'preset'
-              })
-
-        layout1.run()
-
+        //update_min_percent(small[level])
         
-        nl_graph.nodes("#all_actions").css({'background-color': 'white',
-                'line-color': 'white'})
-
-        // cy.nodes('#start').lock();
-        // cy.nodes('#exit').lock();
-
-        nl_graph.nodes().forEach(function(d){
-          var data = d.data();
-
-          if (data.size){
-            d.css('width', 9)
-            d.css('height', 9)
-          }
-
-          if (!data.end){
-            d.addClass('actions')
-          }else{
-            d.addClass('end')
-          }
-
-
-        })
-
-        // cy.nodes('.actions').forEach(function(a){
-        //   console.log(a.data())
-        // })
-
-
-        var box = {x1:0, x2:0, w:390, h:240}
-        var layout  =nl_graph.layout({
-                name: 'cola',
-                flow: {"axis":"y", "left":"start", "right":"exit", "gap":225, "equality":"true"},
-                unconstrIter: 10,
-                userConstIter: 20,
-                edgeLength:175, 
-                fit: true
-                   
-                
-
-              })
-
-
-
-        layout.run()
-
-        layout.on('layoutstop', function(){
-          resize()
-        })
-        // nl_graph.ready(function(e){
-        //   resize()
-        // })
-        
+        set_min_percent(small[level])
 
         nl_graph.edges().forEach(function(e){
           var data = e.data()
@@ -1483,6 +1480,70 @@ d3.csv(csv_file, function(error, data) {
           }
         })
 
+        
+        nl_graph.nodes().forEach(function(d){
+          var data = d.data();
+          
+          var deg = d.connectedEdges('.visible').length;
+          console.log('node:', data.action)
+          console.log('with degree', deg )
+
+          if (deg>0){
+            d.addClass('hasEdges')
+            d.removeClass('orphan')
+          }else{
+            console.log('orphan', data)
+            d.removeClass('hasEdges')
+            d.addClass('orphan')
+          }
+
+          if (data.size){
+            d.css('width', 9)
+            d.css('height', 9)
+          }
+
+          if (!data.end){
+            d.addClass('actions')
+          }else{
+            d.addClass('end')
+          }
+
+
+        })
+
+
+        var box = {x1:0, x2:0, w:390, h:240}
+        var layout  =nl_graph.layout({
+                name: 'cola',
+                flow: {"axis":"y", "left":"start", "right":"exit", "gap":500, "equality":"true"},
+                unconstrIter: 7,
+                userConstIter: 7,
+                allConstIter: 7,
+                avoidOverlap:true,
+                //edgeLength:175, 
+                edgeLength:150, 
+                fit: true
+                   
+                
+
+              })
+
+
+        //$('#cy').hide()
+        $('#load_chart').show()
+        layout.run()
+
+        layout.on('layoutstop', function(){
+          resize()
+          relocate_orphans()
+          //$('#cy').show()
+          $('#load_chart').hide()
+
+        })
+
+
+        
+
 
         nl_graph.on('tap', 'node', function(e){
 
@@ -1492,6 +1553,8 @@ d3.csv(csv_file, function(error, data) {
           var neighborhood = node.neighborhood().add(node);
 
           select_action_node(node.data())
+          console.log('position', node.position())
+          console.log('renderedPosition', node.renderedPosition())
           nl_graph.edges('.small').removeClass('visible')
           nl_graph.edges('.small').addClass('invisible')
 
@@ -1512,44 +1575,115 @@ d3.csv(csv_file, function(error, data) {
             nl_graph.edges('.small').addClass('invisible')
           }
         });
+        
+
+      
+        
+
+          
+        function relocate_orphans(){
+
+          var x = 9999999;
+          var minX = 9999999;
+          var maxX = 0;
+          var minY = 9999999;
+          var maxY = 0;
+
+          nl_graph.nodes('.hasEdges').forEach(function(n){
+            var px = n.renderedPosition().x
+            var py = n.renderedPosition().y
+            x = (px<x)? px :x;
+            maxX = (px>maxX)?px: maxX;
+            minY = (py<minY)? py :minY;
+            maxY = (py>maxY)?py: maxY;
+          })
+          //x = x -20;
+          var y = nl_graph.nodes('#exit').renderedPosition().y -5;
+          var y2 = nl_graph.nodes('#exit').renderedPosition().y + 25;
+          minX = x
+
+          var t=0
+          nl_graph.nodes('.orphan').forEach(function(d,i){
+
+            //OPTION 1/ verical line on left
+            // d.renderedPosition({x:x, y:y});
+            // y = y - 25;
+            
+            //OPTION 2 - just bring back into view
+            // var pos = d.renderedPosition()
+            //  if (pos.x<minX){
+            //    d.renderedPosition({x:minX, y:pos.y})
+            //  }
+            //  if (pos.x> maxX){
+            //    d.renderedPosition({x:maxX, y:pos.y})
+            //  }
+            //  if (pos.y<minY){
+            //    d.renderedPosition({x:pos.x, y:minY})
+            //  }
+            //  if (pos.y>maxY){
+            //    d.renderedPosition({x:pos.x, y:maxY})
+            //  }
+
+            //OPTION 3 in rows bedlow exit
+            if ((i!=0) && (i%5 == 0)){
+              y2 += 30;
+              x= minX;
+            }
+            //t =(t==0)? 7:0;
+            d.renderedPosition({x:x, y:y2+t});
+            x+= 60
+       
+
+          })
+          nl_graph.zoomingEnabled(true);
+          nl_graph.fit(nl_graph.nodes())
+          nl_graph.zoomingEnabled(false);
+
+        }
 
 
         function resize(){
-          
-          
-          nl_graph.nodes('#start').renderedPosition({x:nl_width/2, y:20});
-        nl_graph.nodes('#exit').renderedPosition({x:nl_width/2, y:230});
-
-          
-        
-
-          nl_graph.nodes('.actions').forEach(function(d){
-            var data = d.data();
-
-            var pos = d.renderedPosition()
-            if (pos.x<30){
-              d.renderedPosition({x:30, y:pos.y})
-            }
-            if (pos.x> (nl_width-30)){
-              d.renderedPosition({x:(nl_width-30), y:pos.y})
-            }
-            if (pos.y<50){
-              d.renderedPosition({x:pos.x, y:50})
-            }
-            if (pos.y>205){
-              d.renderedPosition({x:pos.x, y:205})
-            }
-
-
-
-          
-          })
-
-          nl_graph.resize()
-          // cy.fit()
+          nl_graph.zoomingEnabled(true);
+          var maxZoom = nl_graph.maxZoom();
+          console.log('max zoom', maxZoom)
+          //nl_graph.maxZoom( fitMaxZoom );
+          nl_graph.resize();
+          nl_graph.fit(nl_graph.nodes('.hasEdges'))
           nl_graph.zoomingEnabled(false);
-        }
+          // nl_graph.fit(nl_graph.nodes(),50)
+          // nl_graph.fit(nl_graph.$(':visible'),50)
+          //nl_graph.maxZoom( maxZoom );
+          
+          
+          // nl_graph.nodes('#start').renderedPosition({x:nl_width/2, y:20});
+          // nl_graph.nodes('#exit').renderedPosition({x:nl_width/2, y:230});
+
+          
         
+
+          // nl_graph.nodes('.actions').forEach(function(d){
+          //   var data = d.data();
+
+          //   var pos = d.renderedPosition()
+          //   if (pos.x<30){
+          //     d.renderedPosition({x:30, y:pos.y})
+          //   }
+          //   if (pos.x> (nl_width-30)){
+          //     d.renderedPosition({x:(nl_width-30), y:pos.y})
+          //   }
+          //   if (pos.y<50){
+          //     d.renderedPosition({x:pos.x, y:50})
+          //   }
+          //   if (pos.y>205){
+          //     d.renderedPosition({x:pos.x, y:205})
+          //   }
+     
+          // })
+
+          // nl_graph.resize()
+          // cy.fit()
+          
+        }
         
       }
 
@@ -1629,7 +1763,7 @@ d3.csv(csv_file, function(error, data) {
         var node_link_data;
 
         node_link_data = clear_node_link_data();
-        draw_action_transition_graph(node_link_data);
+        //draw_action_transition_graph(node_link_data);
 
         node_link_data = update_node_link_data();
         draw_action_transition_graph(node_link_data);
@@ -5527,7 +5661,7 @@ d3.csv(csv_file, function(error, data) {
 
         show_node_view(selected)
         draw_pattern_graph(pattern_data)
-        update_action_transition_graph()
+        //update_action_transition_graph()
 
         if( $("#build_filter_view").is(':visible'))
           update_filter_view()
@@ -6017,18 +6151,25 @@ d3.csv(csv_file, function(error, data) {
 
       function reset_filters(exception) {
 
-        if (!arguments.length)
-          exception = -1;
+        console.log('Reseting Filters')
 
-        for(var i=0; i<= max_id; i++){
-          if (i != exception){
-            reset(i);
-          }   
-        }
+        // if (!arguments.length)
+        //   exception = -1;
+
+        // for(var i=0; i<= max_id; i++){
+        //   if (i != exception){
+        //     reset(i);
+        //     //charts[i].filter_dimension().filterAll();
+        //   }   
+        // }
+        selectedFilter={}
 
         dimensions.forEach(function(d){
           d.filterAll()
+
         })
+
+        renderAll()
 
       }
       var dim;
@@ -6160,7 +6301,7 @@ d3.csv(csv_file, function(error, data) {
 
             if (selected.data.value == 1) {
 
-              // reset_filters();
+              
               $('#remove_button').prop('disabled',true)
               if (!selected_segment){
                 selected_segment = selected;
@@ -6187,7 +6328,7 @@ d3.csv(csv_file, function(error, data) {
               var filtered_size = all.reduceCount().value()
               console.log('filtered-size', filtered_size );
               if (filtered_size != selected.data.size)  {
-                alert('filtered size is not correct!')
+                alert('filtered size is not correct! pre-calculated size: ' + selected.data.size + ' filtered-size: ' +filtered_size  )
               }
 
 
