@@ -273,24 +273,30 @@
                     <div>Action Level:</div>
                     <div class="dropdown level" style="margin-left:5px;">
                       
-                      <button type="button" 
+                      <button type="button" id='level_label' 
                         class="btn btn-select"
                         data-toggle="dropdown">General</button>
                       <ul class="dropdown-menu dropdown-menu-select">
-                      <li><label class="dropdown-radio" id="general">
-                          <input type="radio" name="level">
+                      <li>
+                          <button type="button" id="general" class="btn btn-primary level_button" disabled>General</button>
+                          <!-- <label class="dropdown-radio level_button" >
+                          <input type="radio" id="general" name="level">
                           <i>General</i>
-                          </label>
+                          </label> -->
                       </li>
-                      <li><label class="dropdown-radio" id="grouped">
-                          <input type="radio" name="level">
+                      <li>
+                           <button type="button" id="grouped" class="btn btn-primary level_button">Grouped</button>
+                          <!-- <label class="dropdown-radio level_button" >
+                          <input type="radio" id="grouped" name="level">
                           <i>Grouped</i>
-                          </label>
+                          </label> -->
                       </li>
-                      <li><label class="dropdown-radio" id='pages'>
-                          <input type="radio" name="level">
+                      <li>
+                           <button type="button" id="pages" class="btn btn-primary level_button">Pages</button>
+                          <!-- <label class="dropdown-radio level_button">
+                          <input type="radio"  id='pages' name="level">
                           <i>Pages</i>
-                          </label>
+                          </label> -->
                       </li>
                       </ul>
                     </div>
@@ -620,19 +626,6 @@ d3.csv(csv_file, function(error, data) {
         current_level = action_hierarchy[level]
         n_actions = current_level.length-2
         
-        // remove_dimension(action_strings)
-        // remove_dimension(action_strings2)
-        // remove_dimension(trans_strings)
-
-        // action_strings = seqs.dimension(function(d) {return d[level]});
-        // action_strings2 = seqs.dimension(function(d) {return d[level]});
-        // trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[level])});
-
-        // dimensions.push(action_strings)
-        // dimensions.push(action_strings2)
-        // dimensions.push(trans_strings)
-
-
         action_strings = action_filter_dimensions[level].action_strings
         action_strings2 = action_filter_dimensions[level].action_strings2
         trans_strings = action_filter_dimensions[level].trans_strings
@@ -806,10 +799,16 @@ d3.csv(csv_file, function(error, data) {
         //update the text
         var checkedtext = $(checked).closest('.dropdown-radio').text();
         dropdown.find('button').text( checkedtext );
+      });
 
-        //retrieve the checked value, if needed in page 
-        // var thisvalue = dropdown.find( checked ).val();
-        //alert ( thisvalue  );
+      $('.level_button').find('input').change(function() {
+        var dropdown = $(this).closest('.dropdown');
+        var radioname = $(this).attr('name');
+        var checked = 'input[name=' + radioname + ']:checked';
+        
+        //update the text
+        var checkedtext = $(checked).closest('.dropdown-radio').text();
+        dropdown.find('button').text( checkedtext );
       });
 
       // d3.selectAll("#sequence_details")
@@ -888,8 +887,8 @@ d3.csv(csv_file, function(error, data) {
       // d3.select("#close_detailed_view")
       //   .on("click", close_detailed_view);
 
-      d3.select("#demo_button")
-        .on("click", function(d) {return change_level(general)});
+      // d3.select("#demo_button")
+      //   .on("click", function(d) {return change_level(general)});
 
       // d3.select("#general")
       //   .on("click", function(d) {return change_level(general)});
@@ -904,13 +903,17 @@ d3.csv(csv_file, function(error, data) {
 
       $('#general').click(function() {
           $('#load').show();
+         
+          change_level_button('#general')
           setTimeout(function() {
               change_level(general)
               $('#load').hide();
+              
           }, 1000);
       });
       $('#grouped').click(function() {
           $('#load').show();
+          change_level_button('#grouped')
           setTimeout(function() {
               change_level(grouped)
               $('#load').hide();
@@ -918,6 +921,7 @@ d3.csv(csv_file, function(error, data) {
       });
       $('#pages').click(function() {
           $('#load').show();
+          change_level_button('#pages')
           setTimeout(function() {
               change_level(actions)
               $('#load').hide();
@@ -925,7 +929,14 @@ d3.csv(csv_file, function(error, data) {
       });
 
         
+      function change_level_button(id){
+        $('.level_button').prop('disabled', false);
 
+        $(id).prop('disabled', true);
+        //update the text
+        var checkedtext = $(id).text();
+        $('#level_label').text( checkedtext );
+      }
 
 
       var charts = [
@@ -1285,11 +1296,6 @@ d3.csv(csv_file, function(error, data) {
 
       }
 
-      // $(document).on('show.bs.collapse', '#collapse_contains', function (e) {
-
-      //     update_action_transition_graph()
-      //   })
-
       $('#collapse_contains').on('shown.bs.collapse', function () {
         update_action_transition_graph()
       });
@@ -1319,12 +1325,6 @@ d3.csv(csv_file, function(error, data) {
       var nl_graph= cytoscape({
           container: document.querySelector('#cy'),
           boxSelectionEnabled: false,
-          // minZoom: 0.75,
-          // maxZoom: 1.25,
-
-          // boxSelectionEnabled: false,
-          // autounselectify: true,
-          //zoomingEnabled: false,
 
           style: cytoscape.stylesheet()
             .selector('node')
@@ -1362,11 +1362,7 @@ d3.csv(csv_file, function(error, data) {
                 'opacity': 0.25,
                 'text-opacity': 0.25
               })
-            // .selector('#all_actions')
-            //   .css({
-            //     'background-color': 'white',
-            //     'line-color': 'white'
-            //   })
+
         });;
 
       
@@ -1552,7 +1548,7 @@ d3.csv(csv_file, function(error, data) {
           var node = e.target;
           var neighborhood = node.neighborhood().add(node);
 
-          select_action_node(node.data())
+          select_horizontal_action(node.data())
           console.log('position', node.position())
           console.log('renderedPosition', node.renderedPosition())
           nl_graph.edges('.small').removeClass('visible')
@@ -3710,8 +3706,7 @@ d3.csv(csv_file, function(error, data) {
             chart = operation.chart,
             operations = operation.results,
             show_all_text = true,
-            threshold_ranges = operation.threshold_ranges,
-            sep = 40;
+            threshold_ranges = operation.threshold_ranges
 
         //update_selected_chart(chart);
         select_chart(chart)
@@ -3747,7 +3742,12 @@ d3.csv(csv_file, function(error, data) {
         console.log('info partition data', partition_data)
         console.log('result partition data', result_data)
 
-        update_node_info_view(info_data, sep)
+        shown_idx = []
+        for(var i=0; i < operations.length;i++){
+          shown_idx.push(i)
+        }
+
+        update_node_info_view(info_data)
         
       }
 
@@ -3790,16 +3790,14 @@ d3.csv(csv_file, function(error, data) {
       }
 
 
-      function update_node_info_view(data, sep){
+      function update_node_info_view(data){
 
         console.log('NODE INFO VIEW DATA', data)
         var n_operations = data.operation_data.length
-        var sep = sep |1;
+        //var sep = sep |1;
+        var sep = 1
         var max_vTranslate;
 
-
-
-      
 
         // //Results View
 
@@ -3851,11 +3849,6 @@ d3.csv(csv_file, function(error, data) {
         var bar_update = bar_enter.merge(bar);
 
 
-
-        
-
-
-
         
         //------------------------OPERATION SIDE ---------------
         oData = data.operation_data
@@ -3873,7 +3866,9 @@ d3.csv(csv_file, function(error, data) {
               return "operation" + last;
             })
             .attr("transform", function(d, i) {
-                var x = ((i !=0) && (i == (n_operations-1)))? 10:0;
+                //spacing for the last result
+                //var x = ((i !=0) && (i == (n_operations-1)))? 10:0;
+                var x=0;
                 var t = 0;
 
                 shown_idx.forEach(function(idx){
@@ -4045,7 +4040,10 @@ d3.csv(csv_file, function(error, data) {
         var resultEnter = result.enter().append("g")
             .attr("class", "result")
             .attr("transform", function(d, i) { 
-              var x = ((i !=0) && (i == (n_operations-1)))? 10:0;
+
+              //spacing for the last result
+              //var x = ((i !=0) && (i == (n_operations-1)))? 10:0;
+              var x =0;
               var t = 0;
               shown_idx.forEach(function(idx){
                   if (i ==idx){ t+= 5}
@@ -4134,7 +4132,7 @@ d3.csv(csv_file, function(error, data) {
           max_tHeight = (h>max_tHeight)? h: max_tHeight;
         })
 
-        var max_height = (n_operations +1)*(oWidth+sep) + max_tHeight +25 + max_vTranslate,
+        var max_height = (n_operations +1)*(oWidth+sep) + max_tHeight +25 + max_vTranslate + vTranslate,
             svg_height = max_height > info_height? max_height : info_height;
 
         console.log('max v Translate', max_vTranslate)
@@ -5319,7 +5317,6 @@ d3.csv(csv_file, function(error, data) {
         brush.on("start.chart", function() {
           var div = d3.select(this.parentNode.parentNode.parentNode);
           update_selected_chart(div);
-          //reset_filters(id);
           div.select(".title a").style("display", null);
           selectedDiv = div.attr('id');
           console.log('all ids but', id)
@@ -6140,28 +6137,15 @@ d3.csv(csv_file, function(error, data) {
         for(var i=0; i<= max_id; i++){
           if (i != exception){
             reset(i);
-            //charts[i].dimension().filterAll();
-            //charts[i].filter_dimension().filterAll();
-
-
           } 
         }
 
       }
 
-      function reset_filters(exception) {
+      function reset_filters() {
 
-        console.log('Reseting Filters')
+        console.log('Reseting All Filters')
 
-        // if (!arguments.length)
-        //   exception = -1;
-
-        // for(var i=0; i<= max_id; i++){
-        //   if (i != exception){
-        //     reset(i);
-        //     //charts[i].filter_dimension().filterAll();
-        //   }   
-        // }
         selectedFilter={}
 
         dimensions.forEach(function(d){
@@ -6705,7 +6689,8 @@ d3.csv(csv_file, function(error, data) {
                 chart: selected_chart,
                 div: chart_id,
                 type: 'range',
-                range: info_range
+                range: info_range,
+                value: 0
 
 
             }
@@ -6735,6 +6720,7 @@ d3.csv(csv_file, function(error, data) {
 
             filter.extents = extents;
             filter.size = size;
+
 
             var filter_data = get_filter_data_for_segment(d, filter),
                 filter_copy = filter_data.filter,
