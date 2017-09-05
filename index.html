@@ -3858,7 +3858,7 @@ d3.csv(csv_file, function(error, data) {
             .remove()
             .exit()
             .data(oData);
-
+        var tt = 0;
         // Enter any new nodes at the parent's previous position.
         var operationEnter = operation.enter().append("g")
             .attr("class", function(d,i) {
@@ -3870,16 +3870,29 @@ d3.csv(csv_file, function(error, data) {
                 //var x = ((i !=0) && (i == (n_operations-1)))? 10:0;
                 var x=0;
                 var t = 0;
+                var tt = 0;
+
+                
+                
+
 
                 shown_idx.forEach(function(idx){
-                  if (i ==idx){ t+= 5}
+                  if (i ==idx){ t+= 5; tt+=5;}
                   if (i > idx){
+                    var textData = oData[idx].text_data[1]
+                    var text_height = textData.text.length
+                    if(text_height < 3) text_height = 3;
+
+                    tt += (text_height+1)*oWidth;
+                    
                     t += 40;
                   }
                 })
+                console.log('tt', tt)
+                console.log('t', t)
                 max_vTranslate = t;
 
-                return "translate(" + 0 + "," + (i*(oWidth + sep)+x+t) + ")";
+                return "translate(" + 0 + "," + (i*(oWidth + sep)+x+tt) + ")";
                 })
             .on("click", function(d,i) {
               select_operation_node(d);
@@ -4045,13 +4058,19 @@ d3.csv(csv_file, function(error, data) {
               //var x = ((i !=0) && (i == (n_operations-1)))? 10:0;
               var x =0;
               var t = 0;
+              var tt = 0;
               shown_idx.forEach(function(idx){
                   if (i ==idx){ t+= 5}
                   if (i > idx){
+                    var textData = oData[idx].text_data[1]
+                    var text_height = textData.text.length
+                    if(text_height < 3) text_height = 3;
+
+                    tt += (text_height+1)*oWidth;
                     t += 40;
                   }
                 })
-              return "translate(" + 0 + "," + (i*(oWidth+sep)+x +t)  + ")"; 
+              return "translate(" + 0 + "," + (i*(oWidth+sep)+x +tt)  + ")"; 
             })
             .on("click", function(d,i) {
               show_operation_text(i);
