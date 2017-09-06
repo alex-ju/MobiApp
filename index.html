@@ -161,7 +161,7 @@
                               </div> -->
                               <div  class="graph" id="pb_graph"></div>
                             </div>
-                            <div style="width:140px;" >
+                         <!--    <div style="width:140px;" >
                               <div class="text-center">
                                 <button type="button" id="clear_pb_button" class="btn btn-sm btn-default btn-block">Clear All</button>
                               </div>
@@ -200,7 +200,7 @@
                                   <div id=collapse_links class="panel-body collapse in">
                                     <div class=btn-group-vertical data-toggle="buttons">
                                       <label class="btn btn-sm btn-default" id="add_cons_link_button"><input  name="link_radio" type="radio" >Consecutive</label>
-                                      <label class="btn btn-sm btn-default" id="create_funnel_button"><input name="link_radio" type="radio" >Non-Consecutive</label>
+                                      <label class="btn btn-sm btn-default" id="add_nonCons_link_button"><input name="link_radio" type="radio" >Non-Consecutive</label>
                                     </div>
                                   </div>
                                 </div>
@@ -208,13 +208,90 @@
 
 
                             </div>
+ -->      
+
+                            
+                            <div style="width:100px">
+                              <div style ="top:0; width:100%; background-color: lightgray; text-align:center;">Actions</div>
+                                    <!-- Actions: -->
+                              <div class="graph scroll border" style=" height: 370px; width: 100px;" id ="action_list"> </div>
+                            </div>
+
+
+                            <div style="width:130px;" >
+                              <div class="text-center">
+                                <button type="button" id="clear_pb_button" class="btn btn-sm btn-default btn-block">Clear All</button>
+                              </div>
+                              <div class="panel-group top-buffer-sm" id="operation_info">
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    Actions
+                                    <a data-toggle="collapse" class="info-toggle" href="#collapse_actions"></a>
+                                  </div>
+                                  <div id=collapse_actions class="panel-body collapse in">
+                                    <div class="text-center btn-group-vertical" data-toggle="buttons"">
+                                      <button type="button" id="add_node_button" class="btn btn-xs btn-default btn-block"><span class="glyphicon glyphicon-plus"></span> Add Action</button>
+                                      <button type="button" id="remove_node_button" class="btn btn-xs btn-default btn-block"> <span class="glyphicon glyphicon-minus"></span> Remove Action</button>
+                                      <button type="button" id="toggle_many_button" class="btn btn-xs btn-default btn-block">One or Many</button>
+                                    </div>
+                                    
+
+
+                                  </div>
+
+                                </div>
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    Links
+                                    <a data-toggle="collapse" class="info-toggle" href="#collapse_links"></a>
+                                  </div>
+                                  <div id=collapse_links class="panel-body collapse in">
+                                    <div class="radio">
+                                      <label><input id="add_cons_link_button" type="radio" name="link_radio">Consecutive</label>
+                                    </div>
+                                    <div class="radio">
+                                      <label><input id="add_nonCons_link_button" type="radio" name="link_radio">Non-Consecutive</label>
+                                    </div>
+                                    <div class="radio">
+                                      <label><input id ="no_links_button" type="radio" name="link_radio">None</label>
+                                    </div>
+<!--                                     <div class=btn-group-vertical data-toggle="buttons">
+                                      <label class="btn btn-sm btn-default" id="add_cons_link_button"><input  name="link_radio" type="radio" >Consecutive</label>
+                                      <label class="btn btn-sm btn-default" id="add_nonCons_link_button"><input name="link_radio" type="radio" >Non-Consecutive</label>
+                                    </div> -->
+                                  </div>
+                                </div>
+                              </div>
+
+
+                            </div>
+
+
+
+
+                            <!-- <div >
+                              <div class="text-center btn-group-vertical" data-toggle="buttons"">
+                                <button type="button" id="clear_pb_button" class="btn btn-xs btn-default btn-block">Clear All</button>
+                                <button type="button" id="add_node_button" class="btn btn-xs btn-default btn-block"><span class="glyphicon glyphicon-plus"></span> Add Action</button>
+                                <button type="button" id="remove_node_button" class="btn btn-xs btn-default btn-block"> <span class="glyphicon glyphicon-minus"></span> Remove Action</button>
+                                <button type="button" id="toggle_many_button" class="btn btn-xs btn-default btn-block">One or Many</button>
+                                <label class="btn btn-xs btn-default" id="add_cons_link_button"><input  name="link_radio" type="radio" >Consecutive</label>
+                                <label class="btn btn-xs btn-default" id="add_nonCons_link_button"><input name="link_radio" type="radio" >Non-Consecutive</label>
+                              </div>
+                            </div> -->
+                            
+                              
+
+
+                            
+
                             <!-- <div class="graph" id ="action_list"> </div> -->
                           </div>
                           <!-- <div class="btn-group-vertical">
                             
                             <button type="button" id="add_cons_link_button" class="btn 
                             btn-primary">Add Consecutive Links</button>
-                            <button type="button" id="create_funnel_button" class="btn btn-primary">Add Non-Consecutive Links</button>
+                            <button type="button" id="add_nonCons_link_button" class="btn btn-primary">Add Non-Consecutive Links</button>
                        
                           </div> -->
                           <div class="text-right top-buffer">
@@ -442,8 +519,6 @@
                         <div id="sequences">
                           <label class="checkbox-inline"><input id="group_sequences" type="checkbox" checked="checked" value="">Group Sequences</label>
                           <label class="checkbox-inline"><input id="transitionize_sequences" type="checkbox" value="">Transitionize Sequences</label>
-                          <label class="checkbox-inline"><input id="visify_sequences" type="checkbox" value="">Visify Sequences</label>
-                          
                           <div class="inline align-center">
                             <div id="sequences_text" class="border scroll" style=" height: 200px; width: 500px; padding:10px; margin-left: 20px; margin-top: 20px;"> 
                             </div>
@@ -599,8 +674,8 @@ d3.csv(csv_file, function(error, data) {
       var small = {}
 
       small[general] =0
-      small[grouped]= 5
-      small[actions] = 10
+      small[grouped]= 10
+      small[actions] = 20
 
 
       action_hierarchy[general] = ['addToCart', 'removeFromCart', 'purchase', 'search', 'pageview']
@@ -693,6 +768,39 @@ d3.csv(csv_file, function(error, data) {
 
 
         return colors[action]
+
+      }
+
+      var parents ={
+
+        "pv_account": "account_group",
+        "pv_login": "account_group",
+        "pv_eliterewards": "account_group",
+        "pv_category": "browse_group",
+        "pv_product": "browse_group",
+        "pv_home": "browse_group",
+        "pv_search": "browse_group",
+        "pv_explore": "browse_group",
+        "pv_specialoffers":"browse_group",
+        "pv_checkout": "checkout_group",
+        "pv_cart": "cart_group",
+        "pv_confirmation": "checkout_group",
+        "pv_other": "other_group",
+        "pv_error": "other_group",
+        "pv_storelocator": "info_group",
+        "pv_help": "info_group" 
+      }
+
+      function get_parent(action){
+
+        if (!action) return 'none'
+        
+        if (!(action in parents)){
+          return 'none'
+        }
+
+
+        return parents[action]
 
       }
 
@@ -859,8 +967,10 @@ d3.csv(csv_file, function(error, data) {
       
       d3.select("#add_node_button")
         .on("click", add_action_node);
-      d3.select("#create_funnel_button")
+      d3.select("#add_nonCons_link_button")
         .on("click", create_funnel)
+      d3.select("#no_links_button")
+        .on("click", no_links)
       d3.select("#apply_contains_operation")
         .on("click", apply_contains_filter)
       d3.select("#apply_funnel_button")
@@ -882,8 +992,8 @@ d3.csv(csv_file, function(error, data) {
         .on("click", group_sequences);
       d3.select("#transitionize_sequences")
         .on("click", transitionize_sequences);
-      d3.select("#visify_sequences")
-        .on("click", visify_sequences);
+      // d3.select("#visify_sequences")
+      //   .on("click", visify_sequences);
       // d3.select("#close_detailed_view")
       //   .on("click", close_detailed_view);
 
@@ -1269,8 +1379,8 @@ d3.csv(csv_file, function(error, data) {
 
       //=========================== Node Link =====================================//
       var nl_graph_data = {nodes:[], links: []},
-          nl_width = 250,
-          nl_height= 250;
+          nl_width = 400,
+          nl_height= 400;
 
       var nl_svg = d3.select("#node_link").append("svg")
                       .attr("width", nl_width)
@@ -1362,6 +1472,10 @@ d3.csv(csv_file, function(error, data) {
                 'opacity': 0.25,
                 'text-opacity': 0.25
               })
+            .selector('.isParent')
+              .css({
+                'opacity': 0.25
+              })
 
         });;
 
@@ -1397,6 +1511,7 @@ d3.csv(csv_file, function(error, data) {
 
         console.log('Drawing action transition graph', node_link_data)
         nl_graph.zoomingEnabled(true);
+
         $('#cy').css('height',nl_height);
         $('#cy').css('width', nl_width);
 
@@ -1413,9 +1528,27 @@ d3.csv(csv_file, function(error, data) {
 
         })
 
+        if (level == grouped){
+          nl_graph.add({group:"nodes", data:{id:'pageview', color:'white'}})
+        }else if (level == actions){
+          nl_graph.add({group:"nodes", data:{id:'browse_group', color:"white"}})
+          nl_graph.add({group:"nodes", data:{id:'other_group', color:"white"}})
+          nl_graph.add({group:"nodes", data:{id:'account_group', color:"white"}})
+          nl_graph.add({group:"nodes", data:{id:'info_group', color:"white"}})
+          nl_graph.add({group:"nodes", data:{id:'cart_group', color:"white"}})
+          nl_graph.add({group:"nodes", data:{id:'checkout_group', color:"white"}})
+        }
+
         var nodes = node_link_data.nodes.map(function(n){
           n.color = color(n.action)
           var node ={group:"nodes", data:n}
+
+          if(n.action.includes('group')){
+            n.parent = 'pageview'
+          }
+          if(n.action.includes('pv_')){
+            n.parent = get_parent(n.action)
+          }
 
           if (n.fx){
             n.size = 9;
@@ -1481,8 +1614,9 @@ d3.csv(csv_file, function(error, data) {
           var data = d.data();
           
           var deg = d.connectedEdges('.visible').length;
-          console.log('node:', data.action)
-          console.log('with degree', deg )
+          if(data.isParent){
+            d.addClass('isParent')
+          }
 
           if (deg>0){
             d.addClass('hasEdges')
@@ -1531,7 +1665,7 @@ d3.csv(csv_file, function(error, data) {
 
         layout.on('layoutstop', function(){
           resize()
-          relocate_orphans()
+          //relocate_orphans()
           //$('#cy').show()
           $('#load_chart').hide()
 
@@ -1908,10 +2042,8 @@ d3.csv(csv_file, function(error, data) {
           
           if(pattern_data.nodes.length>0){
             //add link to previously added node
-            // previous_node_id = selected_pattern_node.id;
             previous_node_id = selected_pattern_node.id;
             add_action_node();
-            // current_node_id = selected_pattern_node.id;
             current_node_id = selected_pattern_node.id;
             pattern_data.links.push({"source": previous_node_id, "target": current_node_id, "value": 0.5, "consecutive": consecutive});
             draw_pattern_graph(pattern_data);
@@ -1920,6 +2052,9 @@ d3.csv(csv_file, function(error, data) {
             add_action_node();
           }
 
+        }else{
+          clear_contains_builder()
+          add_action_node()
         }
 
 
@@ -2415,6 +2550,7 @@ d3.csv(csv_file, function(error, data) {
 
       var al_svg = d3.select("#action_list").append('svg')
                     .attr('width', 100)
+                    .attr('transform', "translate(0,10)")
                     //.attr('height', 175)
 
 
@@ -2498,8 +2634,7 @@ d3.csv(csv_file, function(error, data) {
         if (selected_action_node){
           new_node = {
             action: selected_action_node.action,
-            id: selected_action_node.id + node_id++,
-            pid: 'n' + node_id++
+            id: selected_action_node.id + node_id++
           }
           // if (pattern_data.nodes.length == 0){
           //   pb_width =  pbDiv.node().clientWidth
@@ -2589,10 +2724,10 @@ d3.csv(csv_file, function(error, data) {
           consecutive = false;
 
       function create_funnel(){
-        //toggle_button_color("#create_funnel_button");
+        //toggle_button_color("#add_nonCons_link_button");
         consecutive = false;
         pressed = true;
-        // d3.select("#create_funnel_button").text(function(d){return pressed? 'Complete Pattern': 'Add Non-Consecutive Links'});
+        // d3.select("#add_nonCons_link_button").text(function(d){return pressed? 'Complete Pattern': 'Add Non-Consecutive Links'});
 
       }
 
@@ -2604,6 +2739,9 @@ d3.csv(csv_file, function(error, data) {
 
       }
 
+      function no_links(){
+        pressed = false;
+      }
       var any_node = {
           action: null
       }
@@ -2965,10 +3103,9 @@ d3.csv(csv_file, function(error, data) {
         pb_graph.nodes().forEach(function(n){
           var data = n.data()
 
-          // if (data.type =='many'){
-            
-          //   n.addClass('many')
-          // }
+          pb_graph.elements().removeClass('selected')
+          if(data.selected)
+            n.addClass('selected')
 
           if(data.many){
             n.addClass('many');
@@ -3262,7 +3399,7 @@ d3.csv(csv_file, function(error, data) {
                             .text(function(d){return d.count.value;})
 
         var width =0,
-            h = (details_data.length+1)*13,
+            h = (details_data.length+1)*15,
             height = (h <200)? 200: h;
             //width= max_i*(w+1) +count_width + 50;
             
@@ -3858,7 +3995,7 @@ d3.csv(csv_file, function(error, data) {
             .remove()
             .exit()
             .data(oData);
-        var tt = 0;
+
         // Enter any new nodes at the parent's previous position.
         var operationEnter = operation.enter().append("g")
             .attr("class", function(d,i) {
@@ -3869,28 +4006,21 @@ d3.csv(csv_file, function(error, data) {
                 //spacing for the last result
                 //var x = ((i !=0) && (i == (n_operations-1)))? 10:0;
                 var x=0;
-                var t = 0;
                 var tt = 0;
 
-                
-                
-
-
                 shown_idx.forEach(function(idx){
-                  if (i ==idx){ t+= 5; tt+=5;}
+                  if (i ==idx){ tt+=5;}
                   if (i > idx){
                     var textData = oData[idx].text_data[1]
                     var text_height = textData.text.length
                     if(text_height < 3) text_height = 3;
 
                     tt += (text_height+1)*oWidth;
-                    
-                    t += 40;
+            
                   }
                 })
                 console.log('tt', tt)
-                console.log('t', t)
-                max_vTranslate = t;
+                max_vTranslate = tt;
 
                 return "translate(" + 0 + "," + (i*(oWidth + sep)+x+tt) + ")";
                 })
@@ -4057,17 +4187,15 @@ d3.csv(csv_file, function(error, data) {
               //spacing for the last result
               //var x = ((i !=0) && (i == (n_operations-1)))? 10:0;
               var x =0;
-              var t = 0;
               var tt = 0;
               shown_idx.forEach(function(idx){
-                  if (i ==idx){ t+= 5}
+                  if (i ==idx){ tt+= 5}
                   if (i > idx){
                     var textData = oData[idx].text_data[1]
                     var text_height = textData.text.length
                     if(text_height < 3) text_height = 3;
 
                     tt += (text_height+1)*oWidth;
-                    t += 40;
                   }
                 })
               return "translate(" + 0 + "," + (i*(oWidth+sep)+x +tt)  + ")"; 
@@ -5647,7 +5775,7 @@ d3.csv(csv_file, function(error, data) {
 
         update_builder_range()
 
-         p_width = (width< 235)? width: width-150
+         p_width = (width< 235)? width: width-230
         //p_width = (0.25*width <100)? width-110: 0.75*width
 
         fb_svg
