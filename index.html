@@ -214,7 +214,7 @@
                             <div style="width:100px">
                               <div style ="top:0; width:100%; background-color: lightgray; text-align:center;">Actions</div>
                                     <!-- Actions: -->
-                              <div class="graph scroll border" style=" height: 370px; width: 100px;" id ="action_list"> </div>
+                              <div class="graph scroll border" style=" height: 385px; width: 100px;" id ="action_list"> </div>
                             </div>
 
 
@@ -763,7 +763,8 @@ d3.csv(csv_file, function(error, data) {
           //colors[action] = scheme(color_id)
           while(taken_colors.indexOf(color_id)>-1) color_id=color_id+1;
           colors[action] = scheme[color_id]
-          color_id= color_id+1
+          color_id= (color_id ==19)? 0 : color_id+1;
+
         }
 
 
@@ -1379,8 +1380,8 @@ d3.csv(csv_file, function(error, data) {
 
       //=========================== Node Link =====================================//
       var nl_graph_data = {nodes:[], links: []},
-          nl_width = 400,
-          nl_height= 400;
+          nl_width = 250,
+          nl_height= 250;
 
       var nl_svg = d3.select("#node_link").append("svg")
                       .attr("width", nl_width)
@@ -1597,10 +1598,26 @@ d3.csv(csv_file, function(error, data) {
       function draw_action_transition_graph(node_link_data){
 
         console.log('Drawing action transition graph', node_link_data)
+        
+        var size = 350;
+        if (level == general){
+          size = 250;
+        }else if (level == grouped){
+          size = 300
+        }
+
+        nl_width = size
+        nl_height = size
+
+        nl_svg.attr("width", nl_width)
+                      .attr("height", nl_height)
+
         nl_graph.zoomingEnabled(true);
 
         $('#cy').css('height',nl_height);
         $('#cy').css('width', nl_width);
+
+        nl_graph.resize()
 
         nl_graph.elements().remove()
 
@@ -1619,12 +1636,12 @@ d3.csv(csv_file, function(error, data) {
           nl_graph.add({group:"nodes", data:{ action: 'pageview', id:'pageview', color:'white'}})
         }else if (level == actions){
           nl_graph.add({group:"nodes", data:{action:'pageview', id:'pageview', color:'white'}})
-          nl_graph.add({group:"nodes", data:{action:'browse_group', id:'browse_group', color:"white", parent:"pageview"}})
-          nl_graph.add({group:"nodes", data:{action:'other_group', id:'other_group', color:"white", parent:"pageview"}})
           nl_graph.add({group:"nodes", data:{action:'account_group', id:'account_group', color:"white", parent:"pageview"}})
-          nl_graph.add({group:"nodes", data:{action:'info_group', id:'info_group', color:"white", parent:"pageview"}})
           nl_graph.add({group:"nodes", data:{action:'cart_group', id:'cart_group', color:"white", parent:"pageview"}})
           nl_graph.add({group:"nodes", data:{action:'checkout_group', id:'checkout_group', color:"white", parent:"pageview"}})
+          nl_graph.add({group:"nodes", data:{action:'browse_group', id:'browse_group', color:"white", parent:"pageview"}})
+          nl_graph.add({group:"nodes", data:{action:'other_group', id:'other_group', color:"white", parent:"pageview"}})
+          nl_graph.add({group:"nodes", data:{action:'info_group', id:'info_group', color:"white", parent:"pageview"}})
         }
 
         var nodes = node_link_data.nodes.map(function(n){
@@ -1807,10 +1824,7 @@ d3.csv(csv_file, function(error, data) {
 
 
           select_horizontal_action(node.data())
-          console.log('position', node.position())
-          console.log('renderedPosition', node.renderedPosition())
-          // nl_graph.edges('.small').removeClass('visible')
-          // nl_graph.edges('.small').addClass('invisible')
+
 
           if (node.isParent()){
             node = node.descendants();
@@ -1826,8 +1840,7 @@ d3.csv(csv_file, function(error, data) {
           neighborhood_edges.removeClass('faded');
           neighborhood_nodes.removeClass('faded');
           node.addClass('selected')
-          // node.connectedEdges('.small').addClass('visible')
-          // node.connectedEdges('.small').removeClass('invisible')
+
         });
 
         nl_graph.on('tap', function(e){
@@ -2809,6 +2822,8 @@ d3.csv(csv_file, function(error, data) {
 
           console.log('index of remove', idx);
           console.log('new nodes', pattern_data.nodes);
+
+          select_pattern_node(nodes[idx])
 
           draw_pattern_graph(pattern_data);
         }else{
