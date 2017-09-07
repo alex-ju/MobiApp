@@ -1473,13 +1473,19 @@ d3.csv(csv_file, function(error, data) {
               })
             .selector('.faded')
               .css({
-                'opacity': 0.25,
+                'opacity': 0.2,
                 'text-opacity': 0.25
               })
             .selector('.orphan')
               .css({
                 'opacity': 0.5
               })
+            .selector('$node > node')
+              .css({
+                'border-width': 0.5,
+                'content': ' '
+              })
+
 
         });;
 
@@ -1529,6 +1535,64 @@ d3.csv(csv_file, function(error, data) {
         }
       }
 
+      var positions = {};
+
+      positions[general] = {
+          'start': {x:145, y:90},
+          'removeFromCart': {x:196, y:121},
+          'addToCart': {x:248,y:152},
+          'purchase':{x:274,y:196},
+          'search':{x:96, y:167},
+          'pageview': {x:170,y:208},
+          'exit': {x:160, y:281}
+
+        }
+
+      positions[grouped] = {
+          'start': {x:145, y:58},
+          'removeFromCart': {x:201, y:91},
+          'addToCart': {x:254,y:109},
+          'purchase':{x:302,y:125},
+          'search':{x:78, y:108},
+          'exit': {x:168, y:339},
+          'browse_group': {x:141, y:179},
+          'cart_group': {x:222, y:182},
+          'checkout_group': {x:297, y:236},
+          'info_group': {x:73, y:218},
+          'other_group': {x:93, y:293},
+          'account_group': {x:272, y:293}
+        }
+
+      positions[actions] = {
+          'start': {x:203, y:-290},
+          'removeFromCart': {x:260, y:-257},
+          'addToCart': {x:312,y:-238},
+          'purchase':{x:369,y:-219},
+          'search':{x:48, y:-238},
+          'exit': {x:198, y:200},
+          'pv_home': {x:8,y:-158},
+          'pv_explore': {x:47,y:-128},
+          'pv_specialoffers': {x:87,y:-96},
+          'pv_search': {x:14,y:-79},
+          'pv_category': {x:164,y:-121},
+          'pv_product': {x:249,y:-121},
+          'pv_cart': {x:352,y:-117},
+          'pv_checkout': {x:390,y:-51},
+          'pv_confirmation': {x:394,y:2},
+          'pv_login': {x:319,y:133},
+          'pv_account': {x:368,y:133},
+          'pv_eliterewards': {x:390,y:74},
+          'pv_storelocator': {x:9,y:-1},
+          'pv_help': {x:66,y:18},
+          'pv_other': {x:61,y:94},
+          'pv_error': {x:29,y:127}
+
+
+
+
+        }
+      
+
 
       function draw_action_transition_graph(node_link_data){
 
@@ -1552,15 +1616,15 @@ d3.csv(csv_file, function(error, data) {
         })
 
         if (level == grouped){
-          nl_graph.add({group:"nodes", data:{action: 'pageview', id:'pageview', color:'white'}})
+          nl_graph.add({group:"nodes", data:{ action: 'pageview', id:'pageview', color:'white'}})
         }else if (level == actions){
-          nl_graph.add({group:"nodes", data:{id:'pageview', color:'white'}})
-          nl_graph.add({group:"nodes", data:{action: 'browse_group', id:'browse_group', color:"white", parent:"pageview"}})
-          nl_graph.add({group:"nodes", data:{action: 'other_group', id:'other_group', color:"white", parent:"pageview"}})
-          nl_graph.add({group:"nodes", data:{action: 'account_group', id:'account_group', color:"white", parent:"pageview"}})
-          nl_graph.add({group:"nodes", data:{action: 'info_group', id:'info_group', color:"white", parent:"pageview"}})
+          nl_graph.add({group:"nodes", data:{action:'pageview', id:'pageview', color:'white'}})
+          nl_graph.add({group:"nodes", data:{action:'browse_group', id:'browse_group', color:"white", parent:"pageview"}})
+          nl_graph.add({group:"nodes", data:{action:'other_group', id:'other_group', color:"white", parent:"pageview"}})
+          nl_graph.add({group:"nodes", data:{action:'account_group', id:'account_group', color:"white", parent:"pageview"}})
+          nl_graph.add({group:"nodes", data:{action:'info_group', id:'info_group', color:"white", parent:"pageview"}})
           nl_graph.add({group:"nodes", data:{action:'cart_group', id:'cart_group', color:"white", parent:"pageview"}})
-          nl_graph.add({group:"nodes", data:{action: 'checkout_group', id:'checkout_group', color:"white", parent:"pageview"}})
+          nl_graph.add({group:"nodes", data:{action:'checkout_group', id:'checkout_group', color:"white", parent:"pageview"}})
         }
 
         var nodes = node_link_data.nodes.map(function(n){
@@ -1582,6 +1646,10 @@ d3.csv(csv_file, function(error, data) {
             else if (n.action == 'exit')
               node.position = {x:nl_width/2, y:500}
             //node.position ={x:n.fx, y:n.fy}
+          }
+
+          if (level in positions){
+            node.position = positions[level][n.action]
           }
 
           nl_graph.add(node)
@@ -1633,6 +1701,12 @@ d3.csv(csv_file, function(error, data) {
           }
         })
 
+
+        nl_graph.nodes('$node > node').forEach(function(n){
+          var data = n.data();
+
+          n.css('border-color', color(data.id))
+        })
         
         nl_graph.nodes().forEach(function(d){
           var data = d.data();
@@ -1654,6 +1728,8 @@ d3.csv(csv_file, function(error, data) {
             }
           }
 
+
+
           
 
           if (data.size){
@@ -1672,34 +1748,52 @@ d3.csv(csv_file, function(error, data) {
 
 
         var box = {x1:0, x2:0, w:390, h:240}
-        var layout  =nl_graph.layout({
-                name: 'cola',
-                flow: {"axis":"y", "left":"start", "right":"exit", "gap":500, "equality":"true"},
-                unconstrIter: 7,
-                userConstIter: 7,
-                allConstIter: 7,
-                avoidOverlap:true,
-                //edgeLength:175, 
-                edgeLength:150, 
-                fit: true
+
+        //--------->FORCE DIRECTED LAYOUR
+        // var layout  =nl_graph.layout({
+        //         name: 'cola',
+        //         flow: {"axis":"y", "left":"start", "right":"exit", "gap":500, "equality":"true"},
+        //         unconstrIter: 7,
+        //         userConstIter: 7,
+        //         allConstIter: 7,
+        //         avoidOverlap:true,
+        //         //edgeLength:175, 
+        //         edgeLength:150, 
+        //         fit: true
                    
                 
 
-              })
+        //       })
+
+        // //$('#cy').hide()
+        // $('#load_chart').show()
+        // layout.run()
+
+        // layout.on('layoutstop', function(){
+        //   resize()
+        //   //relocate_orphans()
+        //   //$('#cy').show()
+        //   $('#load_chart').hide()
+
+        // })
 
 
-        //$('#cy').hide()
-        $('#load_chart').show()
-        layout.run()
-
-        layout.on('layoutstop', function(){
-          resize()
-          //relocate_orphans()
-          //$('#cy').show()
-          $('#load_chart').hide()
-
+        //------>PRESET LAYOUT
+         var layout = nl_graph.layout({
+          name: 'preset'
         })
 
+        nl_graph.zoomingEnabled(true);
+        nl_graph.fit(nl_graph.nodes())
+        nl_graph.zoomingEnabled(false);
+
+        // nl_graph.nodes().on('drag', (function(e){
+
+        //   var node = e.target;
+        //   console.log('Dragging', node.data().action);
+        //   console.log('position', node.position())
+        //   console.log('rendered position', node.renderedPosition())
+        // }))
 
         
 
@@ -1746,7 +1840,7 @@ d3.csv(csv_file, function(error, data) {
         });
         
 
-      
+
         
 
           
@@ -1806,7 +1900,7 @@ d3.csv(csv_file, function(error, data) {
           })
           nl_graph.zoomingEnabled(true);
           nl_graph.fit(nl_graph.nodes())
-          //nl_graph.zoomingEnabled(false);
+          nl_graph.zoomingEnabled(false);
 
         }
 
@@ -3010,7 +3104,7 @@ d3.csv(csv_file, function(error, data) {
 
       // var pb_svg = d3.select('#pb_svg').append('svg')
       //               .attr('height', 400)
-      var pb_height = 350;
+      var pb_height = 400;
       var pb_graph = cytoscape({
           container: document.querySelector('#pb_graph'),
           boxSelectionEnabled: false,
@@ -3068,7 +3162,7 @@ d3.csv(csv_file, function(error, data) {
         });
 
       function draw_pattern_graph(node_link_data){
-        console.log('pattern DATA', node_link_data)
+        //console.log('pattern DATA', node_link_data)
         
         pb_graph.zoomingEnabled(true);
 
