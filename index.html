@@ -675,7 +675,7 @@ d3.csv(csv_file, function(error, data) {
 
       small[general] =0
       small[grouped]= 10
-      small[actions] = 20
+      small[actions] = 15
 
 
       action_hierarchy[general] = ['addToCart', 'removeFromCart', 'purchase', 'search', 'pageview']
@@ -1467,14 +1467,18 @@ d3.csv(csv_file, function(error, data) {
               .css({
                 'opacity': 0
               })
+            .selector('.fake')
+              .css({
+                'opacity': 0
+              })
             .selector('.faded')
               .css({
                 'opacity': 0.25,
                 'text-opacity': 0.25
               })
-            .selector('.isParent')
+            .selector('.orphan')
               .css({
-                'opacity': 0.25
+                'opacity': 0.5
               })
 
         });;
@@ -1483,11 +1487,12 @@ d3.csv(csv_file, function(error, data) {
 
       //$("#sequence_attributes").resizable()
       function update_action_transition_edges(min_percent){
-        nl_graph.edges().addClass('visible')
+        //nl_graph.edges().addClass('visible')
         nl_graph.edges().removeClass('invisible')
         nl_graph.edges().removeClass('small')
+        nl_graph.edges().removeClass('visible')
 
-        nl_graph.edges().forEach(function(e){
+        nl_graph.edges(!'.fake').forEach(function(e){
           var data = e.data()
 
 
@@ -1495,15 +1500,33 @@ d3.csv(csv_file, function(error, data) {
 
 
 
-          if (data.invisible ){
-            e.addClass('invisible')
-          }else if (data.value < min_percent){
+          // if (data.invisible ){
+          //   e.addClass('invisible')
+          // }else 
+          if (data.value < min_percent){
             e.addClass('small')
+            e.removeClass('faded')
             e.addClass('invisible')
-          }else{
+          }
+          else{
             e.addClass('visible')
           }
         })
+
+        var node = nl_graph.nodes('.selected')
+
+        if (node.length>0){
+          nl_graph.nodes('.isChild').addClass('faded');
+          nl_graph.edges('.visible').addClass('faded')
+
+          nl_graph.edges('.fake').removeClass('faded')
+
+          var neighborhood_edges = node.connectedEdges('.visible')
+          var neighborhood_nodes = neighborhood_edges.connectedNodes();
+          //neighborhood.removeClass('faded');
+          neighborhood_edges.removeClass('faded');
+          neighborhood_nodes.removeClass('faded');
+        }
       }
 
 
@@ -1529,14 +1552,15 @@ d3.csv(csv_file, function(error, data) {
         })
 
         if (level == grouped){
-          nl_graph.add({group:"nodes", data:{id:'pageview', color:'white'}})
+          nl_graph.add({group:"nodes", data:{action: 'pageview', id:'pageview', color:'white'}})
         }else if (level == actions){
-          nl_graph.add({group:"nodes", data:{id:'browse_group', color:"white"}})
-          nl_graph.add({group:"nodes", data:{id:'other_group', color:"white"}})
-          nl_graph.add({group:"nodes", data:{id:'account_group', color:"white"}})
-          nl_graph.add({group:"nodes", data:{id:'info_group', color:"white"}})
-          nl_graph.add({group:"nodes", data:{id:'cart_group', color:"white"}})
-          nl_graph.add({group:"nodes", data:{id:'checkout_group', color:"white"}})
+          nl_graph.add({group:"nodes", data:{id:'pageview', color:'white'}})
+          nl_graph.add({group:"nodes", data:{action: 'browse_group', id:'browse_group', color:"white", parent:"pageview"}})
+          nl_graph.add({group:"nodes", data:{action: 'other_group', id:'other_group', color:"white", parent:"pageview"}})
+          nl_graph.add({group:"nodes", data:{action: 'account_group', id:'account_group', color:"white", parent:"pageview"}})
+          nl_graph.add({group:"nodes", data:{action: 'info_group', id:'info_group', color:"white", parent:"pageview"}})
+          nl_graph.add({group:"nodes", data:{action:'cart_group', id:'cart_group', color:"white", parent:"pageview"}})
+          nl_graph.add({group:"nodes", data:{action: 'checkout_group', id:'checkout_group', color:"white", parent:"pageview"}})
         }
 
         var nodes = node_link_data.nodes.map(function(n){
@@ -1600,7 +1624,7 @@ d3.csv(csv_file, function(error, data) {
 
 
           if (data.invisible ){
-            e.addClass('invisible')
+            e.addClass('fake')
           }else if (data.value < small[level]){
             e.addClass('small')
             e.addClass('invisible')
@@ -1612,20 +1636,25 @@ d3.csv(csv_file, function(error, data) {
         
         nl_graph.nodes().forEach(function(d){
           var data = d.data();
+
+
           
           var deg = d.connectedEdges('.visible').length;
-          if(data.isParent){
+          if(d.isParent()){
             d.addClass('isParent')
-          }
-
-          if (deg>0){
+          }else{
+            d.addClass('isChild')
+            if (deg>0){
             d.addClass('hasEdges')
             d.removeClass('orphan')
-          }else{
-            console.log('orphan', data)
-            d.removeClass('hasEdges')
-            d.addClass('orphan')
+            }else{
+              console.log('orphan', data)
+              d.removeClass('hasEdges')
+              d.addClass('orphan')
+            }
           }
+
+          
 
           if (data.size){
             d.css('width', 9)
@@ -1680,27 +1709,37 @@ d3.csv(csv_file, function(error, data) {
 
 
           var node = e.target;
-          var neighborhood = node.neighborhood().add(node);
+          //var neighborhood = node.neighborhood(node.connectedEdges('.visible')).add(node);
+
 
           select_horizontal_action(node.data())
           console.log('position', node.position())
           console.log('renderedPosition', node.renderedPosition())
-          nl_graph.edges('.small').removeClass('visible')
-          nl_graph.edges('.small').addClass('invisible')
+          // nl_graph.edges('.small').removeClass('visible')
+          // nl_graph.edges('.small').addClass('invisible')
+
+          if (node.isParent()){
+            node = node.descendants();
+          }
 
           nl_graph.elements().removeClass('selected')
-          nl_graph.nodes().addClass('faded');
+          nl_graph.nodes('.isChild').addClass('faded');
           nl_graph.edges('.visible').addClass('faded')
 
-          neighborhood.removeClass('faded');
+          var neighborhood_edges = node.connectedEdges('.visible')
+          var neighborhood_nodes = neighborhood_edges.connectedNodes();
+          //neighborhood.removeClass('faded');
+          neighborhood_edges.removeClass('faded');
+          neighborhood_nodes.removeClass('faded');
           node.addClass('selected')
-          node.connectedEdges('.small').addClass('visible')
-          node.connectedEdges('.small').removeClass('invisible')
+          // node.connectedEdges('.small').addClass('visible')
+          // node.connectedEdges('.small').removeClass('invisible')
         });
 
         nl_graph.on('tap', function(e){
           if( e.target === nl_graph ){
             nl_graph.elements().removeClass('faded');
+            nl_graph.elements().removeClass('selected');
             nl_graph.edges('.small').removeClass('visible')
             nl_graph.edges('.small').addClass('invisible')
           }
@@ -1767,7 +1806,7 @@ d3.csv(csv_file, function(error, data) {
           })
           nl_graph.zoomingEnabled(true);
           nl_graph.fit(nl_graph.nodes())
-          nl_graph.zoomingEnabled(false);
+          //nl_graph.zoomingEnabled(false);
 
         }
 
@@ -1779,7 +1818,7 @@ d3.csv(csv_file, function(error, data) {
           //nl_graph.maxZoom( fitMaxZoom );
           nl_graph.resize();
           nl_graph.fit(nl_graph.nodes('.hasEdges'))
-          nl_graph.zoomingEnabled(false);
+          //nl_graph.zoomingEnabled(false);
           // nl_graph.fit(nl_graph.nodes(),50)
           // nl_graph.fit(nl_graph.$(':visible'),50)
           //nl_graph.maxZoom( maxZoom );
