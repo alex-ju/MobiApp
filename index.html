@@ -89,8 +89,6 @@
                                 <div class="radio-inline">
                                   <label class="range_radio"><input type="radio" id="full_range_opt" name="optradio">Full Range</label>
                                 </div>
-                                  <!-- <label class="btn btn-default center-block"><input type="radio">All</label>
-                                  <label class="btn btn-default active center-block"><input type="radio">Filtered</label> -->
                               </div>
                               <div  class="graph" id="build_filter_view">
                                 <div class="warning-text" id="select_chart_warning" style="display: none"> Please select Range chart! </div>
@@ -486,6 +484,15 @@
                               </label>
                               <input type="range" min="0" max="100" id="min_percent">
                             </div>
+                            <div class="text-center">
+                                
+                                <div class="radio-inline">
+                                  <label class="link_percent_radio standard-text"><input checked type="radio" id= "outgoing_links" name="link_percent_radio">Outgoing Links</label>
+                                </div>
+                                <div class="radio-inline">
+                                  <label class="link_percent_radio standard-text"><input type="radio" id="incoming_links" name="link_percent_radio">Incoming Links</label>
+                                </div>
+                              </div>
                             <div class ="chart" id="node_link">
                               
                               <div id="load_chart" class="load" style="display: none"></div>
@@ -985,6 +992,12 @@ d3.csv(csv_file, function(error, data) {
       d3.select("#clear_pb_button")
         .on("click", clear_contains_builder)
 
+
+      d3.select("#incoming_links")
+        .on("click", update_to_incoming_links);
+      d3.select("#outgoing_links")
+        .on("click", update_to_outgoing_links);
+
       // d3.select("#print_sequences")
       //   .on("click", show_detailed_view);
       d3.select("#group_sequences")
@@ -1118,36 +1131,6 @@ d3.csv(csv_file, function(error, data) {
                    
       renderAll();
 
-      
-
-      //=========================== Node Link =====================================//
-      var nl_graph_data = {nodes:[], links: []},
-          nl_width = 250,
-          nl_height= 250;
-
-      var nl_svg = d3.select("#node_link").append("svg")
-                      .attr("width", nl_width)
-                      .attr("height", nl_height)
-
-
-      var strokeScale = d3.scaleLinear().domain([0,100]).range([1,6]).clamp(true);
-
-      d3.select("#min_percent").on("input", function() {
-        update_min_percent(+this.value);
-      });
-
-      function update_min_percent(d){
-        set_min_percent(d)
-        
-        update_action_transition_edges(d)
-
-      }
-
-      function set_min_percent(d){
-        d3.select("#min_percent-value").text(d);
-        d3.select("#min_percent").property("value", d);
-
-      }
 
       $('#collapse_contains').on('shown.bs.collapse', function () {
         update_action_transition_graph()
@@ -1173,6 +1156,78 @@ d3.csv(csv_file, function(error, data) {
         //   resize_windows()
         // }
       });
+      
+
+      //=========================== Node Link =====================================//
+      var nl_graph_data = {nodes:[], links: []},
+          nl_width = 250,
+          nl_height= 250;
+
+      var nl_svg = d3.select("#node_link").append("svg")
+                      .attr("width", nl_width)
+                      .attr("height", nl_height)
+
+
+      var strokeScale = d3.scaleLinear().domain([0,100]).range([1,6]).clamp(true);
+
+      
+
+       var positions = {};
+
+      positions[general] = {
+          'start': {x:145, y:90},
+          'removeFromCart': {x:196, y:121},
+          'addToCart': {x:248,y:152},
+          'purchase':{x:274,y:196},
+          'search':{x:96, y:167},
+          'pageview': {x:170,y:208},
+          'exit': {x:160, y:281}
+
+        }
+
+      positions[grouped] = {
+          'start': {x:145, y:58},
+          'removeFromCart': {x:201, y:91},
+          'addToCart': {x:254,y:109},
+          'purchase':{x:302,y:125},
+          'search':{x:78, y:108},
+          'exit': {x:168, y:339},
+          'browse_group': {x:141, y:179},
+          'cart_group': {x:222, y:182},
+          'checkout_group': {x:297, y:236},
+          'info_group': {x:73, y:218},
+          'other_group': {x:93, y:293},
+          'account_group': {x:272, y:293}
+        }
+
+      positions[actions] = {
+          'start': {x:203, y:-290},
+          'removeFromCart': {x:260, y:-257},
+          'addToCart': {x:312,y:-238},
+          'purchase':{x:369,y:-219},
+          'search':{x:48, y:-238},
+          'exit': {x:198, y:200},
+          'pv_home': {x:8,y:-158},
+          'pv_explore': {x:47,y:-128},
+          'pv_specialoffers': {x:87,y:-96},
+          'pv_search': {x:14,y:-79},
+          'pv_category': {x:164,y:-121},
+          'pv_product': {x:249,y:-121},
+          'pv_cart': {x:352,y:-117},
+          'pv_checkout': {x:390,y:-51},
+          'pv_confirmation': {x:394,y:2},
+          'pv_login': {x:319,y:133},
+          'pv_account': {x:368,y:133},
+          'pv_eliterewards': {x:390,y:74},
+          'pv_storelocator': {x:9,y:-1},
+          'pv_help': {x:66,y:18},
+          'pv_other': {x:61,y:94},
+          'pv_error': {x:29,y:127}
+
+
+
+
+        }
 
 
       var nl_graph= cytoscape({
@@ -1231,11 +1286,30 @@ d3.csv(csv_file, function(error, data) {
 
 
         });;
+      d3.select("#min_percent").on("input", function() {
+        update_min_percent(+this.value);
+      });
+
+      function update_min_percent(d){
+        set_min_percent(d)
+        
+        update_action_transition_edges(d)
+
+      }
+
+      function set_min_percent(d){
+        d3.select("#min_percent-value").text(d);
+        d3.select("#min_percent").property("value", d);
+
+      }
 
       
 
-      //$("#sequence_attributes").resizable()
+      var link_type = 'outgoing';
+
+    
       function update_action_transition_edges(min_percent){
+        if(!arguments.length){ min_percent = d3.select("#min_percent").property("value")}
         //nl_graph.edges().addClass('visible')
         nl_graph.edges().removeClass('invisible')
         nl_graph.edges().removeClass('small')
@@ -1244,15 +1318,18 @@ d3.csv(csv_file, function(error, data) {
         nl_graph.edges(!'.fake').forEach(function(e){
           var data = e.data()
 
+          var edge_value = data[link_type]
 
-          e.css('width', strokeScale(data.value))
+          if (edge_value){
+            e.css('width', strokeScale(edge_value))
+          }
 
 
 
           // if (data.invisible ){
           //   e.addClass('invisible')
           // }else 
-          if (data.value < min_percent){
+          if (edge_value < min_percent){
             e.addClass('small')
             e.removeClass('faded')
             e.addClass('invisible')
@@ -1280,68 +1357,26 @@ d3.csv(csv_file, function(error, data) {
         }
       }
 
-      var positions = {};
+     
+    
 
-      positions[general] = {
-          'start': {x:145, y:90},
-          'removeFromCart': {x:196, y:121},
-          'addToCart': {x:248,y:152},
-          'purchase':{x:274,y:196},
-          'search':{x:96, y:167},
-          'pageview': {x:170,y:208},
-          'exit': {x:160, y:281}
+      function update_to_incoming_links(){
+        link_type = 'incoming'
+        update_action_transition_edges()
 
-        }
+      }
 
-      positions[grouped] = {
-          'start': {x:145, y:58},
-          'removeFromCart': {x:201, y:91},
-          'addToCart': {x:254,y:109},
-          'purchase':{x:302,y:125},
-          'search':{x:78, y:108},
-          'exit': {x:168, y:339},
-          'browse_group': {x:141, y:179},
-          'cart_group': {x:222, y:182},
-          'checkout_group': {x:297, y:236},
-          'info_group': {x:73, y:218},
-          'other_group': {x:93, y:293},
-          'account_group': {x:272, y:293}
-        }
+      function update_to_outgoing_links(){
+        link_type = 'outgoing'
+        update_action_transition_edges()
 
-      positions[actions] = {
-          'start': {x:203, y:-290},
-          'removeFromCart': {x:260, y:-257},
-          'addToCart': {x:312,y:-238},
-          'purchase':{x:369,y:-219},
-          'search':{x:48, y:-238},
-          'exit': {x:198, y:200},
-          'pv_home': {x:8,y:-158},
-          'pv_explore': {x:47,y:-128},
-          'pv_specialoffers': {x:87,y:-96},
-          'pv_search': {x:14,y:-79},
-          'pv_category': {x:164,y:-121},
-          'pv_product': {x:249,y:-121},
-          'pv_cart': {x:352,y:-117},
-          'pv_checkout': {x:390,y:-51},
-          'pv_confirmation': {x:394,y:2},
-          'pv_login': {x:319,y:133},
-          'pv_account': {x:368,y:133},
-          'pv_eliterewards': {x:390,y:74},
-          'pv_storelocator': {x:9,y:-1},
-          'pv_help': {x:66,y:18},
-          'pv_other': {x:61,y:94},
-          'pv_error': {x:29,y:127}
-
-
-
-
-        }
-      
-
+      }
 
       function draw_action_transition_graph(node_link_data){
 
         console.log('Drawing action transition graph', node_link_data)
+
+        $('#outgoing_links').prop('checked', true)
         
         var size = 350;
         if (level == general){
@@ -1419,9 +1454,9 @@ d3.csv(csv_file, function(error, data) {
 
 
         var edges = node_link_data.links.map(function(e){
-
-          value = (e.percent >1)? e.percent: 1; 
-          var edge = {group:"edges", data:{source: e.source.id, target:e.target.id, value: value}}
+          var incoming = (e.into_target_percent >1)? e.into_target_percent: 1;
+          var outgoing = (e.percent >1)? e.percent: 1; 
+          var edge = {group:"edges", data:{source: e.source.id, target:e.target.id, value: outgoing, incoming:incoming, outgoing:outgoing}}
 
           nl_graph.add(edge)
 
@@ -1447,14 +1482,16 @@ d3.csv(csv_file, function(error, data) {
 
         nl_graph.edges().forEach(function(e){
           var data = e.data()
+          var edge_value = data[link_type]
 
-
-          e.css('width', strokeScale(data.value))
+          if (edge_value){
+            e.css('width', strokeScale(edge_value))
+          }
 
 
           if (data.invisible ){
             e.addClass('fake')
-          }else if (data.value < small[level]){
+          }else if (edge_value < small[level]){
             e.addClass('small')
             e.addClass('invisible')
           }else{
@@ -1813,6 +1850,8 @@ d3.csv(csv_file, function(error, data) {
         
 
       }
+
+
 
       function update_link_data(action_string, links, pageFunction, reverse){
 
@@ -5776,7 +5815,6 @@ d3.csv(csv_file, function(error, data) {
 
         show_node_view(selected)
         draw_pattern_graph(pattern_data)
-        //update_action_transition_graph()
 
         if( $("#build_filter_view").is(':visible'))
           update_filter_view()
