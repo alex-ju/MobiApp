@@ -937,8 +937,6 @@ d3.csv(csv_file, function(error, data) {
         .on("click", remove_operation);
       d3.select("#clear_button")
         .on("click", clear_all);
-      // d3.select("#segment_button")
-      //   .on("click", toggle_segments);
 
       d3.select("#toggle_oManager")
         .on("click", toggle_operation_manager);
@@ -1120,263 +1118,7 @@ d3.csv(csv_file, function(error, data) {
                    
       renderAll();
 
-      var action_i = 0;
       
-
-      var action_count_n = 2,
-          action_radius= 7;
-      
-
-      function populate_action_count_dropdown(){
-        //var action_radius = 7;
-        var dropdown = d3.select('#action_dropdown').selectAll('li').remove().exit().data(current_level).enter()
-        //current_level.forEach(function(action){
-        var button = dropdown.append('li').append('button')
-                .attr('id', function(d){return d;})
-                .attr('class', 'btn btn-sm btn-default btn-block action-icon action_count_button')
-                .on('click', add_chart)
-                
-        button.append('span')
-            .style('font-size', '11px')
-            .text(function(d){return d;})
-
-        button.append('svg')
-              .attr("transform", "translate(" + 2 + "," + action_radius/2 + ")")
-              .append('circle')
-                .attr('r', action_radius)
-                .attr("transform", "translate(" + (action_radius+1) + "," + (action_radius+1) + ")")
-                .attr('fill', function(d) { 
-                  //return color(action)
-                  return color(d);
-                })
-
-        if (charts.length > OG_charts){
-          for(var i = OG_charts-1; i <charts.length; i++){
-            var c = charts[i],
-                div = c.div_id()
-
-            var action = div.substring(0, div.indexOf('_', 3)),
-            id = '#' + action;
-
-            $(id).prop('disabled', true)
-
-          }
-        }
-
-        //})
-        
-      }
-      
-      populate_action_count_dropdown()
-
-      for(var i= 0; i<2;i++){
-        add_chart(current_level[i])
-      }
-
-      
-
-      function add_chart(d){
-        var id = '#'+d;
-        $(id).prop('disabled',true)
-        add_action_count_chart(d);
-      }
-
-
-
-      function add_action_count_chart(action_counted){
-
-        //action_counted = current_level[action_i]
-
-        if (dimensions.length <= 30){
-          var chart_div = d3.select('#count_charts').append('div')
-                              .attr('class', 'range_chart chart')
-                              .attr('id', action_counted + '_count_chart')
-
-          chart_div.append('button')
-                .attr('type','button')
-                .attr('class', 'close')
-                .attr('id','close_chart')
-                .attr('aria-hidden',true)
-                
-                .html('&times;')
-                .style('display', 'none')
-
-
-          var title_div = chart_div.append('div').style('margin-top','14px').attr('class', 'action-icon')
-          title_div.append('span')
-                  .style('font-size', '11px')
-                  .text('# of ' +action_counted)
-
-          title_div.append('svg')
-                .attr("transform", "translate(" + 2 + "," + action_radius/2 + ")")
-                .append('circle')
-                  .attr('r', action_radius)
-                  .attr("transform", "translate(" + (action_radius+1) + "," + (action_radius+1) + ")")
-                  .attr('fill', color(action_counted))
-          
-         
-          d3.selectAll("#close_chart")
-          .on("click", close_chart);
-          
-
-          a_count = seqs.dimension(function(d) {return action_count(d, action_counted)}),
-          a_count_filter = seqs.dimension(function(d) {return action_count(d, action_counted)}),
-          a_counts = a_count.group(Math.floor)
-
-          dimensions.push(a_count)
-          dimensions.push(a_count_filter)
-
-          console.log('there are now ' +dimensions.length + ' dimensions!')
-
-          charts.push(
-            barChart()
-              .dimension(a_count)
-              .filter_dimension(a_count_filter)
-              .dim_name('# of '+ action_counted)
-              .category('count')
-              .group(a_counts)
-              .x(d3.scaleLinear()
-              .domain([0, 30])
-              .rangeRound([0, 140]))
-
-            )
-
-          rerender_charts()
-
-          action_i++;
-        }else{
-          alert('MAX CHART LIMIT! Please remove a chart before adding another ')
-        }
-
-      }
-
-      function rerender_charts(){
-
-        chart = d3.selectAll(".range_chart")
-             .data(charts)
-
-
-
-        chart.exit().remove()
-
-
-        renderAll();
-
-      }
-
-      function close_chart(){
-        var chart = d3.select(this.parentNode),
-             chart_data = chart.data()[0],
-            div = chart_data.div_id()
-        console.log('chart-data', div )
-        var remove_index;
-        for(var i =4; i <charts.length; i++){
-          var c = charts[i]
-          if (c.div_id()== div)
-            remove_index= i;
-        }
-
-        charts.splice(remove_index, 1)
-
-        charts.forEach(function(c,i){
-          c.id(i);
-        })
-        var idx = []
-        dimensions.forEach(function(d, i){
-          if ((d==chart_data.dimension() )||(d==chart_data.filter_dimension() )){
-            idx.push(i)
-          }
-        })
-        console.log('indices to remove', idx)
-        dimensions.splice(idx[0], 1)
-        dimensions.splice(idx[1], 1)
-
-        chart_data.dimension().dispose()
-        chart_data.filter_dimension().dispose()
-        chart.remove()
-
-        var action = div.substring(0, div.indexOf('_', 3)),
-            id = '#' + action;
-
-        $(id).prop('disabled', false)
-
-        rerender_charts()
-
-
-
-        console.log('NUMBER OF DIMENSIONS', dimensions.length)
-
-
-      }
-
-
-
-      //==========LEGEND ====================//
-
-      var legend_width = 170
-      var legend_svg = d3.select('#legend').append('svg')
-                            .attr('width', legend_width)
-                            // .attr('height', 175)
-      var legend_text = legend_svg.append('g')
-                            .attr('transform',  'translate(' + 0 +','+ action_radius*2  +')')
-
-      var legend = legend_text.append('g')
-                            .attr('transform',  'translate(' + 0 +','+ 15  +')')                   
-      legend_text.append('text')
-          .attr('x', legend_width/2)
-          .style("text-anchor", "middle")
-          .style('font-size', '11px')
-          .text('Legend')
-
-
-
-
-
-
-      populate_legend()
-
-      function populate_legend(){
-        //var action_radius = 7;
-        var spacing = action_radius*3;
-        var height = (current_level.length+1)*spacing
-        legend_svg.attr('height', height )
-        var entries = legend.selectAll('g')
-                          .remove()
-                          .exit()
-                          .data(current_level).enter()
-        //current_level.forEach(function(action){
-        var entry = entries.append('g')
-                .attr('transform', function(d,i){return 'translate(' + (action_radius*2) +','+ (action_radius*3)*i  +')'})
-
-        var action = entry.append('g')
-                    .attr('transform', 'translate(' + 30  +','+ 0  +')')
-        
-        var action_text = action.append('g')
-                    .attr('transform', function(d,i){return 'translate(' + (action_radius*2)  +','+  0 +')'})
-
-                
-            action_text.append('text')
-                .style('font-size', '11px')
-                .text(function(d){return d;})
-
-        var node = action.append('g')
-                    .attr('transform', function(d,i){return 'translate(' + 0 +','+ -action_radius/2  +')'})
-                
-
-            node.append('circle')
-                .attr('r', action_radius)
-                .attr('fill', function(d) {
-                  return color(d);
-                })
-
-        var char_text = entry.append('g')
-                    .attr('transform',  'translate(' + 0 +','+ 0  +')')
-
-            char_text.append('text')
-                .style('font-size', '11px')
-                .text(function(d){return alphabet[d] + " = " ;})    
-
-      }
 
       //=========================== Node Link =====================================//
       var nl_graph_data = {nodes:[], links: []},
@@ -1516,7 +1258,9 @@ d3.csv(csv_file, function(error, data) {
             e.addClass('invisible')
           }
           else{
-            e.addClass('visible')
+            if (!(data.invisible)){
+              e.addClass('visible')
+            }
           }
         })
 
@@ -1721,6 +1465,7 @@ d3.csv(csv_file, function(error, data) {
 
         nl_graph.nodes('$node > node').forEach(function(n){
           var data = n.data();
+          data.isParent = true;
 
           n.css('border-color', color(data.id))
         })
@@ -2295,21 +2040,74 @@ d3.csv(csv_file, function(error, data) {
             total= 0
             //node_spacing = 30;
 
+        if (selected_action_node.isParent){
+          var after_actions ={},
+              before_actions= {},
+              after_total= 0,
+              before_total=0;
 
-        //Gather information from node_link graph
-        links.forEach(function(l){
 
-          if (l.source.id == selected_action_node.id){
-            //after_links.push(l);
-            after_data.actions.push({action: l.target.action,  count:l.count, percent: l.percent});
+          links.forEach(function(l){
+            var source = l.source.action,
+                target = l.target.action;
+            if (get_parent(source) == selected_action_node.action){
+              //after_links.push(l);
+              if (!(target in after_actions))
+                after_actions[target] =0;
 
-          }else if (l.target.id == selected_action_node.id){
-            //before_links.push(l);
-            before_data.actions.push({action: l.source.action, count:l.count, percent: l.into_target_percent});
+              var count = l.count;
+                
+              after_actions[target] += count;
+              after_total += count;
+
+
+            }else if (get_parent(target) == selected_action_node.action){
+              if (!(source in before_actions))
+                before_actions[source] =0;
+                
+              before_actions[source] += l.count;
+              before_total+= l.count;
+            }
+            
+
+          })
+
+
+
+          console.log('after actions', after_actions)
+          console.log('after total', after_total)
+          console.log('before acitons', before_actions)
+          console.log('before_total', before_total)
+
+          for (var a in after_actions){
+            var count = after_actions[a]
+            after_data.actions.push({action: a,  count:count, percent: count*100/after_total});
           }
-          
 
-        })
+          for (var a in before_actions){
+            var count = before_actions[a]
+            before_data.actions.push({action: a,  count:count, percent: count*100/before_total});
+          }
+
+
+        }else{
+
+
+          //Gather information from node_link graph
+          links.forEach(function(l){
+
+            if (l.source.id == selected_action_node.id){
+              //after_links.push(l);
+              after_data.actions.push({action: l.target.action,  count:l.count, percent: l.percent});
+
+            }else if (l.target.id == selected_action_node.id){
+              //before_links.push(l);
+              before_data.actions.push({action: l.source.action, count:l.count, percent: l.into_target_percent});
+            }
+            
+
+          })
+        }
 
 
         //create data for After and Before
@@ -2932,6 +2730,9 @@ d3.csv(csv_file, function(error, data) {
 
       function create_contains_filter(funnelize){
 
+        $('#load').show();
+        setTimeout(function() {
+
         reset_charts()
 
 
@@ -3076,6 +2877,9 @@ d3.csv(csv_file, function(error, data) {
 
           }
 
+          $('#load').hide();
+        }, 500);
+        
 
         function reduceInitial() {
           return {
@@ -3098,7 +2902,6 @@ d3.csv(csv_file, function(error, data) {
           return p;
 
         }
-
 
 
       }
@@ -4167,7 +3970,6 @@ d3.csv(csv_file, function(error, data) {
             
                   }
                 })
-                console.log('tt', tt)
                 max_vTranslate = tt;
 
                 return "translate(" + 0 + "," + (i*(oWidth + sep)+x+tt) + ")";
@@ -4430,7 +4232,6 @@ d3.csv(csv_file, function(error, data) {
         var max_height = (n_operations +1)*(oWidth+sep) + max_tHeight +25 + max_vTranslate + vTranslate,
             svg_height = max_height > info_height? max_height : info_height;
 
-        console.log('max v Translate', max_vTranslate)
 
         nv_svg.attr('height', svg_height)
 
@@ -4444,11 +4245,7 @@ d3.csv(csv_file, function(error, data) {
       function toggle_operation_manager(){
         if($('#operation_manager').hasClass('open'))
         {  
-          // $('#operation_manager').removeClass('col-md-4');
-           // $('#tree_view').addClass('col-md-5');
-          // $('#tree_view').removeClass('col-md-2');
-          // $('#sequence_attributes').addClass('col-md-7')
-          // $('#sequence_attributes').removeClass('col-md-6')
+    
           $('#toggle_oManager').removeClass('hidden')
           $('#operation_manager').removeClass('open');
           $('#operation_manager').addClass('hidden');
@@ -4458,12 +4255,6 @@ d3.csv(csv_file, function(error, data) {
         }
         else
         {
-          
-          // $('#operation_manager').addClass('col-md-4');
-          // $('#tree_view').removeClass('col-md-5');
-          // $('#tree_view').addClass('col-md-2');
-          // $('#sequence_attributes').addClass('col-md-6')
-          // $('#sequence_attributes').removeClass('col-md-7')
           $('#toggle_oManager').addClass('hidden')
           $('#operation_manager').width('30%')
           $('#operation_manager').addClass('open');
@@ -4531,39 +4322,49 @@ d3.csv(csv_file, function(error, data) {
 
       function create_range_filter(){
 
-        if (partitions){
-          
-          var value1 = partitions[2].value,
-              value2 = partitions[1].value,
-              value1 = parseFloat(value1)? parseFloat(value1): value1,
-              value2 = parseFloat(value2)? parseFloat(value2): value2,
-              extents = [value1, value2],
-              not = partitions[1].colored? false: true;
+        $('#load').show();
+        setTimeout(function() {
 
-          console.log(' Creating range filter with following extents: ' + extents)
-          var dimension = selected_chart.data()[0].dimension()
-          dimension.filterAll()
-          dimension.filterRange(extents);
+          if (partitions){
+            
+            var value1 = partitions[2].value,
+                value2 = partitions[1].value,
+                value1 = parseFloat(value1)? parseFloat(value1): value1,
+                value2 = parseFloat(value2)? parseFloat(value2): value2,
+                extents = [value1, value2],
+                not = partitions[1].colored? false: true;
 
-          var size = all.reduceCount().value()
-          var prev_size = selected.data.size;
+            console.log(' Creating range filter with following extents: ' + extents)
+            var dimension = selected_chart.data()[0].dimension()
+            dimension.filterAll()
+            dimension.filterRange(extents);
 
-          size = not? (prev_size - size): size
-          //matches = all.reduce(reduceAdd, reduceRemove, reduceInitial).value()
-          var selected_chart_data = selected_chart.data()[0];
-          selectedFilter.size = size;
-          selectedFilter.extents = extents;
-          selectedFilter.not = not;
-          selectedFilter.chart = selected_chart;
-          selectedFilter.div = selected_chart_data.div_id();
-          selectedFilter.current_range = selected_chart_data.current_range();
-          selectedFilter.range = selected_chart_data.range();
-          selectedFilter.category = selected_chart_data.category();
-          selectedFilter.type = 'range';
+            var size = all.reduceCount().value()
+            var prev_size = selected.data.size;
 
-          create_filter()
+            size = not? (prev_size - size): size
+            //matches = all.reduce(reduceAdd, reduceRemove, reduceInitial).value()
+            var selected_chart_data = selected_chart.data()[0];
+            selectedFilter.size = size;
+            selectedFilter.extents = extents;
+            selectedFilter.not = not;
+            selectedFilter.chart = selected_chart;
+            selectedFilter.div = selected_chart_data.div_id();
+            selectedFilter.current_range = selected_chart_data.current_range();
+            selectedFilter.range = selected_chart_data.range();
+            selectedFilter.category = selected_chart_data.category();
+            selectedFilter.type = 'range';
 
-        }
+            if(selectedFilter.div.includes('count_chart') ){
+              var x = $('#'+selectedFilter.div).find('.close')
+              x.prop('disabled', true)
+            }
+
+            create_filter()
+
+          }
+          $('#load').hide();
+        }, 500);
 
       }
 
@@ -4956,10 +4757,6 @@ d3.csv(csv_file, function(error, data) {
               .text(function(d) {
                 d.value = builder_range.invert(d.x)
                 return format_text(d.value)
-                // if (typeof d.value =='number')
-                //   return Math.floor(d.value);
-                // else
-                //   return dateFormat(d.value);
               })
               .attr("x", function(d)  {return d.x = x_loc;});
 
@@ -4970,7 +4767,7 @@ d3.csv(csv_file, function(error, data) {
            partition_input.property("value", selected_partition_bar.value);
 
           if( $("#build_filter_view").is(':visible')){
-            //extents_data.extents = [range_start_bar.value, range_end_bar.value]
+            extents_data.extents = [range_start_bar.value, range_end_bar.value]
             update_filter_view(false)
           }
         }
@@ -5165,6 +4962,9 @@ d3.csv(csv_file, function(error, data) {
 
       //----------- end of partition view ----------//
 
+
+      //--------------- BAR CHARTS ----------------------- //
+
       var selected_leftover_bar;
 
       function update_selected_leftover(div){
@@ -5211,6 +5011,18 @@ d3.csv(csv_file, function(error, data) {
         
       }
 
+      function rerender_charts(){
+
+        chart = d3.selectAll(".range_chart")
+             .data(charts)
+
+        chart.exit().remove()
+
+
+        renderAll();
+
+      }
+
 
       window.filter = filters => {
         filters.forEach((d, i) => { charts[i].filter(d); });
@@ -5226,7 +5038,7 @@ d3.csv(csv_file, function(error, data) {
       };
 
 
-      function get_x_limit(groups, yScale) {
+      function get_x_limit(groups, yScale, xScale) {
 
         for (var i= groups.length -1 ; i >= 0 ; i--){
           var grp = groups[i];
@@ -5234,8 +5046,13 @@ d3.csv(csv_file, function(error, data) {
 
           if (pixels > 1){
             var x_domain_max;
-            if (i == groups.length -1)
+            if (i == groups.length -1){
               x_domain_max = null;
+              console.log('x domain', xScale.domain())
+              console.log('key', grp.key)
+              if ((typeof(grp.key) == 'number') && (grp.key < (xScale.domain()[1]-2)))
+                x_domain_max = grp.key+1
+            }
             else
               x_domain_max = grp.key + 2;
             break;
@@ -5243,7 +5060,7 @@ d3.csv(csv_file, function(error, data) {
 
         }
 
-        return x_domain_max;
+        return (x_domain_max >30)? 30: x_domain_max;
       }
       
       function reduce_leftover_count(x_max, groups){
@@ -5355,10 +5172,12 @@ d3.csv(csv_file, function(error, data) {
               
               y.domain([0, group.top(1)[0].value]);
 
-              x_domain_max = get_x_limit(group.all(), y);
+              x_domain_max = get_x_limit(group.all(), y, x);
               x_max = group.all()[group.all().length-1].key;
               x_min = group.all()[0].key;
               range = add_one([x_min,x_max]);
+              
+              //x.domain(range)
 
         
               if (x_domain_max){
@@ -5369,11 +5188,15 @@ d3.csv(csv_file, function(error, data) {
                 brush.extent([[0,0], [width, height]]);
                 margin.right = 30;
                 
-                if (x_domain_max < 5)
+                if (x_domain_max < 6)
                   axis.ticks(x_domain_max);
+                else{
+                  axis.ticks(6)
+                }
+                  
                 
-                axis.scale(x);
               }
+              axis.scale(x);
               
 
 
@@ -5569,6 +5392,7 @@ d3.csv(csv_file, function(error, data) {
                 n = groups.length,
                 d;
 
+            bar_width = 9;
 
             // if (typeof x.domain()[1] == "number"){
             //   n_groups = x.domain()[1];
@@ -5578,7 +5402,7 @@ d3.csv(csv_file, function(error, data) {
             //   bar_width = 8;
             //   //n_groups = n;
             // ;
-            bar_width = 9;
+            
             while (++i < n) {
               d = groups[i];
               //path.push("M", x(d.key), ",", height, "V", y(d.value), "h9V", height);
@@ -5614,7 +5438,6 @@ d3.csv(csv_file, function(error, data) {
           update_selected_chart(div);
           div.select(".title a").style("display", null);
           selectedDiv = div.attr('id');
-          console.log('all ids but', id)
           reset_charts(id);
         });
 
@@ -6287,52 +6110,6 @@ d3.csv(csv_file, function(error, data) {
       }
 
 
-
-      // function clock_symbol(o){
-        
-      //   var size = oWidth*0.75,
-      //       r = size/2,
-      //       pad = r/4,
-      //       len = r - pad,
-      //       sym_len = r,
-      //       sym_y = (r-sym_len + pad);
-      //       //sym_y = -(r + pad);
-
-      //   var clock = 'M' + 0 + ',' + 0 +
-      //   ' m' + (-r) + ',0' +
-      //   ' a' + r + ',' + r + ' 0 1,0' + (r * 2) + ',0' +
-      //   ' a' + r + ',' + r + ' 0 1,0' + (-(r * 2)) + ',0'+
-          
-      //   'M' + 0 + ',' + (-len) +
-      //   'l' + 0 + ',' + len + ' ' + len + ',0';
-
-      //   if (o.div.includes('hour'))
-      //     return clock + 
-      //     'M' + -(r + pad + sym_len/2) + ',' + sym_y +
-      //     'l' + 0 + ',' + sym_len +
-      //     'm0' + 0 + ',' + -sym_len/2 +
-      //     'l' + sym_len/2 + ',' + 0 +
-      //     'm0' + 0 + -sym_len/2 +
-      //     'l' + 0 + ',' + sym_len  ;
-      //   else if(o.div.includes('date'))
-      //     return clock +
-      //     'M' + -(r + pad + sym_len/2) + ',' + sym_y +
-      //     'l' + 0 + ',' + sym_len +
-      //     'q' + (pad*4) + ',' + -(sym_len/4) + ' ' + 0 + ',' + -sym_len;
-      //   else if (o.div.includes('duration'))
-      //     return clock +
-      //     'M' + -(r + pad + sym_len/2) + ',' + sym_y +
-      //     'l' + (-sym_len/4) + ',' + sym_len +
-      //     'm0' + sym_len/3 + ',' + 0 +
-      //     'l' + sym_len/4 + ',' + -sym_len +
-      //     'm0' + sym_len/5 + ',' + sym_len/3 +
-      //     'l' + -sym_len + ',0' +
-      //     'm0' + 0 + ',' + sym_len/3 +
-      //     'l' + sym_len + ',0';
-      //   else
-      //     return clock; 
-      // }
-
       function clock_symbol(o){
         
         var size = oWidth*0.75,
@@ -6457,12 +6234,7 @@ d3.csv(csv_file, function(error, data) {
 
 
         var selected_filters = selected.data.filters;
-            //reset_filters();
-            // if (dim) {
-            //     //dim.filterAll();
-            //     reset_filters();
 
-            //   }
         var filter_to_update;
         if(!is_descendant){
           reset_filters()
@@ -6621,14 +6393,6 @@ d3.csv(csv_file, function(error, data) {
             resize_windows()
 
         }
-      }
-
-
-
-
-
-      function showDiv() {
-        d3.select("#attributes").style("display", "block");
       }
 
       function add_child_node(d, node_obj, display) {
@@ -6904,146 +6668,135 @@ d3.csv(csv_file, function(error, data) {
 
 
       function create_partition() {
+        
         if (selected && selected_chart) {
+          $('#load').show()
+          setTimeout(function() {
 
-          update_thresholds();
-          
+            update_thresholds();
+            
 
-          var d = selected_segment,
-              dim,
-              dims;
+            var d = selected_segment,
+                dim,
+                dims;
 
-          chart_id = selected_chart.attr('id');
-          var selected_chart_data = selected_chart.data()[0],
-              range = selected_chart_data.range(),
-              current_range =selected_chart_data.current_range(),
-              dim = selected_chart_data.dimension()
-              //dims = selected_chart_data.group()
+            chart_id = selected_chart.attr('id');
+            var selected_chart_data = selected_chart.data()[0],
+                range = selected_chart_data.range(),
+                current_range =selected_chart_data.current_range(),
+                dim = selected_chart_data.dimension()
+                //dims = selected_chart_data.group()
 
-          update_oScale(range);
+            update_oScale(range);
 
-          var info_range = range, //range used for info view
-              node_range = current_range //range used for workflow view
+            var info_range = range, //range used for info view
+                node_range = current_range //range used for workflow view
 
-          var node_data,
-              threshold_ranges =[],
-              results = [],
-              operation = {
-                'type': 'range',
-                'action': 'partition',
-                'value': 2,
-                'category': selected_chart.data()[0].category(),
-                'thresholds': thresholds.slice(),
-                'div': chart_id,
-                'chart': selected_chart,
-                'results': results,
-                'range': range,
-                'current_range': current_range
-              };
+            var node_data,
+                threshold_ranges =[],
+                results = [],
+                operation = {
+                  'type': 'range',
+                  'action': 'partition',
+                  'value': 2,
+                  'category': selected_chart.data()[0].category(),
+                  'thresholds': thresholds.slice(),
+                  'div': chart_id,
+                  'chart': selected_chart,
+                  'results': results,
+                  'range': range,
+                  'current_range': current_range
+                };
 
-          name = 'NEW Partition!';
-          partition_data = { 'name': name,
-                       'value': 2,
-                       'operation': operation
-                     };
-
-
-          partition_node = add_child_node(d, partition_data);
-
-          
-
-          // chart_div = chart_data[chart_id];
-          // dim = chart_div.dim1;
-          // dims = chart_div.dims;
+            name = 'NEW Partition!';
+            partition_data = { 'name': name,
+                         'value': 2,
+                         'operation': operation
+                       };
 
 
+            partition_node = add_child_node(d, partition_data);
 
-          console.log('thresholds for grouping', thresholds)
-          console.log('Number of seqs: ', all.reduceCount().value())
-          groups = dim.group(function(d) {
-              return group_count(d, thresholds);
-            }).all()
+            console.log('thresholds for grouping', thresholds)
+            console.log('Number of seqs: ', all.reduceCount().value())
+            groups = dim.group(function(d) {
+                return group_count(d, thresholds);
+              }).all()
 
-          partition = {};
-          partition.div = chart_id;
-          //partition.groups = groups;
+            partition = {};
+            partition.div = chart_id;
+            //partition.groups = groups;
 
-          //max_key = dims[dims.length-1].key;
-          max_key = current_range[1]
+            //max_key = dims[dims.length-1].key;
+            max_key = current_range[1]
 
-          d_filters = d.data.filters;
-          d_size = d.data.size;
+            d_filters = d.data.filters;
+            d_size = d.data.size;
 
-          low_bound = 0;
+            low_bound = 0;
 
-          // partition_data.partitions = [];
-          
-          partition_data.fullSize = d_size;
+            // partition_data.partitions = [];
+            
+            partition_data.fullSize = d_size;
 
-          var filter = { 
-                chart: selected_chart,
-                div: chart_id,
-                type: 'range',
-                range: info_range,
-                value: 0
+            var filter = { 
+                  chart: selected_chart,
+                  div: chart_id,
+                  type: 'range',
+                  range: info_range,
+                  value: 0
 
+
+              }
+            
+            for (var i = 0; i < groups.length; i++) {
+              g = groups[i];
+              low_bound = g.key;
+              next = groups[i+1];
+              if (next)
+                high_bound = next.key;
+              else
+                high_bound = max_key;
+              extents = [low_bound, high_bound];
+              size = g.value;
+              
+              oScale = update_scale(node_range, oRange)
+
+              var translate_x = oScale(low_bound) + ((oScale(high_bound)-oScale(low_bound))/2) - (oLength)/2;
+
+              threshold_ranges.push(extents);
+              filter.extents = extents;
+              filter.size = size;
+
+
+              var filter_data = get_filter_data_for_segment(d, filter),
+                  filter_copy = filter_data.filter,
+                  filters = filter_data.agg_filters,
+                  operations = filter_data.operations;
+              
+
+              results.push(filter_copy);
+
+              name = 'NEW SEGMENT!'
+              segment_data = { 'name': name,
+                         'value': 1,
+                         'filters': filters,
+                         'operations': operations,
+                         'size': size,
+                         'translate_x': translate_x
+                       };
+
+              segment_node = add_child_node(partition_node, segment_data);
 
             }
-          
-          for (var i = 0; i < groups.length; i++) {
-            g = groups[i];
-            low_bound = g.key;
-            next = groups[i+1];
-            if (next)
-              high_bound = next.key;
-            else
-              high_bound = max_key;
-            extents = [low_bound, high_bound];
-            size = g.value;
             
+            partition_data.operation.threshold_ranges = threshold_ranges
             oScale = update_scale(node_range, oRange)
+            partition_data.node_data = create_range_partition_data(threshold_ranges, oScale);
 
-            var translate_x = oScale(low_bound) + ((oScale(high_bound)-oScale(low_bound))/2) - (oLength)/2;
-
-            threshold_ranges.push(extents);
-            // var partition = {};
-            // partition.range = extents;
-            // partition.size = size;
-            // partition.percent = size/d_size;
-            // partition_data.partitions.push(partition);
-
-
-            filter.extents = extents;
-            filter.size = size;
-
-
-            var filter_data = get_filter_data_for_segment(d, filter),
-                filter_copy = filter_data.filter,
-                filters = filter_data.agg_filters,
-                operations = filter_data.operations;
-            
-
-            results.push(filter_copy);
-
-            name = 'NEW SEGMENT!'
-            segment_data = { 'name': name,
-                       'value': 1,
-                       'filters': filters,
-                       'operations': operations,
-                       'size': size,
-                       'translate_x': translate_x
-                     };
-
-            segment_node = add_child_node(partition_node, segment_data);
-
-          }
-          
-          partition_data.operation.threshold_ranges = threshold_ranges
-          oScale = update_scale(node_range, oRange)
-          partition_data.node_data = create_range_partition_data(threshold_ranges, oScale);
-
-          update(d);
-          
+            update(d);
+            $('#load').hide();
+          }, 500);
         } else {
           if (!selected)
             alert('Segment was not selected!');
@@ -7421,120 +7174,113 @@ d3.csv(csv_file, function(error, data) {
 
       function create_filter(parent_segment) {
 
-        var d = parent_segment || selected_segment;
+        // $('#load').show();
+        // setTimeout(function() {
+                   
+          var d = parent_segment || selected_segment;
 
-        if (d && selectedFilter.type && d.data.value==1) {
-          // var d_filters = d.data.filters,
-          //     d_operations = d.data.operations,
-          var node_data=[],
-              translate_x = 0;
-              
+          if (d && selectedFilter.type && d.data.value==1) {
+            // var d_filters = d.data.filters,
+            //     d_operations = d.data.operations,
+            var node_data=[],
+                translate_x = 0;
+                
 
-          
+            
 
-          if(selectedFilter.type =='range'){
-            oScale = update_scale(selectedFilter.range, oRange)
-            node_data = create_range_filter_data(selectedFilter, oScale)
-            for(var i=0; i <node_data.length;i++){
-              var nd = node_data[i];
-              if (nd.highlighted){
-                translate_x = nd.x0 + (nd.x1-nd.x0)/2 - oLength/2
+            if(selectedFilter.type =='range'){
+              oScale = update_scale(selectedFilter.range, oRange)
+              node_data = create_range_filter_data(selectedFilter, oScale)
+              for(var i=0; i <node_data.length;i++){
+                var nd = node_data[i];
+                if (nd.highlighted){
+                  translate_x = nd.x0 + (nd.x1-nd.x0)/2 - oLength/2
+                }
               }
             }
+            else if(selectedFilter.type == 'contains'){
+              node_data = create_contains_filter_data(selectedFilter, oLength)
+              node_data = selectedFilter.pattern
+            }
+
+            var filter_data = get_filter_data_for_segment(d, selectedFilter),
+                filter_copy = filter_data.filter, 
+                operations = filter_data.operations,
+                filters = filter_data.agg_filters;
+
+            console.log('selected filter div', selectedFilter.div)
+            
+            console.log('Filter Data', filter_data)
+
+            prev_size = d.data.size;
+            size = selectedFilter.size;
+
+
+           
+            filter_copy.action = 'filter';
+            filter_copy.value = 0;
+
+            name = 'NEW Filter!';
+            filter_data = { 'name': name,
+                         'value': 0,
+                         'operation': filter_copy,
+                         'node_data': node_data
+
+                       };
+
+            filter_node = add_child_node(d, filter_data);
+            
+
+            var segment_data = { 'name': name,
+                         'value': 1,
+                         'operations': operations,
+                         'filters': filters,
+                         'size': size,
+                         'prev_size': d.data.size,
+                         'translate_x': translate_x
+                       };
+
+            var segment_node = add_child_node(filter_node, segment_data);
+
+
+            selectedExtents = null;
+            selectedChar = null;
+
+            
+            update(d);
+
+            selectedFilter = {};
+
+            return filter_node;
+            
+          } else {
+            if (!selected_segment)
+              alert('Segment was not selected!');
+            else if (d.value != 1)
+              alert('Can only filter segments!')
+            else
+              alert('Please choose range to filter!');
+
           }
-          else if(selectedFilter.type == 'contains'){
-            node_data = create_contains_filter_data(selectedFilter, oLength)
-            node_data = selectedFilter.pattern
-          }
 
-
-          // var filter_copy = copy_filter(selectedFilter), 
-          //     operations = add_filter_to_set(d_operations, filter_copy),
-          //     filters = create_agg_filter_set(d_filters, selectedFilter);
-
-          var filter_data = get_filter_data_for_segment(d, selectedFilter),
-              filter_copy = filter_data.filter, 
-              operations = filter_data.operations,
-              filters = filter_data.agg_filters;
-
-          console.log('selected filter div', selectedFilter.div)
-          
-          console.log('Filter Data', filter_data)
-
-          prev_size = d.data.size;
-          size = selectedFilter.size;
-
-
-         
-          filter_copy.action = 'filter';
-          filter_copy.value = 0;
-
-          name = 'NEW Filter!';
-          filter_data = { 'name': name,
-                       'value': 0,
-                       'operation': filter_copy,
-                       'node_data': node_data
-
-                     };
-
-          filter_node = add_child_node(d, filter_data);
-          
-
-          var segment_data = { 'name': name,
-                       'value': 1,
-                       'operations': operations,
-                       'filters': filters,
-                       'size': size,
-                       'prev_size': d.data.size,
-                       'translate_x': translate_x
-                     };
-
-          var segment_node = add_child_node(filter_node, segment_data);
-
-
-          selectedExtents = null;
-          selectedChar = null;
-
-          
-          update(d);
-
-          selectedFilter = {};
-
-          return filter_node;
-          
-        } else {
-          if (!selected_segment)
-            alert('Segment was not selected!');
-          else if (d.value != 1)
-            alert('Can only filter segments!')
-          else
-            alert('Please choose range to filter!');
-
-        }  
+        //   $('#load').hide();
+        // }, 500);  
 
 
 
       }
 
-
-      function toggle_segments(d){
-        var treeData = tree(root);
-        var nodes = treeData.descendants();
-
-        nodes.forEach(function(d) {
-              if (d.value == 1)
-                   d.data.visible = 1 - d.data.visible;
-          });
-
-        update(root);
-      }
 
       function clear_all(){
 
         var segment = root.children[0]
         segment.children=null;
         reset_filters()
+        
+        update(segment);
         select_node(segment);
+
+        $('#count_charts').find('.close').removeAttr('disabled')
       }
 
 
@@ -7569,21 +7315,6 @@ d3.csv(csv_file, function(error, data) {
         //update(d.parent)
 
       }
-
-      // function filter_partition(d){
-      //   parent = d.parent;
-
-      //   if (parent.data.value == 2) {
-      //     parent.data.value = 3;
-      //     parent._children = parent.children;
-      //     parent.children = [];
-      //     parent.children.push(d);
-      //   } else if (parent.data.value == 3) {
-      //     parent.data.value = 2;
-      //     parent.children = parent._children;
-      //   }
-      //   update(parent);
-      // }
 
 
       function create_rect_path(d) {
@@ -7648,6 +7379,257 @@ d3.csv(csv_file, function(error, data) {
         update(root);
 
       }
+
+
+      // ---------- dropdown -----
+
+      var action_i = 0;
+      
+
+      var action_count_n = 2,
+          action_radius= 7;
+      
+
+      function populate_action_count_dropdown(){
+        //var action_radius = 7;
+        var dropdown = d3.select('#action_dropdown').selectAll('li').remove().exit().data(current_level).enter()
+        //current_level.forEach(function(action){
+        var button = dropdown.append('li').append('button')
+                .attr('id', function(d){return d;})
+                .attr('class', 'btn btn-sm btn-default btn-block action-icon action_count_button')
+                .on('click', add_chart)
+                
+        button.append('span')
+            .style('font-size', '11px')
+            .text(function(d){return d;})
+
+        button.append('svg')
+              .attr("transform", "translate(" + 2 + "," + action_radius/2 + ")")
+              .append('circle')
+                .attr('r', action_radius)
+                .attr("transform", "translate(" + (action_radius+1) + "," + (action_radius+1) + ")")
+                .attr('fill', function(d) { 
+                  //return color(action)
+                  return color(d);
+                })
+
+        if (charts.length > OG_charts){
+          for(var i = OG_charts-1; i <charts.length; i++){
+            var c = charts[i],
+                div = c.div_id()
+
+            var action = div.substring(0, div.indexOf('_', 3)),
+            id = '#' + action;
+
+            $(id).prop('disabled', true)
+
+          }
+        }
+
+        //})
+        
+      }
+      
+      
+      for(var i= 0; i<2;i++){
+        add_chart(current_level[i])
+      }
+
+      
+
+      function add_chart(d){
+        reset_charts();
+        var id = '#'+d;
+        $(id).prop('disabled',true)
+        add_action_count_chart(d);
+      }
+
+
+
+      function add_action_count_chart(action_counted){
+
+        //action_counted = current_level[action_i]
+
+        if (dimensions.length <= 30){
+          var chart_div = d3.select('#count_charts').append('div')
+                              .attr('class', 'range_chart chart')
+                              .attr('id', action_counted + '_count_chart')
+
+          chart_div.append('button')
+                .attr('type','button')
+                .attr('class', 'close')
+                .attr('id','close_chart')
+                .attr('aria-hidden',true)
+                
+                .html('&times;')
+                .style('display', 'none')
+
+
+          var title_div = chart_div.append('div').style('margin-top','14px').attr('class', 'action-icon')
+          title_div.append('span')
+                  .style('font-size', '11px')
+                  .text('# of ' +action_counted)
+
+          title_div.append('svg')
+                .attr("transform", "translate(" + 2 + "," + action_radius/2 + ")")
+                .append('circle')
+                  .attr('r', action_radius)
+                  .attr("transform", "translate(" + (action_radius+1) + "," + (action_radius+1) + ")")
+                  .attr('fill', color(action_counted))
+          
+         
+          d3.selectAll("#close_chart")
+          .on("click", close_chart);
+          
+
+          a_count = seqs.dimension(function(d) {return action_count(d, action_counted)}),
+          a_count_filter = seqs.dimension(function(d) {return action_count(d, action_counted)}),
+          a_counts = a_count.group(Math.floor)
+
+          dimensions.push(a_count)
+          dimensions.push(a_count_filter)
+
+          console.log('there are now ' +dimensions.length + ' dimensions!')
+
+          charts.push(
+            barChart()
+              .dimension(a_count)
+              .filter_dimension(a_count_filter)
+              .dim_name('# of '+ action_counted)
+              .category('count')
+              .group(a_counts)
+              .x(d3.scaleLinear()
+              .domain([0, 30])
+              .rangeRound([0, 140]))
+
+            )
+
+          rerender_charts()
+
+          action_i++;
+        }else{
+          alert('MAX CHART LIMIT! Please remove a chart before adding another ')
+        }
+
+      }
+
+      
+
+      function close_chart(){
+        var chart = d3.select(this.parentNode),
+             chart_data = chart.data()[0],
+            div = chart_data.div_id()
+        console.log('chart-data', div )
+        var remove_index;
+        for(var i =4; i <charts.length; i++){
+          var c = charts[i]
+          if (c.div_id()== div)
+            remove_index= i;
+        }
+
+        charts.splice(remove_index, 1)
+
+        charts.forEach(function(c,i){
+          c.id(i);
+        })
+        var idx = []
+        dimensions.forEach(function(d, i){
+          if ((d==chart_data.dimension() )||(d==chart_data.filter_dimension() )){
+            idx.push(i)
+          }
+        })
+        console.log('indices to remove', idx)
+        dimensions.splice(idx[0], 1)
+        dimensions.splice(idx[1], 1)
+
+        chart_data.dimension().dispose()
+        chart_data.filter_dimension().dispose()
+        chart.remove()
+
+        var action = div.substring(0, div.indexOf('_', 3)),
+            id = '#' + action;
+
+        $(id).prop('disabled', false)
+
+        rerender_charts()
+
+
+
+        console.log('NUMBER OF DIMENSIONS', dimensions.length)
+
+
+      }
+
+      //==========LEGEND ====================//
+
+      var legend_width = 170
+      var legend_svg = d3.select('#legend').append('svg')
+                            .attr('width', legend_width)
+                            // .attr('height', 175)
+      var legend_text = legend_svg.append('g')
+                            .attr('transform',  'translate(' + 0 +','+ action_radius*2  +')')
+
+      var legend = legend_text.append('g')
+                            .attr('transform',  'translate(' + 0 +','+ 15  +')')                   
+      legend_text.append('text')
+          .attr('x', legend_width/2)
+          .style("text-anchor", "middle")
+          .style('font-size', '11px')
+          .text('Legend')
+
+
+
+
+
+
+      
+
+      function populate_legend(){
+        //var action_radius = 7;
+        var spacing = action_radius*3;
+        var height = (current_level.length+1)*spacing
+        legend_svg.attr('height', height )
+        var entries = legend.selectAll('g')
+                          .remove()
+                          .exit()
+                          .data(current_level).enter()
+        //current_level.forEach(function(action){
+        var entry = entries.append('g')
+                .attr('transform', function(d,i){return 'translate(' + (action_radius*2) +','+ (action_radius*3)*i  +')'})
+
+        var action = entry.append('g')
+                    .attr('transform', 'translate(' + 30  +','+ 0  +')')
+        
+        var action_text = action.append('g')
+                    .attr('transform', function(d,i){return 'translate(' + (action_radius*2)  +','+  0 +')'})
+
+                
+            action_text.append('text')
+                .style('font-size', '11px')
+                .text(function(d){return d;})
+
+        var node = action.append('g')
+                    .attr('transform', function(d,i){return 'translate(' + 0 +','+ -action_radius/2  +')'})
+                
+
+            node.append('circle')
+                .attr('r', action_radius)
+                .attr('fill', function(d) {
+                  return color(d);
+                })
+
+        var char_text = entry.append('g')
+                    .attr('transform',  'translate(' + 0 +','+ 0  +')')
+
+            char_text.append('text')
+                .style('font-size', '11px')
+                .text(function(d){return alphabet[d] + " = " ;})    
+
+      }
+
+
+      populate_action_count_dropdown()
+      populate_legend()
 
 
       //make sure first node is selected
