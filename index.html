@@ -251,7 +251,7 @@
                                       <label><input id="add_nonCons_link_button" type="radio" name="link_radio">Non-Consecutive</label>
                                     </div>
                                     <div class="radio">
-                                      <label><input id ="no_links_button" type="radio" name="link_radio">None</label>
+                                      <label><input id ="no_links_button" type="radio" name="link_radio" checked>None</label>
                                     </div>
 <!--                                     <div class=btn-group-vertical data-toggle="buttons">
                                       <label class="btn btn-sm btn-default" id="add_cons_link_button"><input  name="link_radio" type="radio" >Consecutive</label>
@@ -655,8 +655,10 @@ d3.csv(csv_file, function(error, data) {
         alphabet_rev = {};
         alpha_data.forEach(function(d){
 
-          alphabet[d.Action] = d.Character;
-          alphabet_rev[d.Character] = d.Action
+          if (d.Action != 'pv_search'){
+            alphabet[d.Action] = d.Character;
+            alphabet_rev[d.Character] = d.Action
+          }
         })
         var start_c = '0',
             exit_c = '1';
@@ -684,19 +686,177 @@ d3.csv(csv_file, function(error, data) {
       small[grouped]= 10
       small[actions] = 15
 
+      hierarchy = [
+        {
+          action: 'addToCart',
+          level: 0
 
-      action_hierarchy[general] = ['addToCart', 'removeFromCart', 'purchase', 'search', 'pageview']
-      action_hierarchy[grouped] = ['addToCart', 'removeFromCart', 'purchase', 'search', 'account_group', 'cart_group', 'checkout_group', 'browse_group', 'other_group', 'info_group']
-      //action_hierarchy[actions] = Object.keys(alphabet).slice(0,-2);
-      var all_actions = ['addToCart', 'removeFromCart', 'purchase', 'search']
-      for (var key in alphabet){
-        if(alphabet.hasOwnProperty(key)){
-          if (key.includes('pv_')){
-            all_actions.push(key)
+        },
+        {
+          action: 'purchase',
+          level:0
+        },
+        {
+          action: 'removeFromCart',
+          level:0
+        },
+        {
+          action: 'search',
+          level:0
+        },
+        {
+          action: 'pageview',
+          level:0,
+          children: [
+            {
+              action: 'account_group',
+              level: 1,
+              children: [
+                {
+                  action: 'pv_account',
+                  level:2
+                },
+                {
+                  action: 'pv_eliterewards',
+                  level:2
+                },
+                {
+                  action: 'pv_login',
+                  level:2
+                }
+              ]
+            },
+            {
+              action: 'browse_group',
+              level:1,
+              children: [
+                {
+                  action: 'pv_category',
+                  level:2
+                },
+                {
+                  action: 'pv_explore',
+                  level: 2 
+                },
+                {
+                  action: 'pv_home',
+                  level:2
+                },
+                {
+                  action: 'pv_product',
+                  level: 2
+                },
+                {
+                  action: 'pv_specialoffers',
+                  level: 2
+                }
+              ]
+            },
+            {
+              action: 'cart_group',
+              level: 1,
+              children: [
+                {
+                  action: 'pv_cart',
+                  level:2
+                }
+              ]
+            },
+            {
+              action: 'checkout_group',
+              level: 1,
+              children: [
+                {
+                  action: 'pv_checkout',
+                  level:2
+                },
+                {
+                  action: 'pv_confirmation',
+                  level: 2
+                }
+              ]
+            },
+            {
+              action: 'info_group',
+              level: 1,
+              children: [
+                {
+                  action: 'pv_help',
+                  level: 2
+                },
+                {
+                  action: 'pv_storelocator',
+                  level: 2
+                }
+              ]
+            },{
+              action: 'other_group',
+              level: 1,
+              children: [
+                {
+                  action: 'pv_error',
+                  level: 2
+                },
+                {
+                  action: 'pv_other',
+                  level: 2
+                }
+              ]
+            }
+          ]
+        }
+
+      ]
+
+      function iterate(current, depth, max_level, array, array2) {
+
+        
+
+        var children = current.children;
+        if (children && (depth < max_level)){
+          if(array2 &&(depth>-1)){
+            var header = {
+              header: current.action,
+              level: depth
+            }
+
+            array2.push(header)
           }
+          for (var i = 0, len = children.length; i < len; i++) {
+            iterate(children[i], depth + 1, max_level, array, array2);
+          }
+        }else{
+          if(array)
+            array.push(current.action)
+
+          if(array2){
+            array2.push({action:current.action, level:depth})
+          }
+
         }
       }
-      action_hierarchy[actions] = all_actions
+      var levels = [general, grouped, actions]
+      function get_action_up_to_level(action_level, with_headers){
+        console.log(' GETTING ACTIONS WITH LEVEL', action_level)
+        var level = levels.indexOf(action_level)
+
+        var actions_array = [],
+            array_group_names = []
+        
+        iterate({children:hierarchy}, -1, level, actions_array, array_group_names);
+
+        var array = with_headers? array_group_names: actions_array
+
+        return array
+      }
+
+
+      
+      action_hierarchy[general] = get_action_up_to_level(general)
+      action_hierarchy[grouped] = get_action_up_to_level(grouped)
+      action_hierarchy[actions] = get_action_up_to_level(actions)
+
+      console.log('action hierarchy', action_hierarchy)
 
 
       current_level = action_hierarchy[level];
@@ -796,7 +956,13 @@ d3.csv(csv_file, function(error, data) {
         "pv_other": "other_group",
         "pv_error": "other_group",
         "pv_storelocator": "info_group",
-        "pv_help": "info_group" 
+        "pv_help": "info_group",
+        "account_group":"pageview",
+        "browse_group":"pageview",
+        "cart_group":"pageview",
+        "checkout_group":"pageview",
+        "info_group":"pageview",
+        "other_group":"pageview"  
       }
 
       function get_parent(action){
@@ -1282,7 +1448,9 @@ d3.csv(csv_file, function(error, data) {
               .css({
                 'border-width': 0.5,
                 'content': ' '
+
               })
+
 
 
         });;
@@ -1606,10 +1774,16 @@ d3.csv(csv_file, function(error, data) {
 
 
           select_horizontal_action(node.data())
+          var parent= nl_graph.nodes('.selectedParent')
+            parent.css('border-width',0.5).css('content', ' ')
 
 
           if (node.isParent()){
+            node.css('border-width', 5)
+            node.css('content', node.data().action)
+            node.addClass('selectedParent')
             node = node.descendants();
+
           }
 
           nl_graph.elements().removeClass('selected')
@@ -1629,8 +1803,12 @@ d3.csv(csv_file, function(error, data) {
           if( e.target === nl_graph ){
             nl_graph.elements().removeClass('faded');
             nl_graph.elements().removeClass('selected');
+            
             nl_graph.edges('.small').removeClass('visible')
             nl_graph.edges('.small').addClass('invisible')
+
+            var parent= nl_graph.nodes('.selectedParent')
+            parent.css('border-width',0.5).css('content', ' ')
           }
         });
         
@@ -2386,50 +2564,8 @@ d3.csv(csv_file, function(error, data) {
 
         // }
 
-
-           //drawing chart
-     
-
-
       }
 
-      // function populate_tooltip(d){
-
-      //   if (d.selected){
-      //   //var ttip = d3.selectAll(".ttip")
-      //     var data =[d]
-
-      //     if (d.action == 'extra'){
-      //       data =data.concat(d.actions)
-      //       ttip.select('rect').attr('height', (d.actions.length+1)*10)
-      //     }else(
-      //       ttip.select('rect').attr('height', tooltip_height)
-      //     )
-
-      //     //var text = d3.format(".1%")(d.percent/100) + ', ' + d3.format(",")(d.count);
-      //     t_text = ttip_text.selectAll('text')
-      //                 .remove()
-      //                 .exit()
-      //                 .data(data)
-
-      //     t_text_enter = t_text.enter()
-      //                     .append('text')
-      //                     //.attr('class', 'ttip_text')
-      //                     .attr('dy', function(d,i){return (i)*10})
-      //                     .text(function(d, i){
-      //                       var text = d3.format(".1%")(d.percent/100) + ', ' + d3.format(",")(d.count)
-      //                       if (i>0) text = d.action + ': ' + text;
-      //                       return text
-      //                     })
-
-                        
-
-
-      //   }
-
-
-
-      // }
 
       function tooltip(d){
         
@@ -2478,41 +2614,6 @@ d3.csv(csv_file, function(error, data) {
         
       }
 
-      // function tooltip(d){
-        
-      //   if (d.selected){
-      //     var bar_position = d.translate
-      //     var xPosition = (d.translate == 0)? -65 :d.translate + bar_width;
-      //     var yPosition = bar_len(d.x0 +((d.x1-d.x0)/2)) 
-
-      //     xPosition += margin_ac.left
-
-      //     console.log('xposition', d.translate)
-
-
-      //     var text = d3.format(".1%")(d.percent/100) + ', ' + d3.format(",")(d.count);
-
-      //     if (d.action =='extra'){
-      //       d.actions.forEach(function(a){
-
-      //       })
-      //     }
-
-      //     d3.select("#tooltip")
-      //         .style("left", xPosition + "px")
-      //         .style("top", yPosition + "px")
-      //         .select("#value")
-      //         .text(text);
-
-          
-
-      //     d3.select("#tooltip").classed("hidden", false);
-
-      //   }
-        
-        
-      // }
-
       function select_pattern_node(d){
         if (selected_pattern_node){
           selected_pattern_node.selected = false;
@@ -2539,17 +2640,24 @@ d3.csv(csv_file, function(error, data) {
 
 
       var al_actions = al_svg.append('g')
-                        .attr("transform", "translate(" + 50 + "," + ((node_radius*2)+2) + ")")
+                        .attr("transform", "translate(" + (node_radius*2) + "," + ((node_radius*2)+2) + ")")
       
       update_action_list_data()
 
       function update_action_list_data(){
         var height = (current_level.length + 2)*node_spacing;
         al_svg.attr('height', height )
-        var data = current_level.map(function (action) { return { action: action, id: action}; });
-        data.push({action:'start', id:'start'})
-        data.push({action:'exit', id:'exit'})
+        
+        //var data = current_level.map(function (action) { return { action: action, id: action}; });
+        var data = get_action_up_to_level(level,true)
+        
+        data.unshift({action:'exit', id:'exit', level: 0})
+        data.unshift({action:'start', id:'start', level:0})
+        
         al_data = data;
+
+        var height = (data.length + 2)*node_spacing;
+        al_svg.attr('height', height )
 
         update_action_list()
       }
@@ -2563,16 +2671,26 @@ d3.csv(csv_file, function(error, data) {
                             .remove()
                             .exit()
                             .data(data)
-                            
+        var spacing = 0
         var action_enter = action.enter().append('g')
                             .attr('class', 'action')
                             //.attr("transform", function(d, i){return "translate(" + 0 + "," + (node_radius*3)*i + ")" })
-                            .attr("transform", function(d, i){return "translate(" + 0 + "," + node_spacing*i + ")" })
+                            .attr("transform", function(d, i){
+                              var hTranslate= d.level? d.level*10: 0;
+                              var vTranslate =0;
+                              if(i != 0){
+                                vTranslate = d.header? (node_spacing/2): node_spacing
+                              }
+                              spacing+=vTranslate
+                              return "translate(" + hTranslate + "," + spacing + ")"; 
+                            })
                             .on("click", select_pattern_action_node)
 
         action_enter.append('circle')
               .attr("r", function(d){
-                if(d.action == 'start' || d.action == 'exit')
+                if(d.header)
+                  return 0;
+                else if(d.action == 'start' || d.action == 'exit')
                   return end_radius
                 else
                   return node_radius
@@ -2582,13 +2700,21 @@ d3.csv(csv_file, function(error, data) {
         action_enter.append('text')
             .style('fill', 'black')
             .style("font-size", "10px")
-            .style("text-anchor", "middle")
-            .attr('dy', 
-              -(node_radius+1)
+            //.style("text-anchor", "middle")
+            .style("text-anchor", "left")
+            .attr('dx', -node_radius)
+            .attr('dy', function (d){
+              var dy = (d.header)? node_spacing/2: 0
+
+              return dy -(node_radius+2);
               //node_radius/2 
               //node_radius
+            }
               )
-            .text(function(d) {return d.action;})
+            .text(function(d) {
+              var text = d.action? d.action: d.header;
+              return text;
+            })
 
 
 
