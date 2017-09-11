@@ -591,6 +591,13 @@ input {
   stroke-dasharray: {50,50,50,50}
 }
 
+/*.horizontal-row{
+  cursor:pointer;
+}*/
+
+.clickable{
+  cursor:pointer;
+}
 
 /*----------*/
 

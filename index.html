@@ -1638,6 +1638,9 @@ d3.csv(csv_file, function(error, data) {
 
 
         }
+      var link_type = 'outgoing';
+      var hover_selection;
+      var hover_color= '#5e6063'
 
 
       var nl_graph= cytoscape({
@@ -1670,6 +1673,13 @@ d3.csv(csv_file, function(error, data) {
                 'border-width': 2,
                 'border-style': 'solid',
                 'border-color': 'black'
+              })
+            .selector('.hover-selected')
+              .css({
+                
+                'border-width': 2,
+                'border-style': 'solid',
+                'border-color': hover_color
               })
             .selector('.invisible')
               .css({
@@ -1717,7 +1727,19 @@ d3.csv(csv_file, function(error, data) {
 
       
 
-      var link_type = 'outgoing';
+      
+      function update_action_transition_nodes(d){
+        if (hover_selection){
+          nl_graph.nodes('#'+hover_selection).removeClass('hover-selected')
+        }
+        if (d){
+          hover_selection = d.action; 
+          nl_graph.nodes('#'+hover_selection).addClass('hover-selected')
+        }else{
+          hover_selection=null;
+        }
+
+      }
 
     
       function update_action_transition_edges(min_percent){
@@ -2007,7 +2029,38 @@ d3.csv(csv_file, function(error, data) {
         // }))
 
         
+        nl_graph.nodes().on('mouseover', function(e){
+          var node = e.target,
+              data = node.data()
 
+          node.css({'opacity': 0.8})
+          $('html,body').css('cursor', 'pointer');
+
+          
+          for(var i=0; i<all_matches.length;i++){
+            var m= all_matches[i]
+            if (m.action == data.action){
+              m.hoverSelected = true;
+            }else{
+              m.hoverSelected = false;
+            }
+          }
+
+          update_horizontal_chart(all_matches)
+        })
+
+        nl_graph.nodes().on('mouseout', function(e){
+          var node = e.target;
+
+          node.css({'opacity': 1})
+          $('html,body').css('cursor', 'default')
+          
+          all_matches.forEach(function(m){
+            m.hoverSelected = false;
+          })
+
+          update_horizontal_chart(all_matches)
+        })
 
         nl_graph.on('tap', 'node', function(e){
 
@@ -2685,6 +2738,7 @@ d3.csv(csv_file, function(error, data) {
               .data(d =>d.actions)
            
            var bar_enter = bar.enter().append('g')
+                            .classed('clickable', true)
                             .on("click", select_adj_node);
 
 
@@ -2779,12 +2833,12 @@ d3.csv(csv_file, function(error, data) {
 
           }
 
-         var adj_nodes = adjacency_chart.selectAll(".adjnodes")
+         var adj_nodes = adjacency_chart.selectAll(".action")
                         .remove()
                         .exit()
                         .data(node_data)
                         .enter().append("g")
-                        .attr("class", "adjnodes")
+                        .attr("class", "action")
 
           var node = adj_nodes.selectAll("circle")
                             .remove()
@@ -6984,14 +7038,17 @@ d3.csv(csv_file, function(error, data) {
                 
 
         var row_enter = row.enter().append("g")
+                .classed('clickable', true)
                 .attr("transform", function (d) { return "translate(" + axis_translate + "," + y_hc(d.action) + ")"; })
+                //.on('click', select_horizontal_action)
+                
 
 
         var node = row_enter.append('circle')
                 .attr("transform", function (d) { return "translate("+ -((axis_translate + 8)/2) +"," + y_hc.bandwidth()/2 + ")"; })
                 .attr("r", node_radius)
                 .attr("fill", function(d){ return color(d.action)})
-                .on('click', select_horizontal_action)
+                
 
 
                 
@@ -7052,6 +7109,18 @@ d3.csv(csv_file, function(error, data) {
 
 
           })
+          .on('mouseover', function(d){
+            var row = d3.select(this)
+            row.selectAll('circle').style('opacity', '0.8')
+            row.selectAll('rect').style('opacity', '0.8')
+            update_action_transition_nodes(d);
+          })
+          .on('mouseout', function(d){
+            var row = d3.select(this)
+            row.selectAll('circle').style('opacity', '1')
+            row.selectAll('rect').style('opacity', '1')
+            update_action_transition_nodes(null);
+          })
 
         row_enter.append("rect")
             .attr("class", "outer_box")
@@ -7065,9 +7134,11 @@ d3.csv(csv_file, function(error, data) {
         var row_update = row_enter.merge(row)
 
         row_update.selectAll('circle')
-            .style('stroke', function(d){return d.selected? 'black': 'none'})
+            //.style('stroke', function(d){return d.selected? 'black': 'none'})
+            .style('stroke', function(d){return d.hoverSelected? hover_color: d.selected? 'black': 'none'})
         row_update.select('.outer_box')
-            .style('stroke', function(d){return d.selected? 'black': 'none'})
+            //.style('stroke', function(d){return d.selected? 'black': 'none'})
+            .style('stroke', function(d){return d.hoverSelected? hover_color: d.selected? 'black': 'none'})
 
 
         horizontal_chart.append('g').attr("class", "noAxis")
