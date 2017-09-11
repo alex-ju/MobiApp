@@ -830,7 +830,7 @@ d3.csv(csv_file, function(error, data) {
             array.push(current.action)
 
           if(array2){
-            array2.push({action:current.action, level:depth})
+            array2.push({action:current.action, id:current.action, level:depth})
           }
 
         }
@@ -903,17 +903,261 @@ d3.csv(csv_file, function(error, data) {
 
 
 
-      var colors = {
+      // var colors = {
+
+      //   "addToCart": "#79EA85",
+      //   "removeFromCart": "#EA0000",
+      //   "purchase": "#00AC22",
+      //   "search": "#FF7100",
+      //   "pageview": "#0073B9",
+      //   "start": "#999",
+      //   "exit": "#999",
+      //   "extra": 'black'
+
+
+      // }
+
+      // var colors = {
+
+      //   "addToCart": "#79EA85",
+      //   "removeFromCart": "#EA0000",
+      //   "purchase": "#00AC22",
+      //   "search": "#FFFF33",
+      //   "pageview": "#0073B9",
+      //   "start": "#999",
+      //   "exit": "#999",
+      //   "extra": 'black',
+      //   'account_group': '#9467BD',
+      //   'browse_group': '#3f16f9',
+      //   'cart_group': '#8C564B',
+      //   'checkout_group': '#FF7F0E',
+      //   'info_group': '#E377C2',
+      //   'other_group': '#7F7F7F',
+      //   'pv_login': '#cf60f3',
+      //   'pv_account': '#7f20ac',
+      //   'pv_eliterewards': '#dfccfa',
+      //   'pv_category': '#3f16f9',
+      //   'pv_product': '#199bce',
+      //   'pv_home':'#68affc',
+      //   'pv_specialoffers':'#22577a',
+      //   'pv_explore':'#54f8fe',
+      //   'pv_cart': '#571e0b',
+      //   'pv_checkout': '#f8ba7c',
+      //   'pv_confirmation': '#ff743c',
+      //   'pv_storelocator': '#f886bf',
+      //   'pv_help': '#ff0087',
+      //   'pv_other': '#bfbdbd',
+      //   'pv_error': '#585959'
+
+
+
+      // }
+
+      // var colors = {
+
+      //   "addToCart": "#79EA85",
+      //   "removeFromCart": "#EA0000",
+      //   "purchase": "#00AC22",
+      //   "search": "#FFFF33",
+      //   "pageview": "#0073B9",
+      //   "start": "#999",
+      //   "exit": "#999",
+      //   "extra": 'black',
+      //   'account_group': '#9467BD',
+      //   'browse_group': '#3f16f9',
+      //   'cart_group': '#8C564B',
+      //   'checkout_group': '#FF7F0E',
+      //   'info_group': '#E377C2',
+      //   'other_group': '#7F7F7F',
+      //   'pv_account': '#5254A3',
+      //   'pv_eliterewards': '#6B6ECF',
+      //   'pv_login': '#9C9EDE',
+      //   'pv_category': '#00457a',
+      //   'pv_explore':'#3182BD',
+      //   'pv_home':'#6BAED6',
+      //   'pv_product': '#9ECAE1',
+      //   'pv_specialoffers':'#C6DBEF',  
+      //   'pv_cart': '#8C6D31',
+      //   'pv_checkout': '#FF7F0E',
+      //   'pv_confirmation': '#FFBB78',
+      //   'pv_storelocator': '#f886bf',
+      //   'pv_help': '#ff0087',       
+      //   'pv_error': '#7F7F7F',
+      //   'pv_other': '#C7C7C7',
+
+
+
+      // }
+
+      //       var colors = {
+
+      //   "addToCart": "#79EA85",
+      //   "removeFromCart": "#EA0000",
+      //   "purchase": "#00AC22",
+      //   "search": "#BCBD22",
+      //   "pageview": "#0073B9",
+      //   "start": "#999",
+      //   "exit": "#999",
+      //   "extra": 'black',
+      //   'account_group': '#FF7F0E',
+      //   'browse_group': '#1F77B4',
+      //   'cart_group': '#E377C2',
+      //   'checkout_group': '#9467BD',
+      //   'info_group': '#8C564B',
+      //   'other_group': '#7F7F7F',
+      //   'pv_account': '#E6550D',
+      //   'pv_eliterewards': '#FD8D3C',
+      //   'pv_login': '#FDD0A2',
+      //   'pv_category': '#00457a',
+      //   'pv_explore':'#3182BD',
+      //   'pv_home':'#6BAED6',
+      //   'pv_product': '#9ECAE1',
+      //   'pv_specialoffers':'#C6DBEF',  
+      //   'pv_cart': '#E377C2',
+      //   'pv_checkout': '#9467BD',
+      //   'pv_confirmation': '#C5B0D5',
+      //   'pv_storelocator': '#8C564B',
+      //   'pv_help': '#C49C94',       
+      //   'pv_error': '#7F7F7F',
+      //   'pv_other': '#C7C7C7',
+
+
+
+      // }
+
+      // var colors = {
+
+      //   "addToCart": "#79EA85",
+      //   "removeFromCart": "#EA0000",
+      //   "purchase": "#00AC22",
+      //   "search": "#f4d403",
+      //   "pageview": "#0073B9",
+      //   "start": "#999",
+      //   "exit": "#999",
+      //   "extra": 'black',
+      //   'account_group': '#FF7F0E',
+      //   'browse_group': '#1F77B4',
+      //   'cart_group': '#E377C2',
+      //   'checkout_group': '#9467BD',
+      //   'info_group': '#8C564B',
+      //   'other_group': '#7F7F7F',
+      //   'pv_account': '#E6550D',
+      //   'pv_eliterewards': '#FD8D3C',
+      //   'pv_login': '#FDD0A2',
+      //   'pv_category': '#002f54',
+      //   'pv_explore':'#3182BD',
+      //   'pv_home':'#6BAED6',
+      //   'pv_product': '#9ECAE1',
+      //   'pv_specialoffers':'#C6DBEF',  
+      //   'pv_cart': '#E377C2',
+      //   'pv_checkout': '#9467BD',
+      //   'pv_confirmation': '#C5B0D5',
+      //   'pv_storelocator': '#8C564B',
+      //   'pv_help': '#C49C94',       
+      //   'pv_error': '#7F7F7F',
+      //   'pv_other': '#C7C7C7'
+
+      // }
+
+      // var colors = {
+
+      //   "addToCart": "#79EA85",
+      //   "removeFromCart": "#EA0000",
+      //   "purchase": "#00AC22",
+      //   "search": "#f4d403",
+      //   "pageview": "#0073B9",
+      //   "start": "#999",
+      //   "exit": "#999",
+      //   "extra": 'black',
+      //   'account_group': '#8C564B',
+      //   'browse_group': '#1F77B4',
+      //   'cart_group': '#E377C2',
+      //   'checkout_group': '#9467BD',
+      //   'info_group': '#FF7F0E',
+      //   'other_group': '#7F7F7F',
+      //   'pv_account': '#7b4419',
+      //   'pv_eliterewards': '#b88665',
+      //   'pv_login': '#fbcab9',
+      //   'pv_category': '#333a9e',
+      //   'pv_explore':'#4328e7',
+      //   'pv_home':'#0274b9',
+      //   'pv_product': '#23dbe1',
+      //   'pv_specialoffers':'#87cefe',  
+      //   'pv_cart': '#E377C2',
+      //   'pv_checkout': '#9467BD',
+      //   'pv_confirmation': '#C5B0D5',
+      //   'pv_help': '#FDAE6B',
+      //   'pv_storelocator': '#FD8D3C',       
+      //   'pv_error': '#7F7F7F',
+      //   'pv_other': '#C7C7C7'
+
+      // }
+
+      //       var colors = {
+
+      //   "addToCart": "#79EA85",
+      //   "removeFromCart": "#EA0000",
+      //   "purchase": "#00AC22",
+      //   "search": "#f4d403",
+      //   "pageview": "#0073B9",
+      //   "start": "#999",
+      //   "exit": "#999",
+      //   "extra": 'black',
+      //   'account_group': '#8C564B',
+      //   'browse_group': '#1F77B4',
+      //   'cart_group': '#E377C2',
+      //   'checkout_group': '#9467BD',
+      //   'info_group': '#FF7F0E',
+      //   'other_group': '#7F7F7F',
+      //   'pv_account': '#7b4419',
+      //   'pv_eliterewards': '#b88665',
+      //   'pv_login': '#b94403',
+      //   'pv_category': '#333a9e',
+      //   'pv_explore':'#4328e7',
+      //   'pv_home':'#0274b9',
+      //   'pv_product': '#23dbe1',
+      //   'pv_specialoffers':'#87cefe',  
+      //   'pv_cart': '#E377C2',
+      //   'pv_checkout': '#9467BD',
+      //   'pv_confirmation': '#C5B0D5',
+      //   'pv_help': '#FF7F0E',
+      //   'pv_storelocator': '#FFBB78',       
+      //   'pv_error': '#7F7F7F',
+      //   'pv_other': '#C7C7C7'
+
+      // }
+
+                  var colors = {
 
         "addToCart": "#79EA85",
         "removeFromCart": "#EA0000",
         "purchase": "#00AC22",
-        "search": "#FF7100",
+        "search": "#f4d403",
         "pageview": "#0073B9",
         "start": "#999",
         "exit": "#999",
-        "extra": 'black'
-
+        "extra": 'black',
+        'account_group': '#8C564B',
+        'browse_group': '#1F77B4',
+        'cart_group': '#E377C2',
+        'checkout_group': '#9467BD',
+        'info_group': '#FF7F0E',
+        'other_group': '#7F7F7F',
+        'pv_account': '#7b4419',
+        'pv_eliterewards': '#b88665',
+        'pv_login': '#b94403',
+        'pv_category': '#002f54',
+        'pv_explore':'#3182BD',
+        'pv_home':'#6BAED6',
+        'pv_product': '#9ECAE1',
+        'pv_specialoffers':'#C6DBEF',  
+        'pv_cart': '#E377C2',
+        'pv_checkout': '#9467BD',
+        'pv_confirmation': '#C5B0D5',
+        'pv_help': '#FF7F0E',
+        'pv_storelocator': '#FFBB78',       
+        'pv_error': '#7F7F7F',
+        'pv_other': '#C7C7C7'
 
       }
 
@@ -2236,7 +2480,12 @@ d3.csv(csv_file, function(error, data) {
               .attr("d", "M0,-5L10,0L0,5")
               .attr("fill", "gray");
                         
-      var node_spacing = 30;
+      
+      var node_radius = 8,
+          end_radius = 4;
+      // var node_spacing = 32;
+      var label_spacing = 13
+          node_spacing = (node_radius*2) + label_spacing + 3
 
       function clear_adjacency_chart_data(){
         if (selected_action_node)
@@ -2255,7 +2504,6 @@ d3.csv(csv_file, function(error, data) {
             link_data =[],
             x0 = 0,
             total= 0
-            //node_spacing = 30;
 
         if (selected_action_node.isParent){
           var after_actions ={},
@@ -2448,7 +2696,8 @@ d3.csv(csv_file, function(error, data) {
                       return bar_width;
                   })
                   .attr("height", function(d){
-                      return bar_len(d.x1) - bar_len(d.x0);
+                      d.height = bar_len(d.x1) - bar_len(d.x0)
+                      return d.height;
                   })
                   .attr("fill", function(d) {
                     //return color(d.group);
@@ -2457,8 +2706,24 @@ d3.csv(csv_file, function(error, data) {
 
             var bar_update = bar_enter.merge(bar);
 
-            bar_update.selectAll('rect')
-                    .attr('stroke', function(d){ return d.selected? "black": "none"})
+            bars.selectAll('rect')
+                    .attr('stroke', 'black')
+                    .attr('stroke-width', 
+                      function(d){return d.selected? 1:0.5}
+                      )
+                    .attr('stroke-dasharray', function(d, i) {
+                      if (d.selected){
+                        return '0';
+                      }
+                      else if (i==0){
+                        return '0,' + (2*(bar_width+d.height));
+                      }
+                      else{
+                        return bar_width +',' + (bar_width + 2*d.height);
+                      } 
+                      
+                    })
+                    //.attr('stroke', function(d){ return d.selected? "black": "none"})
                     // .each(populate_tooltip)
                     .each(tooltip)
 
@@ -2625,15 +2890,14 @@ d3.csv(csv_file, function(error, data) {
 
       }
 
-      var node_radius = 8,
-          end_radius = 4;
+      
 
       // ====================== Action List ============== //
 
       var al_data = []
 
       var al_svg = d3.select("#action_list").append('svg')
-                    .attr('width', 100)
+                    .attr('width', 110)
                     .attr('transform', "translate(0,10)")
                     //.attr('height', 175)
 
@@ -2667,23 +2931,26 @@ d3.csv(csv_file, function(error, data) {
         // var data = current_level.map(function (action) { return { action: action, id: action}; });
         var data = al_data;
 
-        var action = al_actions.selectAll('.action')
+        var action = al_actions.selectAll('.action-list')
                             .remove()
                             .exit()
                             .data(data)
-        var spacing = 0
-        var action_enter = action.enter().append('g')
-                            .attr('class', 'action')
+        var spacing = 0;
+        var al_action = action.enter().append('g').attr('class', 'action-list')
+        var action_enter = al_action.append('g')
+                            .attr('class', function(d){return d.header? 'header': 'action'})
                             //.attr("transform", function(d, i){return "translate(" + 0 + "," + (node_radius*3)*i + ")" })
                             .attr("transform", function(d, i){
-                              var hTranslate= d.level? d.level*10: 0;
+                              var hTranslate= d.level? d.level*(node_radius*2): 0;
                               var vTranslate =0;
                               if(i != 0){
-                                vTranslate = d.header? (node_spacing/2): node_spacing
+                                vTranslate = d.header? (node_spacing/1.5): node_spacing
                               }
                               spacing+=vTranslate
                               return "translate(" + hTranslate + "," + spacing + ")"; 
                             })
+                            
+        al_actions.selectAll('.action')
                             .on("click", select_pattern_action_node)
 
         action_enter.append('circle')
@@ -2702,11 +2969,11 @@ d3.csv(csv_file, function(error, data) {
             .style("font-size", "10px")
             //.style("text-anchor", "middle")
             .style("text-anchor", "left")
-            .attr('dx', -node_radius)
+            .attr('dx', -(node_radius+2))
             .attr('dy', function (d){
               var dy = (d.header)? node_spacing/2: 0
 
-              return dy -(node_radius+2);
+              return dy -(node_radius+3);
               //node_radius/2 
               //node_radius
             }
@@ -3411,7 +3678,7 @@ d3.csv(csv_file, function(error, data) {
 
       function update_sequences(){
 
-         var w = transitionized ? 15: 9,
+         var w = transitionized ? 17: 11,
             h = 9,
               max_i=0,
               vsep =h+5;

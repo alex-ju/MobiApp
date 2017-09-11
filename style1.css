@@ -28,6 +28,10 @@
   cursor: pointer;
 }
 
+.header{
+  font-weight: bold;
+}
+
 .radio{
    line-height: 1.9 !important;
    padding: 2px !important;
@@ -580,6 +584,11 @@ input {
 .count{
   font-size: 11px;
   fill:black;
+}
+
+.top-bottom{
+  stroke:black;
+  stroke-dasharray: {50,50,50,50}
 }
 
 
