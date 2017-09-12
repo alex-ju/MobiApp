@@ -35,7 +35,7 @@
                     <button type="button" id="path_button" class="btn btn-sm btn-primary">Show only path</button>
                     <button type="button" id="remove_button" class="btn btn-sm btn-primary">Remove Operation</button>
                     <button type="button" id="clear_button" class="btn btn-sm btn-primary">Clear All</button>
-                    <!-- <button type="button" id="demo_button" class="btn btn-sm btn-primary">Demo</button> -->
+                    <button type="button" id="demo_button" class="btn btn-sm btn-primary">Demo</button>
                   </div>
                   
                 </div>
@@ -352,27 +352,15 @@
                         class="btn btn-select"
                         data-toggle="dropdown">General</button>
                       <ul class="dropdown-menu dropdown-menu-select">
-                      <li>
-                          <button type="button" id="general" class="btn btn-primary level_button" disabled>General</button>
-                          <!-- <label class="dropdown-radio level_button" >
-                          <input type="radio" id="general" name="level">
-                          <i>General</i>
-                          </label> -->
-                      </li>
-                      <li>
-                           <button type="button" id="grouped" class="btn btn-primary level_button">Grouped</button>
-                          <!-- <label class="dropdown-radio level_button" >
-                          <input type="radio" id="grouped" name="level">
-                          <i>Grouped</i>
-                          </label> -->
-                      </li>
-                      <li>
-                           <button type="button" id="pages" class="btn btn-primary level_button">Pages</button>
-                          <!-- <label class="dropdown-radio level_button">
-                          <input type="radio"  id='pages' name="level">
-                          <i>Pages</i>
-                          </label> -->
-                      </li>
+                        <li>
+                            <button type="button" id="general" class="btn btn-primary level_button" disabled>General</button>
+                        </li>
+                        <li>
+                             <button type="button" id="grouped" class="btn btn-primary level_button">Grouped</button>
+                        </li>
+                        <li>
+                             <button type="button" id="pages" class="btn btn-primary level_button">Pages</button>
+                        </li>
                       </ul>
                     </div>
                   </div>
@@ -414,6 +402,24 @@
                             <div class="panel-body">
                               <div class="charts">
                                 <div class="chart range_chart" id="duration_chart"> 
+                                  <div class="dropdown" id="dropdown" style="position:absolute; top: -3px; right:0;">
+                                    <button class="btn btn-xs btn-default dropdown-toggle" type="button" data-toggle="dropdown" >
+                                          <span class="caret"></span></button>
+                                    <ul class="dropdown-menu time-dropdown">
+                                      <li>
+                                          <button type="button" id="minutes" class="btn btn-default interval_button">minutes</button>
+                                      </li>
+                                      <li>
+                                           <button type="button" id="hours" class="btn btn-default interval_button" disabled>hours</button>
+                                      </li>
+                                      <li>
+                                           <button type="button" id="days" class="btn btn-default interval_button">days</button>
+                                      </li>
+                                      
+                                    </ul>
+                                  </div>
+
+
                                   <div class="title"> Duration chart </div>
                                 </div>
                                 <div class="chart range_chart" id="hour_chart"> 
@@ -1308,10 +1314,13 @@ d3.csv(csv_file, function(error, data) {
             start_filter = seqs.dimension(function(d) {return d.start}),
             starts = start.group(d3.timeDay);
             
-            interval = 1000*60*60
-            duration = seqs.dimension(function(d) {return (d.end - d.start)/(interval)});
-            dur_filter = seqs.dimension(function(d) {return (d.end - d.start)/(interval)});
-            durations = duration.group(Math.floor);
+            interval = 60*60
+            // duration = seqs.dimension(function(d) {return (d.end - d.start)/(interval)});
+            // dur_filter = seqs.dimension(function(d) {return (d.end - d.start)/(interval)});
+            // durations = duration.group(Math.floor);
+            duration = seqs.dimension(function(d) {return (d.end - d.start)/1000});
+            dur_filter = seqs.dimension(function(d) {return (d.end - d.start)/1000});
+            durations = duration.group(function(d){return Math.floor(d/interval)});
 
             // action_strings = seqs.dimension(function(d) {return d[level]});
             // action_strings2 = seqs.dimension(function(d) {return d[level]});
@@ -1479,18 +1488,18 @@ d3.csv(csv_file, function(error, data) {
       // d3.select("#close_detailed_view")
       //   .on("click", close_detailed_view);
 
-      // d3.select("#demo_button")
-      //   .on("click", function(d) {return change_level(general)});
+      d3.select("#demo_button")
+        .on("click", function(d) {return change_time_interval('#minutes')});
 
-      // d3.select("#general")
-      //   .on("click", function(d) {return change_level(general)});
+      // d3.select("#minutes")
+      //   .on("click", function(d) {return change_time_interval('#minutes')});
 
 
-      // d3.select("#grouped")
-      //   .on("click", function(d) {return change_level(grouped)});
+      // d3.select("#hours")
+      //   ..on("click", function(d) {return change_time_interval('#hours')});
 
-      // d3.select("#pages")
-      //   .on("click", function(d) {return change_level(actions)});
+      // d3.select("#days")
+      //   .on("click", function(d) {return change_time_interval('#days')});
 
 
       $('#general').click(function() {
@@ -1520,7 +1529,35 @@ d3.csv(csv_file, function(error, data) {
           }, 3000);
       });
 
+      $('.interval_button').click(function(){
+        $('.interval_button').prop('disabled', false);
+        $(this).prop('disabled', true);
+        var t = $(this).text()
+        change_time_interval(t)
+
+      })
+
+      function change_time_interval(t){
+
+        d3.select('#duration_chart').select('svg').remove();
+
+        if (t == 'minutes'){
+          interval = 60
+        }else if (t=='hours'){
+          interval = 60*60
+        }else if (t=='days'){
+          interval = 60*60*24
+        }
+
+        durations = duration.group(function(d){return Math.floor(d/interval)});
+
+        var dur_chart = charts[0]
+        dur_chart.dim_name('Duration (' + t +')')
+        dur_chart.group(durations)
         
+        renderAll();
+        // /rerender_charts()
+      }
       function change_level_button(id){
         $('.level_button').prop('disabled', false);
 
@@ -1741,6 +1778,11 @@ d3.csv(csv_file, function(error, data) {
                 'border-style': 'solid',
                 'border-color': hover_color
               })
+            .selector('.hover-mouseover')
+              .css({
+              'opacity':0.8,
+              'text-opacity':1
+            })
             .selector('.invisible')
               .css({
                 'opacity': 0
@@ -2093,7 +2135,8 @@ d3.csv(csv_file, function(error, data) {
           var node = e.target,
               data = node.data()
 
-          node.css({'opacity': 0.8})
+          //node.css({'opacity': 0.8})
+          node.addClass('hover-mouseover')
           $('html,body').css('cursor', 'pointer');
 
           
@@ -2112,7 +2155,7 @@ d3.csv(csv_file, function(error, data) {
         nl_graph.nodes().on('mouseout', function(e){
           var node = e.target;
 
-          node.css({'opacity': 1})
+          node.removeClass('hover-mouseover')
           $('html,body').css('cursor', 'default')
           
           all_matches.forEach(function(m){
@@ -4400,7 +4443,8 @@ d3.csv(csv_file, function(error, data) {
 
         info_data.partition_data = []
         info_data = update_node_info_data(operations, show_all_text )
-        shown_idx = [info_data.operation_data.length -1]
+        var n_ops = info_data.operation_data.length
+        shown_idx = (n_ops>0)?[n_ops -1]: []
         update_node_info_view(info_data)
 
 
@@ -5544,13 +5588,13 @@ d3.csv(csv_file, function(error, data) {
       function select_chart(div){
         if (selected_chart){
           selected_chart.style("background-color", "white" );
-          selected_chart.select('button').style('display', 'none')
+          selected_chart.select('.close').style('display', 'none')
         }
         selected_chart = div;
         selected_chart.style("background-color", "lightyellow" );
 
 
-        selected_chart.select('button').style('display', null)
+        selected_chart.select('.close').style('display', null)
       }
 
       function render(method) {
@@ -5718,9 +5762,7 @@ d3.csv(csv_file, function(error, data) {
 
             // Create the skeletal chart.
             if (g.empty()) {
-
-              
-              
+            
               y.domain([0, group.top(1)[0].value]);
 
               x_domain_max = get_x_limit(group.all(), y, x);
@@ -6234,7 +6276,7 @@ d3.csv(csv_file, function(error, data) {
         
     var i = 0,
         //duration = 750,
-        duration = 0,
+        //duration = 0,
         root;
 
     var tree = d3.tree()
@@ -6572,7 +6614,7 @@ d3.csv(csv_file, function(error, data) {
 
 
         nodeUpdate.transition()
-            .duration(duration)
+            //.duration(duration)
             .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
 
@@ -6590,7 +6632,7 @@ d3.csv(csv_file, function(error, data) {
 
         // Transition exiting nodes to the parent's new position.
         var nodeExit = node.exit().transition()
-            .duration(duration)
+            //.duration(duration)
             .attr("transform", function(d) { return "translate(" + source.x + "," + source.y + ")"; })
             .remove();
 
@@ -6620,14 +6662,14 @@ d3.csv(csv_file, function(error, data) {
 
 
         linkUpdate.transition()
-            .duration(function(d) {
-                            return duration;
-                      })
+            // .duration(function(d) {
+            //                 return duration;
+            //           })
             .attr("d", function(d){return diagonal(d, d.parent)})
 
         // Transition exiting nodes to the parent's new position.
         var linkExit = link.exit().transition()
-            .duration(duration)
+            //.duration(duration)
             .attr("d", function(d) {
               var o = {x: source.x, y: source.y};
                // if(!d.target.visible && !d.target.children)

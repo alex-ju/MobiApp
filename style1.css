@@ -430,7 +430,7 @@ input {
 }
 
 .dropdown-menu {
-  min-width:120px !important;
+  min-width:65px !important;
 
 }
 
@@ -623,6 +623,11 @@ input {
 
 .clickable{
   cursor:pointer;
+}
+
+.time-dropdown button{
+  font-size:10px;
+  width:100%;
 }
 
 /*----------*/
