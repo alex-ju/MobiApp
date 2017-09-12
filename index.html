@@ -98,11 +98,11 @@
                                 <div>
                                 Start: 
                                 <!-- <input type="text" size="6" id="partition_value"> -->
-                                <input type="text" size="6" id="range_start_value">
+                                <input type="text" size="10" id="range_start_value">
                                 </div>
                                 <div class="left-buffer">
                                 End:
-                                <input type="text" size="6" id="range_end_value">
+                                <input type="text" size="10" id="range_end_value">
                                 </div>
                               </div>
                               <div class="text-right top-buffer">
@@ -212,7 +212,7 @@
                             <div style="width:100px">
                               <div style ="top:0; width:100%; background-color: lightgray; text-align:center;">Actions</div>
                                     <!-- Actions: -->
-                              <div class="graph scroll border" style=" height: 385px; width: 100px;" id ="action_list"> </div>
+                              <div class="graph scroll border" style=" width: 100px;" id ="action_list"> </div>
                             </div>
 
 
@@ -526,7 +526,7 @@
                         <div id="sequences">
                           <label class="checkbox-inline"><input id="group_sequences" type="checkbox" checked="checked" value="">Group Sequences</label>
                           <label class="checkbox-inline"><input id="transitionize_sequences" type="checkbox" value="">Transitionize Sequences</label>
-                          <div class="inline align-center">
+                          <div class="inline align-top">
                             <div id="sequences_text" class="border scroll" style=" height: 200px; width: 500px; padding:10px; margin-left: 20px; margin-top: 20px;"> 
                             </div>
                             <div id="legend" class="scroll" style="width:170px; height:230px"></div>
@@ -572,7 +572,16 @@
     
 <script>
 
+function visibleWidth(){
+   return window.innerWidth||document.documentElement.clientWidth||document.body.clientWidth||0;
+}
+function visibleHeight(){
+   return window.innerHeight||document.documentElement.clientHeight||document.body.clientHeight||0;
+}
+
 $(document).ready(function(){
+  console.log('visible width', visibleWidth())
+  console.log('visible height', visibleHeight())
   $('#load').hide()
 
 
@@ -587,14 +596,22 @@ $(document).ready(function(){
   var parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S.%L")
   //var parseTimeDelta = d3.timeParse("%d %H:%M:%S.%L")
 
-  //with pv_
-  var alpha_file = "alphabet_pv.csv";
+   //with new alphabet (pageview all small letters)
+  var alpha_file = "alphabet-1709.csv";
   //session
-  var csv_file = "sample_table_pv1.csv"; //100K new alpha
-  // var csv_file = "sample_table300k.csv"; 
-  //var csv_file = "sample_table1M.csv"; 
-  //client
-  var client_file = "sample_100000_client_table.csv"; //100K new alpha
+  var csv_file = "sample_100000_session_table_1709.csv"; //100K new alpha
+
+
+
+
+  // //with pv_
+  // var alpha_file = "alphabet_pv.csv";
+  // //session
+  // var csv_file = "sample_table_pv1.csv"; //100K new alpha
+  // // var csv_file = "sample_table300k.csv"; 
+  // //var csv_file = "sample_table1M.csv"; 
+  // //client
+  // var client_file = "sample_100000_client_table.csv"; //100K new alpha
 
   
 
@@ -621,8 +638,8 @@ d3.csv(csv_file, function(error, data) {
   if (error) throw error;
   seq_data = data;
 
-  d3.csv(client_file, function(error1, client_data) {
-  if (error1) throw error1;
+  // d3.csv(client_file, function(error1, client_data) {
+  // if (error1) throw error1;
 
 
     d3.csv(alpha_file, function(error2, alpha_data) {
@@ -639,16 +656,16 @@ d3.csv(csv_file, function(error, data) {
           d.dur = d.end -d.start;
         });
 
-        client_data.forEach(function(d){
+        // client_data.forEach(function(d){
 
-          d.len = +d.len;
-          d.index = +d.index;
-          d.start_index = +d.start_index;
-          d.end_index = +d.end_index;
-          d.start = parseDate(d.start);
-          d.end = parseDate(d.end);
-          d.dur = d.end -d.start;
-        });
+        //   d.len = +d.len;
+        //   d.index = +d.index;
+        //   d.start_index = +d.start_index;
+        //   d.end_index = +d.end_index;
+        //   d.start = parseDate(d.start);
+        //   d.end = parseDate(d.end);
+        //   d.dur = d.end -d.start;
+        // });
 
 
         alphabet = {},
@@ -669,7 +686,7 @@ d3.csv(csv_file, function(error, data) {
 
         console.log('Alphabet: ', alphabet);
         console.log('first session', seq_data[0])
-        console.log('first client', client_data[0])
+        //console.log('first client', client_data[0])
 
       var general= 'general_actions',
           grouped = 'pages_grouped',
@@ -899,10 +916,12 @@ d3.csv(csv_file, function(error, data) {
 
         dim.dispose()
       }
-        
+      
 
 
 
+
+      //randomly assigned by cat20
       // var colors = {
 
       //   "addToCart": "#79EA85",
@@ -916,6 +935,8 @@ d3.csv(csv_file, function(error, data) {
 
 
       // }
+
+
 
       // var colors = {
 
@@ -1093,6 +1114,7 @@ d3.csv(csv_file, function(error, data) {
 
       // }
 
+      //using different shades of blue
       //       var colors = {
 
       //   "addToCart": "#79EA85",
@@ -1127,6 +1149,44 @@ d3.csv(csv_file, function(error, data) {
 
       // }
 
+      // //Sequential blues 
+
+      //             var colors = {
+
+      //   "addToCart": "#79EA85",
+      //   "removeFromCart": "#EA0000",
+      //   "purchase": "#00AC22",
+      //   "search": "#f4d403",
+      //   "pageview": "#0073B9",
+      //   "start": "#999",
+      //   "exit": "#999",
+      //   "extra": 'black',
+      //   'account_group': '#8C564B',
+      //   'browse_group': '#1F77B4',
+      //   'cart_group': '#E377C2',
+      //   'checkout_group': '#9467BD',
+      //   'info_group': '#FF7F0E',
+      //   'other_group': '#7F7F7F',
+      //   'pv_account': '#7b4419',
+      //   'pv_eliterewards': '#b88665',
+      //   'pv_login': '#b94403',
+      //   'pv_category': '#002f54',
+      //   'pv_explore':'#3182BD',
+      //   'pv_home':'#6BAED6',
+      //   'pv_product': '#9ECAE1',
+      //   'pv_specialoffers':'#C6DBEF',  
+      //   'pv_cart': '#E377C2',
+      //   'pv_checkout': '#9467BD',
+      //   'pv_confirmation': '#C5B0D5',
+      //   'pv_help': '#FF7F0E',
+      //   'pv_storelocator': '#FFBB78',       
+      //   'pv_error': '#7F7F7F',
+      //   'pv_other': '#C7C7C7'
+
+      // }
+
+      //Sequential blues from color brewer
+
                   var colors = {
 
         "addToCart": "#79EA85",
@@ -1146,11 +1206,11 @@ d3.csv(csv_file, function(error, data) {
         'pv_account': '#7b4419',
         'pv_eliterewards': '#b88665',
         'pv_login': '#b94403',
-        'pv_category': '#002f54',
-        'pv_explore':'#3182BD',
-        'pv_home':'#6BAED6',
-        'pv_product': '#9ECAE1',
-        'pv_specialoffers':'#C6DBEF',  
+        'pv_category': '#3680af',
+        'pv_explore':'#074b91',
+        'pv_home':'#021e47',
+        'pv_product': '#8eb9d1',
+        'pv_specialoffers':'#d5e3ef',  
         'pv_cart': '#E377C2',
         'pv_checkout': '#9467BD',
         'pv_confirmation': '#C5B0D5',
@@ -2946,107 +3006,6 @@ d3.csv(csv_file, function(error, data) {
 
       
 
-      // ====================== Action List ============== //
-
-      var al_data = []
-
-      var al_svg = d3.select("#action_list").append('svg')
-                    .attr('width', 110)
-                    .attr('transform', "translate(0,10)")
-                    //.attr('height', 175)
-
-
-
-      var al_actions = al_svg.append('g')
-                        .attr("transform", "translate(" + (node_radius*2) + "," + ((node_radius*2)+2) + ")")
-      
-      update_action_list_data()
-
-      function update_action_list_data(){
-        var height = (current_level.length + 2)*node_spacing;
-        al_svg.attr('height', height )
-        
-        //var data = current_level.map(function (action) { return { action: action, id: action}; });
-        var data = get_action_up_to_level(level,true)
-        
-        data.unshift({action:'exit', id:'exit', level: 0})
-        data.unshift({action:'start', id:'start', level:0})
-        
-        al_data = data;
-
-        var height = (data.length + 2)*node_spacing;
-        al_svg.attr('height', height )
-
-        update_action_list()
-      }
-
-      function update_action_list(){
-
-        // var data = current_level.map(function (action) { return { action: action, id: action}; });
-        var data = al_data;
-
-        var action = al_actions.selectAll('.action-list')
-                            .remove()
-                            .exit()
-                            .data(data)
-        var spacing = 0;
-        var al_action = action.enter().append('g').attr('class', 'action-list')
-        var action_enter = al_action.append('g')
-                            .attr('class', function(d){return d.header? 'header': 'action'})
-                            //.attr("transform", function(d, i){return "translate(" + 0 + "," + (node_radius*3)*i + ")" })
-                            .attr("transform", function(d, i){
-                              var hTranslate= d.level? d.level*(node_radius*2): 0;
-                              var vTranslate =0;
-                              if(i != 0){
-                                vTranslate = d.header? (node_spacing/1.5): node_spacing
-                              }
-                              spacing+=vTranslate
-                              return "translate(" + hTranslate + "," + spacing + ")"; 
-                            })
-                            
-        al_actions.selectAll('.action')
-                            .on("click", select_pattern_action_node)
-
-        action_enter.append('circle')
-              .attr("r", function(d){
-                if(d.header)
-                  return 0;
-                else if(d.action == 'start' || d.action == 'exit')
-                  return end_radius
-                else
-                  return node_radius
-              })
-              .attr('fill', function(d){return color(d.action);})
-
-        action_enter.append('text')
-            .style('fill', 'black')
-            .style("font-size", "10px")
-            //.style("text-anchor", "middle")
-            .style("text-anchor", "left")
-            .attr('dx', -(node_radius+2))
-            .attr('dy', function (d){
-              var dy = (d.header)? node_spacing/2: 0
-
-              return dy -(node_radius+3);
-              //node_radius/2 
-              //node_radius
-            }
-              )
-            .text(function(d) {
-              var text = d.action? d.action: d.header;
-              return text;
-            })
-
-
-
-        var action_update = action_enter.merge(action)
-
-        action_update.selectAll('circle')
-            .attr('stroke', function(d){ return d.selected? 'black': 'none'})
-
-
-      }
-
 
 
 
@@ -3570,6 +3529,110 @@ d3.csv(csv_file, function(error, data) {
         pb_graph.zoomingEnabled(false);
       }
 
+       // ====================== Action List ============== //
+
+      var al_data = []
+      $('#action_list').css('height', pb_height)
+      var al_svg = d3.select("#action_list").append('svg')
+                    .attr('width', 110)
+                    .attr('height', pb_height)
+                    .attr('transform', "translate(0,10)")
+                    //.attr('height', 175)
+
+
+
+      var al_actions = al_svg.append('g')
+                        .attr("transform", "translate(" + (node_radius*2) + "," + ((node_radius*2)+2) + ")")
+      
+      update_action_list_data()
+
+      function update_action_list_data(){
+        var height = (current_level.length + 2)*node_spacing;
+        al_svg.attr('height', height )
+        
+        //var data = current_level.map(function (action) { return { action: action, id: action}; });
+        var data = get_action_up_to_level(level,true)
+        
+        data.unshift({action:'exit', id:'exit', level: 0})
+        data.unshift({action:'start', id:'start', level:0})
+        
+        al_data = data;
+
+        var height = (data.length + 2)*node_spacing;
+        al_svg.attr('height', height )
+
+        update_action_list()
+      }
+
+      function update_action_list(){
+
+        // var data = current_level.map(function (action) { return { action: action, id: action}; });
+        var data = al_data;
+
+        var action = al_actions.selectAll('.action-list')
+                            .remove()
+                            .exit()
+                            .data(data)
+        var spacing = 0;
+        var al_action = action.enter().append('g').attr('class', 'action-list')
+        var action_enter = al_action.append('g')
+                            .attr('class', function(d){return d.header? 'header': 'action'})
+                            //.attr("transform", function(d, i){return "translate(" + 0 + "," + (node_radius*3)*i + ")" })
+                            .attr("transform", function(d, i){
+                              var hTranslate= d.level? d.level*(node_radius*2): 0;
+                              var vTranslate =0;
+                              if(i != 0){
+                                vTranslate = d.header? (node_spacing/1.5): node_spacing
+                              }
+                              spacing+=vTranslate
+                              return "translate(" + hTranslate + "," + spacing + ")"; 
+                            })
+                            
+        al_actions.selectAll('.action')
+                            .on("click", select_pattern_action_node)
+
+        action_enter.append('circle')
+              .attr("r", function(d){
+                if(d.header)
+                  return 0;
+                else if(d.action == 'start' || d.action == 'exit')
+                  return end_radius
+                else
+                  return node_radius
+              })
+              .attr('fill', function(d){return color(d.action);})
+
+        action_enter.append('text')
+            .style('fill', 'black')
+            .style("font-size", "10px")
+            //.style("text-anchor", "middle")
+            .style("text-anchor", "left")
+            .attr('dx', -(node_radius+2))
+            .attr('dy', function (d){
+              var dy = (d.header)? node_spacing/2: 0
+
+              return dy -(node_radius+3);
+              //node_radius/2 
+              //node_radius
+            }
+              )
+            .text(function(d) {
+              var text = d.action? d.action: d.header;
+              return text;
+            })
+
+
+
+        var action_update = action_enter.merge(action)
+
+        action_update.selectAll('circle')
+            .attr('stroke', function(d){ return d.selected? 'black': 'none'})
+
+
+      }
+
+
+
 
       //========================== Detailed View ==================================//
       var patterns = {};
@@ -3732,7 +3795,7 @@ d3.csv(csv_file, function(error, data) {
 
       function update_sequences(){
 
-         var w = transitionized ? 17: 11,
+         var w = transitionized ? 17: 13,
             h = 9,
               max_i=0,
               vsep =h+5;
@@ -3855,6 +3918,8 @@ d3.csv(csv_file, function(error, data) {
 
         seq_svg.attr('width', width)
               .attr('height', height)
+
+        $('#sequences_text').css('height', height)
 
 
       }
@@ -6210,9 +6275,11 @@ d3.csv(csv_file, function(error, data) {
 
 
 
-
+    
     
     function resize_windows(){
+      console.log('visible width', visibleWidth())
+      console.log('visible height', visibleHeight())
 
       resize_tree()
       resize_builder()
@@ -6833,7 +6900,8 @@ d3.csv(csv_file, function(error, data) {
 
             show_node_view(selected);
           
-            //find_all_patterns();
+            var patterns = find_all_patterns();
+            console.log('Patterns', patterns)
 
             if (selected.data.value == 1) {
 
@@ -7021,8 +7089,10 @@ d3.csv(csv_file, function(error, data) {
 
       function select_horizontal_action(d){
         select_action_node(d);
-        clear_contains_builder();
-        add_action_node()
+        if (!d.isParent){
+          clear_contains_builder();
+          add_action_node()
+        }
 
 
       }
@@ -8090,6 +8160,7 @@ d3.csv(csv_file, function(error, data) {
         //var action_radius = 7;
         var spacing = action_radius*3;
         var height = (current_level.length+1)*spacing
+        $('#legend').css('height', height)
         legend_svg.attr('height', height )
         var entries = legend.selectAll('g')
                           .remove()
@@ -8145,7 +8216,7 @@ d3.csv(csv_file, function(error, data) {
 
     });
   });
-});
+// });
 
 });
 
