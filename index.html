@@ -35,7 +35,7 @@
                     <button type="button" id="path_button" class="btn btn-sm btn-primary">Show only path</button>
                     <button type="button" id="remove_button" class="btn btn-sm btn-primary">Remove Operation</button>
                     <button type="button" id="clear_button" class="btn btn-sm btn-primary">Clear All</button>
-                    <button type="button" id="demo_button" class="btn btn-sm btn-primary">Demo</button>
+                    <!-- <button type="button" id="demo_button" class="btn btn-sm btn-primary">Demo</button> -->
                   </div>
                   
                 </div>
@@ -1248,6 +1248,11 @@ d3.csv(csv_file, function(error, data) {
         return colors[action]
 
       }
+      var time_constants={
+        'minutes':60,
+        'hours': 60*60,
+        'days': 60*60*24
+      }
 
       var parents ={
 
@@ -1314,13 +1319,14 @@ d3.csv(csv_file, function(error, data) {
             start_filter = seqs.dimension(function(d) {return d.start}),
             starts = start.group(d3.timeDay);
             
-            interval = 60*60
+            interval = 'hours'
+
             // duration = seqs.dimension(function(d) {return (d.end - d.start)/(interval)});
             // dur_filter = seqs.dimension(function(d) {return (d.end - d.start)/(interval)});
             // durations = duration.group(Math.floor);
             duration = seqs.dimension(function(d) {return (d.end - d.start)/1000});
             dur_filter = seqs.dimension(function(d) {return (d.end - d.start)/1000});
-            durations = duration.group(function(d){return Math.floor(d/interval)});
+            durations = duration.group(function(d){return Math.floor(d/time_constants[interval])});
 
             // action_strings = seqs.dimension(function(d) {return d[level]});
             // action_strings2 = seqs.dimension(function(d) {return d[level]});
@@ -1370,6 +1376,7 @@ d3.csv(csv_file, function(error, data) {
 
       var OG_dimensions = dimensions.length;
 
+      
 
       function action_count(d, action){
         var c = alphabet[action],
@@ -1488,18 +1495,8 @@ d3.csv(csv_file, function(error, data) {
       // d3.select("#close_detailed_view")
       //   .on("click", close_detailed_view);
 
-      d3.select("#demo_button")
-        .on("click", function(d) {return change_time_interval('#minutes')});
-
-      // d3.select("#minutes")
+      // d3.select("#demo_button")
       //   .on("click", function(d) {return change_time_interval('#minutes')});
-
-
-      // d3.select("#hours")
-      //   ..on("click", function(d) {return change_time_interval('#hours')});
-
-      // d3.select("#days")
-      //   .on("click", function(d) {return change_time_interval('#days')});
 
 
       $('#general').click(function() {
@@ -1537,26 +1534,32 @@ d3.csv(csv_file, function(error, data) {
 
       })
 
+      
+
       function change_time_interval(t){
-
+        new_selection = true
         d3.select('#duration_chart').select('svg').remove();
+         interval= t 
 
-        if (t == 'minutes'){
-          interval = 60
-        }else if (t=='hours'){
-          interval = 60*60
-        }else if (t=='days'){
-          interval = 60*60*24
-        }
+        // if (t == 'minutes'){
+        //   interval = 60
+        // }else if (t=='hours'){
+        //   interval = 60*60
+        // }else if (t=='days'){
+        //   interval = 60*60*24
+        // }
 
-        durations = duration.group(function(d){return Math.floor(d/interval)});
+        var constant = time_constants[interval]
+
+        durations = duration.group(function(d){return Math.floor(d/constant)});
 
         var dur_chart = charts[0]
         dur_chart.dim_name('Duration (' + t +')')
         dur_chart.group(durations)
         
         renderAll();
-        // /rerender_charts()
+        //rerender_charts()
+        new_selection=false
       }
       function change_level_button(id){
         $('.level_button').prop('disabled', false);
@@ -4300,7 +4303,10 @@ d3.csv(csv_file, function(error, data) {
           infoScale = update_scale(o.range, infoRange)
           operation_data = create_range_filter_data(o, infoScale)
           label_text =['Chart: ', 'Domain: ', 'Filtered: ']
-          var value_text = [o.div]
+          var chart_div = o.div;
+          if(chart_div.includes('duration') && o.interval)
+            chart_div += '_' + o.interval;
+          var value_text = [chart_div]
           var domain_range = format_range_text(o.range),
               filtered_range = format_range_text(o.extents)
           
@@ -4929,17 +4935,25 @@ d3.csv(csv_file, function(error, data) {
                 extents = [value1, value2],
                 not = partitions[1].colored? false: true;
 
+            var selected_chart_data = selected_chart.data()[0];
+            if (selected_chart_data.div_id().includes("duration")){
+              size_extents = extents.map(function(e){return e*time_constants[interval];})
+              selectedFilter.interval = interval
+
+            }else{
+              size_extents = extents
+            }
             console.log(' Creating range filter with following extents: ' + extents)
             var dimension = selected_chart.data()[0].dimension()
             dimension.filterAll()
-            dimension.filterRange(extents);
+            dimension.filterRange(size_extents);
 
             var size = all.reduceCount().value()
             var prev_size = selected.data.size;
 
             size = not? (prev_size - size): size
             //matches = all.reduce(reduceAdd, reduceRemove, reduceInitial).value()
-            var selected_chart_data = selected_chart.data()[0];
+            
             selectedFilter.size = size;
             selectedFilter.extents = extents;
             selectedFilter.not = not;
@@ -5643,10 +5657,15 @@ d3.csv(csv_file, function(error, data) {
             var x_domain_max;
             if (i == groups.length -1){
               x_domain_max = null;
+              
               console.log('x domain', xScale.domain())
               console.log('key', grp.key)
-              if ((typeof(grp.key) == 'number') && (grp.key < (xScale.domain()[1]-2)))
-                x_domain_max = grp.key+1
+              if (typeof(grp.key) == 'number'){
+                if(grp.key < (xScale.domain()[1]-2))
+                  x_domain_max = grp.key+1
+                else
+                  x_domain_max = xScale.domain()[1];
+              }
             }
             else
               x_domain_max = grp.key + 2;
@@ -7328,13 +7347,20 @@ d3.csv(csv_file, function(error, data) {
                          'operation': operation
                        };
 
+            max_key = current_range[1]
 
             partition_node = add_child_node(d, partition_data);
-
+            var t_constant = time_constants[interval];
+            if(chart_id.includes('duration')){
+              size_thresholds = thresholds.map(function(t){return t*t_constant;})
+              max_key = max_key*t_constant;
+            }else{
+              size_thresholds = thresholds
+            }
             console.log('thresholds for grouping', thresholds)
             console.log('Number of seqs: ', all.reduceCount().value())
             groups = dim.group(function(d) {
-                return group_count(d, thresholds);
+                return group_count(d, size_thresholds);
               }).all()
 
             partition = {};
@@ -7342,7 +7368,7 @@ d3.csv(csv_file, function(error, data) {
             //partition.groups = groups;
 
             //max_key = dims[dims.length-1].key;
-            max_key = current_range[1]
+            
 
             d_filters = d.data.filters;
             d_size = d.data.size;
@@ -7371,12 +7397,21 @@ d3.csv(csv_file, function(error, data) {
                 high_bound = next.key;
               else
                 high_bound = max_key;
-              extents = [low_bound, high_bound];
+              
               size = g.value;
               
               oScale = update_scale(node_range, oRange)
 
+              if(chart_id.includes('duration')){
+                low_bound = low_bound/t_constant;
+                high_bound =high_bound/t_constant;
+                filter.interval = interval
+              }
+
+              extents = [low_bound, high_bound];
+
               var translate_x = oScale(low_bound) + ((oScale(high_bound)-oScale(low_bound))/2) - (oLength)/2;
+              
 
               threshold_ranges.push(extents);
               filter.extents = extents;
@@ -7777,7 +7812,13 @@ d3.csv(csv_file, function(error, data) {
         filter_copy.results = { in_size: d.size, out_size: filter_copy.size}
 
         var operations = add_filter_to_set(d.operations, filter_copy)
-            agg_filters = create_agg_filter_set(d.filters, filter_copy)
+
+        var filter_copy2 = copy_filter(new_filter)
+        if(new_filter.div && new_filter.div.includes('duration')){
+          filter_copy2.extents = filter_copy2.extents.map(function(e){return e*time_constants[interval];})
+        }
+
+        var    agg_filters = create_agg_filter_set(d.filters, filter_copy2)
 
 
 
