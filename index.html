@@ -32,10 +32,10 @@
               <div class="panel-body">
                 <div class="inline">
                   <div class="btn-group">
-                    <button type="button" id="path_button" class="btn btn-sm btn-primary">Show only path</button>
+                    <!-- <button type="button" id="path_button" class="btn btn-sm btn-primary">Show only path</button> -->
                     <button type="button" id="remove_button" class="btn btn-sm btn-primary">Remove Operation</button>
                     <button type="button" id="clear_button" class="btn btn-sm btn-primary">Clear All</button>
-                    <!-- <button type="button" id="demo_button" class="btn btn-sm btn-primary">Demo</button> -->
+                    <button type="button" id="demo_button" class="btn btn-sm btn-primary">Demo</button>
                   </div>
                   
                 </div>
@@ -114,14 +114,14 @@
                             </div>
                             <div id="r_partition" class="tab-pane fade in panel-background" role="tabpanel">
                               <h6>Range Partition Builder</h6>
-                              <div class="text-center">
+                              <!-- <div class="text-center">
                                 <div class="radio-inline">
                                   <label class="range_radio"><input checked type="radio" id= "current_range_opt2" name="optradio2">Current Range</label>
                                 </div>
                                 <div class="radio-inline">
                                   <label class="range_radio"><input type="radio" id="full_range_opt2" name="optradio2">Full Range</label>
                                 </div>
-                              </div>
+                              </div> -->
                               <div  class="graph" id="build_partition_view">
                                 <div class="warning-text" id="select_chart_warning2" style="display: none"> Please select chart! </div>
                               </div>
@@ -659,7 +659,7 @@ d3.csv(csv_file, function(error, data) {
           d.end_index = +d.end_index;
           d.start = parseDate(d.start);
           d.end = parseDate(d.end);
-          d.dur = d.end -d.start;
+          d.duration = d.end -d.start;
         });
 
         // client_data.forEach(function(d){
@@ -860,7 +860,6 @@ d3.csv(csv_file, function(error, data) {
       }
       var levels = [general, grouped, actions]
       function get_action_up_to_level(action_level, with_headers){
-        console.log(' GETTING ACTIONS WITH LEVEL', action_level)
         var level = levels.indexOf(action_level)
 
         var actions_array = [],
@@ -886,6 +885,8 @@ d3.csv(csv_file, function(error, data) {
 
       function change_level(l){
         //$('#load').show()
+
+        clear_contains_builder()
         color_id =0
         level = l
         current_level = action_hierarchy[level]
@@ -1120,7 +1121,7 @@ d3.csv(csv_file, function(error, data) {
 
       // }
 
-      //using different shades of blue
+      // //using different shades of blue
       //       var colors = {
 
       //   "addToCart": "#79EA85",
@@ -1154,6 +1155,42 @@ d3.csv(csv_file, function(error, data) {
       //   'pv_other': '#C7C7C7'
 
       // }
+
+
+      //using different shades of blue #2 from colorgorical . angle 180-270, name diff and percept diff 100
+            var colors = {
+
+        "addToCart": "#79EA85",
+        "removeFromCart": "#EA0000",
+        "purchase": "#00AC22",
+        "search": "#f4d403",
+        "pageview": "#0073B9",
+        "start": "#999",
+        "exit": "#999",
+        "extra": 'black',
+        'account_group': '#8C564B',
+        'browse_group': '#1F77B4',
+        'cart_group': '#E377C2',
+        'checkout_group': '#9467BD',
+        'info_group': '#FF7F0E',
+        'other_group': '#7F7F7F',
+        'pv_account': '#7b4419',
+        'pv_eliterewards': '#b88665',
+        'pv_login': '#b94403',
+        'pv_category': '#4795e0',
+        'pv_explore':'#10eddc',
+        'pv_home':'#10558a',
+        'pv_product': '#99def9',
+        'pv_specialoffers':'#399283',  
+        'pv_cart': '#E377C2',
+        'pv_checkout': '#9467BD',
+        'pv_confirmation': '#C5B0D5',
+        'pv_help': '#FF7F0E',
+        'pv_storelocator': '#FFBB78',       
+        'pv_error': '#7F7F7F',
+        'pv_other': '#C7C7C7'
+
+      }
 
       // //Sequential blues 
 
@@ -1193,39 +1230,39 @@ d3.csv(csv_file, function(error, data) {
 
       //Sequential blues from color brewer
 
-                  var colors = {
+      //             var colors = {
 
-        "addToCart": "#79EA85",
-        "removeFromCart": "#EA0000",
-        "purchase": "#00AC22",
-        "search": "#f4d403",
-        "pageview": "#0073B9",
-        "start": "#999",
-        "exit": "#999",
-        "extra": 'black',
-        'account_group': '#8C564B',
-        'browse_group': '#1F77B4',
-        'cart_group': '#E377C2',
-        'checkout_group': '#9467BD',
-        'info_group': '#FF7F0E',
-        'other_group': '#7F7F7F',
-        'pv_account': '#7b4419',
-        'pv_eliterewards': '#b88665',
-        'pv_login': '#b94403',
-        'pv_category': '#3680af',
-        'pv_explore':'#074b91',
-        'pv_home':'#021e47',
-        'pv_product': '#8eb9d1',
-        'pv_specialoffers':'#d5e3ef',  
-        'pv_cart': '#E377C2',
-        'pv_checkout': '#9467BD',
-        'pv_confirmation': '#C5B0D5',
-        'pv_help': '#FF7F0E',
-        'pv_storelocator': '#FFBB78',       
-        'pv_error': '#7F7F7F',
-        'pv_other': '#C7C7C7'
+      //   "addToCart": "#79EA85",
+      //   "removeFromCart": "#EA0000",
+      //   "purchase": "#00AC22",
+      //   "search": "#f4d403",
+      //   "pageview": "#0073B9",
+      //   "start": "#999",
+      //   "exit": "#999",
+      //   "extra": 'black',
+      //   'account_group': '#8C564B',
+      //   'browse_group': '#1F77B4',
+      //   'cart_group': '#E377C2',
+      //   'checkout_group': '#9467BD',
+      //   'info_group': '#FF7F0E',
+      //   'other_group': '#7F7F7F',
+      //   'pv_account': '#7b4419',
+      //   'pv_eliterewards': '#b88665',
+      //   'pv_login': '#b94403',
+      //   'pv_category': '#3680af',
+      //   'pv_explore':'#074b91',
+      //   'pv_home':'#021e47',
+      //   'pv_product': '#8eb9d1',
+      //   'pv_specialoffers':'#d5e3ef',  
+      //   'pv_cart': '#E377C2',
+      //   'pv_checkout': '#9467BD',
+      //   'pv_confirmation': '#C5B0D5',
+      //   'pv_help': '#FF7F0E',
+      //   'pv_storelocator': '#FFBB78',       
+      //   'pv_error': '#7F7F7F',
+      //   'pv_other': '#C7C7C7'
 
-      }
+      // }
 
       var color_id=0;
       //var scheme = d3.scaleOrdinal(d3.schemeCategory20);
@@ -1495,8 +1532,13 @@ d3.csv(csv_file, function(error, data) {
       // d3.select("#close_detailed_view")
       //   .on("click", close_detailed_view);
 
-      // d3.select("#demo_button")
-      //   .on("click", function(d) {return change_time_interval('#minutes')});
+      d3.select("#demo_button")
+        .on("click", function(d) {
+          console.log(dimensions[0])
+          console.log(dimensions[0].top(Infinity))
+          // document.getElementById('whereToPrint').innerHTML = JSON.stringify(lineChartData, null, 2);
+
+        });
 
 
       $('#general').click(function() {
@@ -3841,7 +3883,7 @@ d3.csv(csv_file, function(error, data) {
 
       function update_sequences(){
 
-         var w = transitionized ? 17: 13,
+         var w = transitionized ? 15: 11,
             h = 9,
               max_i=0,
               vsep =h+5;
@@ -7319,6 +7361,11 @@ d3.csv(csv_file, function(error, data) {
                 current_range =selected_chart_data.current_range(),
                 dim = selected_chart_data.dimension()
                 //dims = selected_chart_data.group()
+
+            if(chart_id.includes('count_chart') ){
+              var x = $('#'+chart_id).find('.close')
+              x.prop('disabled', true)
+            }
 
             update_oScale(range);
 
