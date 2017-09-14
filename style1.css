@@ -99,7 +99,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-around;
-  /*margin-right:25px;*/
+  margin-right:20px;
 
 }
 
@@ -107,6 +107,7 @@
   display: inline-block;
   position: relative;
   margin-left:10px;
+  z-index:1;
 /*  height: 151px;*/
   /*margin-bottom: 20px;*/
 }
@@ -447,6 +448,7 @@ input {
   padding-right: 10px;
   padding-top: 5px;
   font-size: 24px;
+  z-index:2;
 }
 
 .panel-group{
