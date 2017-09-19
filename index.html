@@ -4438,6 +4438,8 @@ d3.csv(csv_file, function(error, data) {
         var op_result_view = info_view.select('.operation_result_view')
                              .attr("transform", "translate(" + iView_hSep + "," + vTranslate + ")")
 
+
+        //------------------------ PARTITION VIEW --------------------
         var pData = data.partition_data
 
         var presult = partition_results_view.selectAll(".presult")
@@ -4449,12 +4451,15 @@ d3.csv(csv_file, function(error, data) {
         var presultEnter = presult.enter().append("g")
             .attr("class", "presult")
             .attr("transform", function(d, i) { return "translate(" + (i*(infoLength+ separation))  + "," + 0 + ")"; })
+            .append("g")
+            .attr('class', function(d,i){return (i==0)? 'range': 'none'})
 
-        presultEnter.append('rect')
-            .attr("width", infoLength)
-            .attr("height", oWidth)
-            .attr("fill", 'none')
-            .attr("stroke", "black")
+        // presultEnter.append('rect')
+        //     .attr("width", infoLength)
+        //     .attr("height", oWidth)
+        //     .attr("fill", 'none')
+        //     .attr("stroke", "black")
+
 
       
         var bar =  presultEnter.selectAll("rect")
@@ -4568,7 +4573,7 @@ d3.csv(csv_file, function(error, data) {
 
         //range nodes
 
-        var range_nodes = operationEnter.selectAll(".range")
+        var range_nodes = info_view.selectAll(".range")
 
         var range_symbol = range_nodes.append('g')
                 .attr("transform", function(d) { return "translate(" + (-oWidth -3) + "," + oWidth/2 + ")"; })
@@ -5536,8 +5541,9 @@ d3.csv(csv_file, function(error, data) {
           update_filter_data()
           $('#range_not_button').prop('checked', false);
         }
-        else
+        else if ($("#build_partition_view").is(':visible')){
           update_partitions_data()
+        }
 
       }
 
@@ -5563,6 +5569,7 @@ d3.csv(csv_file, function(error, data) {
       }
 
       function rerender_charts(){
+        d3.selectAll(".range_chart").selectAll('.chart_svg').remove()
 
         chart = d3.selectAll(".range_chart")
              .data(charts)
@@ -5718,12 +5725,17 @@ d3.csv(csv_file, function(error, data) {
           
 
           div.each(function() {
-            var div = d3.select(this),
-                g = div.select("g");
+            var div = d3.select(this)
+
+            
+            var g = div.select("g");
+
+
 
             // Create the skeletal chart.
             if (g.empty()) {
-            
+              
+              //fix leftover/axis
               y.domain([0, group.top(1)[0].value]);
 
               x_domain_max = get_x_limit(group.all(), y, x);
@@ -5732,7 +5744,6 @@ d3.csv(csv_file, function(error, data) {
               range = add_one([x_min,x_max]);
               
               //x.domain(range)
-
         
               if (x_domain_max){
                 x.domain([x.domain()[0], x_domain_max]);
@@ -5747,13 +5758,10 @@ d3.csv(csv_file, function(error, data) {
                 else{
                   axis.ticks(6)
                 }
-                  
-                
+                                 
               }
               axis.scale(x);
               
-
-
               //remove if change date chart range back to 300
               if (typeof(x_min) != 'number'){
                 axis.ticks(4)
@@ -5770,6 +5778,7 @@ d3.csv(csv_file, function(error, data) {
 
 
               g = div.append("svg")
+                  .attr('class', 'chart_svg')
                   .attr("width", width + margin.left + margin.right)
                   .attr("height", height + margin.top + margin.bottom)
                 .append("g")
@@ -6867,9 +6876,10 @@ d3.csv(csv_file, function(error, data) {
             var filtered_size = all.reduceCount().value()
             console.log('filtered-size', filtered_size );
             
-            renderAll();
 
           })
+          //renderAll();
+          rerender_charts()
           
         }
 
@@ -7275,7 +7285,8 @@ d3.csv(csv_file, function(error, data) {
             update_oScale(range);
 
             var info_range = range, //range used for info view
-                node_range = current_range //range used for workflow view
+                node_range = current_range //range used for workflow view,
+                category = selected_chart.data()[0].category()
 
             var node_data,
                 threshold_ranges =[],
@@ -7284,7 +7295,7 @@ d3.csv(csv_file, function(error, data) {
                   'type': 'range',
                   'action': 'partition',
                   'value': 2,
-                  'category': selected_chart.data()[0].category(),
+                  'category': category,
                   'thresholds': thresholds.slice(),
                   'div': chart_id,
                   'chart': selected_chart,
@@ -7335,6 +7346,7 @@ d3.csv(csv_file, function(error, data) {
                   chart: selected_chart,
                   div: chart_id,
                   type: 'range',
+                  category: category,
                   range: info_range,
                   value: 0
 
