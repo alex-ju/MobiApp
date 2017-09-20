@@ -55,7 +55,7 @@
                 <div class="panel panel-default">
                   <div class="panel-heading">
                     <h4 class="panel-title">
-                      <a data-toggle="collapse" class="info-toggle" href="#collapse_node"> Operation Viewer</a>
+                      <a data-toggle="collapse" class="info-toggle" href="#collapse_node"> Operation Inspector</a>
                     </h4>
                   </div>
                   <div id=collapse_node class="panel-body collapse in"> 
@@ -417,7 +417,7 @@
                           <div class="panel-body">
                             <div class="charts">
                               <div class="chart range_chart" id="duration_chart"> 
-                                <div class="dropdown" id="dropdown" style="position:absolute; top: -3px; right:0;">
+                                <div class="dropdown" id="dropdown" style="position:absolute; top: -3px; right:-10px;">
                                   <button class="btn btn-xs btn-default dropdown-toggle" type="button" data-toggle="dropdown" >
                                         <span class="caret"></span></button>
                                   <ul class="dropdown-menu time-dropdown">
@@ -435,13 +435,13 @@
                                 </div>
 
 
-                                <div class="title"> Duration chart </div>
+                                <div class="title"> Duration chart (L)</div>
                               </div>
                               <div class="chart range_chart" id="hour_chart"> 
-                                  <div class="title"> Start hour chart </div>
+                                  <div class="title"> Start hour chart (H) </div>
                               </div>
                               <div class="chart range_chart" id="date_chart"> 
-                                  <div class="title"> Start Date </div>
+                                  <div class="title"> Start Date (D) </div>
                               </div>
                             </div>
                           </div>
@@ -903,7 +903,6 @@ d3.csv(csv_file, function(error, data) {
       current_level = action_hierarchy[level];
 
       function change_level(l){
-        //$('#load').show()
 
         clear_contains_builder()
         color_id =0
@@ -927,8 +926,6 @@ d3.csv(csv_file, function(error, data) {
         clear_adjacency_chart_data()
         update_horizontal_chart_data()
         print_sequences()
-        //$('#load').hide()
-        //resize_windows()
       }
 
       function remove_dimension(dim){
@@ -1496,7 +1493,7 @@ d3.csv(csv_file, function(error, data) {
             .category('time')
             .group(durations)
             .x(d3.scaleLinear()
-            .domain([0, 30 ])
+            //.domain([0, 30 ])
             .rangeRound([0, 10])),
 
             barChart()
@@ -1519,7 +1516,6 @@ d3.csv(csv_file, function(error, data) {
           .x(d3.scaleTime()
             .domain([new Date(2017, 0, 24), new Date(2017, 3, 3)])
              .rangeRound([0, 225])),
-            //.rangeRound([0, 300]))
 
           barChart()
             .dimension(len)
@@ -1528,7 +1524,7 @@ d3.csv(csv_file, function(error, data) {
             .category('count')
             .group(lens)
             .x(d3.scaleLinear()
-            .domain([0, 30])
+            //.domain([0, 30])
             .rangeRound([0, 140]))
 
 
@@ -1831,7 +1827,8 @@ d3.csv(csv_file, function(error, data) {
 
         console.log('Drawing action transition graph', node_link_data)
 
-        $('#outgoing_links').prop('checked', true)
+        //$('#outgoing_links').prop('checked', true)
+        //link_type = 'outgoing'
         
         var size = 350;
         if (level == general){
@@ -4453,6 +4450,9 @@ d3.csv(csv_file, function(error, data) {
             .attr("transform", function(d, i) { return "translate(" + (i*(infoLength+ separation))  + "," + 0 + ")"; })
             .append("g")
             .attr('class', function(d,i){return (i==0)? 'range': 'none'})
+            .on("click", function(d,i) {
+              select_operation_node(d);
+            })
 
         // presultEnter.append('rect')
         //     .attr("width", infoLength)
@@ -4522,9 +4522,12 @@ d3.csv(csv_file, function(error, data) {
 
                 return "translate(" + 0 + "," + (i*(oWidth + sep)+x+tt) + ")";
                 })
+            .on("dblclick", function(d,i) {
+              //select_operation_node(d);
+              show_operation_text(i);
+            })
             .on("click", function(d,i) {
               select_operation_node(d);
-              show_operation_text(i);
             })
 
         operationEnter.append('rect')
@@ -4698,8 +4701,12 @@ d3.csv(csv_file, function(error, data) {
                 })
               return "translate(" + 0 + "," + (i*(oWidth+sep)+x +tt)  + ")"; 
             })
-            .on("click", function(d,i) {
+            .on("dblclick", function(d,i) {
+              //select_operation_node(d);
               show_operation_text(i);
+            })
+            .on("click", function(d,i) {
+              select_operation_node(d);
             })
 
 
@@ -4877,8 +4884,8 @@ d3.csv(csv_file, function(error, data) {
             
             var value1 = partitions[2].value,
                 value2 = partitions[1].value,
-                value1 = parseFloat(value1)? parseFloat(value1): value1,
-                value2 = parseFloat(value2)? parseFloat(value2): value2,
+                value1 = isNaN(parseFloat(value1))? value1: parseFloat(value1),
+                value2 = isNaN(parseFloat(value2))? value2: parseFloat(value2),
                 extents = [value1, value2],
                 not = partitions[1].colored? false: true;
 
@@ -5071,7 +5078,7 @@ d3.csv(csv_file, function(error, data) {
 
       function update_filter_view(_){
 
-        if (selected_chart.data()[0].range() || partitions.length>0){
+        if ((selected_chart && selected_chart.data()[0].range()) || partitions.length>0){
           $('#select_chart_warning').hide()
         
           if(!arguments.length){
@@ -5274,19 +5281,19 @@ d3.csv(csv_file, function(error, data) {
         visible_partition.append('text')
           .attr("dy", ".15em")
           .attr("y", function(d) { return -(partition_height/2)-3; })
-          .attr('x', function(d){return d.x + 2})
+          .attr('x', function(d){return d.x})
+          .attr('dx', function(d){
+            return (d.id == "start")? partition_width: 0;
+          })
           .style("font-size", "10px")
           .style("fill", "black")
-          .style("text-anchor", "middle")
+          //.style("text-anchor", "middle")
+          .style("text-anchor", function(d){
+            return (d.id == "start")? "end": (d.id == "end")? "start": "middle";
+          })
           .text(function(d) { 
               var value = builder_range.invert(d.x);
               return format_text(value)
-              // if (typeof value =='number'){
-              //   //return Math.floor(value);
-              //   return d3.format(",.1f")(value);
-              // }else
-              //   return dateFormat(value);
-
             })
 
         function dragstarted(d) {
@@ -5569,7 +5576,7 @@ d3.csv(csv_file, function(error, data) {
       }
 
       function rerender_charts(){
-        d3.selectAll(".range_chart").selectAll('.chart_svg').remove()
+        d3.selectAll(".range_chart").selectAll('.modifiable_charts').remove()
 
         chart = d3.selectAll(".range_chart")
              .data(charts)
@@ -5699,6 +5706,7 @@ d3.csv(csv_file, function(error, data) {
             axis = d3.axisBottom(),
             axisY = d3.axisLeft(),
             brush = d3.brushX(),
+            fixedDomain,
             x_domain_max,
             x_max,
             x_min,
@@ -5723,7 +5731,7 @@ d3.csv(csv_file, function(error, data) {
 
           brush.extent([[0,0], [width, height]]);
           
-
+          
           div.each(function() {
             var div = d3.select(this)
 
@@ -5736,6 +5744,7 @@ d3.csv(csv_file, function(error, data) {
             if (g.empty()) {
               
               //fix leftover/axis
+              console.log(div_id)
               y.domain([0, group.top(1)[0].value]);
 
               x_domain_max = get_x_limit(group.all(), y, x);
@@ -5743,8 +5752,8 @@ d3.csv(csv_file, function(error, data) {
               x_min = group.all()[0].key;
               range = add_one([x_min,x_max]);
               
-              //x.domain(range)
-        
+              
+                //x.domain(range)
               if (x_domain_max){
                 x.domain([x.domain()[0], x_domain_max]);
                 x.range([0, x_domain_max*10])
@@ -5760,7 +5769,10 @@ d3.csv(csv_file, function(error, data) {
                 }
                                  
               }
+              
               axis.scale(x);
+
+              
               
               //remove if change date chart range back to 300
               if (typeof(x_min) != 'number'){
@@ -5768,6 +5780,7 @@ d3.csv(csv_file, function(error, data) {
                 axis.scale(x)
 
               }
+
 
               div.select(".title").append("a")
                   .attr("href", "javascript:reset(" + id + ")")
@@ -5778,7 +5791,7 @@ d3.csv(csv_file, function(error, data) {
 
 
               g = div.append("svg")
-                  .attr('class', 'chart_svg')
+                  .attr('class', function(d){return fixedDomain? null: 'modifiable_charts'})
                   .attr("width", width + margin.left + margin.right)
                   .attr("height", height + margin.top + margin.bottom)
                 .append("g")
@@ -6084,6 +6097,7 @@ d3.csv(csv_file, function(error, data) {
         };
 
         chart.x = function(_) {
+          fixedDomain = (!((_.domain()[0] == 0) && (_.domain()[1]== 1)))
           if (!arguments.length) return x;
           x = _;
           axis.scale(x);
@@ -6290,8 +6304,8 @@ d3.csv(csv_file, function(error, data) {
     
     
     function resize_windows(){
-      console.log('visible width', visibleWidth())
-      console.log('visible height', visibleHeight())
+      // console.log('visible width', visibleWidth())
+      // console.log('visible height', visibleHeight())
 
       resize_tree()
       resize_builder()
@@ -6939,8 +6953,8 @@ d3.csv(csv_file, function(error, data) {
 
               new_selection = false;
               console.log('The current selection has ' + selected.data.size + ' sequences!' );
-              update_horizontal_chart_data();
               update_action_transition_graph();
+              update_horizontal_chart_data();
               clear_adjacency_chart_data();
               print_sequences();
 
@@ -8118,7 +8132,6 @@ d3.csv(csv_file, function(error, data) {
               .category('count')
               .group(a_counts)
               .x(d3.scaleLinear()
-              .domain([0, 30])
               .rangeRound([0, 140]))
 
             )

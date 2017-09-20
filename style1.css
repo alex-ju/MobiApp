@@ -112,6 +112,14 @@
   /*margin-bottom: 20px;*/
 }
 
+.time-dropdown{
+  z-index:9999 !important;
+  float: right !important;
+  right: 0 !important;
+  left: auto !important;
+}
+
+
 
 
 .reset {
@@ -632,6 +640,11 @@ input {
 .clickable{
   cursor:pointer;
 }
+
+.result, .presult, .operation{
+  cursor: pointer
+}
+
 
 .time-dropdown button{
   font-size:10px;
