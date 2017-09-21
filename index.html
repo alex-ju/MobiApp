@@ -135,7 +135,7 @@
                               </div>
                             </div> -->
                             <div  class="graph" id="build_partition_view">
-                              <div class="warning-text" id="select_chart_warning2" style="display: none"> Please select chart! </div>
+                              <div class="warning-text" id="select_chart_warning2" style="display: none"> Please select Range chart! </div>
                             </div>
                             <div class="inline">
                               <div class="btn-toolbar">
@@ -4053,21 +4053,31 @@ d3.csv(csv_file, function(error, data) {
         nv_width = 400 - nv_margin.right - nv_margin.left,
         nv_height = 200 - nv_margin.top - nv_margin.bottom;
 
-
+      var operation;
       function update_builder_view(o){
         var id = '.nav-tabs a[href="#' + o.type + '"]',
             new_tab = $(id)
+
+        operation = o;
 
         current_tab =  $("ul#operation_types li.active a")
 
         if (new_tab[0].id != current_tab[0].id){
           $(id).tab('show')
           $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
-            show_builder(o);
+            if (operation){
+              show_builder(operation);
+              
+            }
+            
           })
+
         }else{
-          show_builder(o);
+          show_builder(operation);
+         
         }
+
+        
 
 
       }
@@ -4103,6 +4113,7 @@ d3.csv(csv_file, function(error, data) {
 
 
         }
+        operation = null;
       }
 
 
@@ -4871,6 +4882,14 @@ d3.csv(csv_file, function(error, data) {
         update_filter_data()
       }
 
+      $('#partition_view').on('shown.bs.tab', function () {
+          update_partitions_data()
+      });
+
+      $('#filter_view').on('shown.bs.tab', function () {
+          update_filter_data()
+      });
+
       
 
 
@@ -4903,7 +4922,7 @@ d3.csv(csv_file, function(error, data) {
             dimension.filterRange(size_extents);
 
             var size = all.reduceCount().value()
-            var prev_size = selected.data.size;
+            var prev_size = selected_segment.data.size;
 
             size = not? (prev_size - size): size
             //matches = all.reduce(reduceAdd, reduceRemove, reduceInitial).value()
@@ -4945,7 +4964,7 @@ d3.csv(csv_file, function(error, data) {
       var partition_width = 5,
             partition_height = 25;
 
-      var b_margin = {top: 20, right:22, bottom: 10, left: 22},
+      var b_margin = {top: 20, right:25, bottom: 10, left: 25},
         b_width = 400 - b_margin.right - b_margin.left,
         b_height = 130 - b_margin.top - b_margin.bottom,
         b_range= [0, b_width],
@@ -4968,10 +4987,7 @@ d3.csv(csv_file, function(error, data) {
                   
       //                     })
 
-      range_start_input.on("input", function(){
-                            set_range_start(this.value)
-                  
-                          })
+      
 
       function set_range_end(value){
         console.log('going to set the range end')
@@ -5000,12 +5016,17 @@ d3.csv(csv_file, function(error, data) {
       var partition_input = d3.selectAll("#partition_value")
                 
 
-          partition_input.on("input", function(){
-                  set_partition_value(this.value);
-                  })
-          range_end_input.on("input", function(){
-                  set_range_end(this.value);
-                  })
+      partition_input.on("input", function(){
+              set_partition_value(this.value);
+              })
+
+      range_start_input.on("input", function(){
+                            set_range_start(this.value)
+                  
+                          })
+      range_end_input.on("input", function(){
+              set_range_end(this.value);
+              })
 
        var fb_svg = d3.select("#build_filter_view")
                       .append("svg")
@@ -5045,10 +5066,7 @@ d3.csv(csv_file, function(error, data) {
             var not = o? o.not: $('#range_not_button').is(':checked')? true: false;
 
             extents_data = {extents:extents, not:not}
-
-            //create_filter_data(builder_range, extents, not)
-
-          
+         
           }
 
           update_filter_view()
@@ -5283,13 +5301,23 @@ d3.csv(csv_file, function(error, data) {
           .attr("y", function(d) { return -(partition_height/2)-3; })
           .attr('x', function(d){return d.x})
           .attr('dx', function(d){
-            return (d.id == "start")? partition_width: 0;
+            if (!(isNaN(parseFloat(d.value)))){
+              return (d.id == "start")? partition_width: 0;
+            }
+            else{
+              return 0;
+            }
           })
           .style("font-size", "10px")
           .style("fill", "black")
           //.style("text-anchor", "middle")
           .style("text-anchor", function(d){
-            return (d.id == "start")? "end": (d.id == "end")? "start": "middle";
+            if (!(isNaN(parseFloat(d.value)))){
+              return (d.id == "start")? "end": (d.id == "end")? "start": "middle";
+            }
+            else{
+              return "middle"
+            }
           })
           .text(function(d) { 
               var value = builder_range.invert(d.x);
@@ -6066,7 +6094,9 @@ d3.csv(csv_file, function(error, data) {
           dimension.filterRange(extents);
           
           active_range = extents;
-          update_filter_data()
+          if( $("#build_filter_view").is(':visible')){
+            update_filter_data()
+          }
 
 
 
@@ -6085,7 +6115,9 @@ d3.csv(csv_file, function(error, data) {
             selectedFilter = {};
 
             active_range= current_range;
-            update_filter_data()
+            if( $("#build_filter_view").is(':visible')){
+              update_filter_data()
+            }
           }
 
         });
@@ -6360,8 +6392,9 @@ d3.csv(csv_file, function(error, data) {
 
         if( $("#build_filter_view").is(':visible'))
           update_filter_view()
-        else
+        else if ($("#build_partition_view").is(':visible')){
           update_partition_view()
+        }
         
       }
 
