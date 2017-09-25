@@ -4,7 +4,7 @@
     <meta charset="utf-8">
      <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tree Example</title>
+    <title>Segmentifier</title>
     <link rel="stylesheet" href="style1.css" />
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -619,11 +619,17 @@ $(document).ready(function(){
   var parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S.%L")
   //var parseTimeDelta = d3.timeParse("%d %H:%M:%S.%L")
 
-   //with new alphabet (pageview all small letters)
-  var alpha_file = "alphabet-1709.csv";
-  //session
-  var csv_file = "sample_100000_session_table_1709.csv"; //100K new alpha
+  
 
+  //-----------with NEW DATASTE
+  var alpha_file = "alphabet_09_17.csv";
+  //session
+  var csv_file = "sample_100000_session_table_09_2017.csv"; //100K new alpha
+
+  //  //with new alphabet (pageview all small letters)
+  // var alpha_file = "alphabet-1709.csv";
+  // //session
+  // var csv_file = "sample_100000_session_table_1709.csv"; //100K new alpha
 
 
 
@@ -697,10 +703,10 @@ d3.csv(csv_file, function(error, data) {
         alphabet_rev = {};
         alpha_data.forEach(function(d){
 
-          if (d.Action != 'pv_search'){
+          // if (d.Action != 'pv_search'){
             alphabet[d.Action] = d.Character;
             alphabet_rev[d.Character] = d.Action
-          }
+          // }
         })
         var start_c = '0',
             exit_c = '1';
@@ -728,127 +734,160 @@ d3.csv(csv_file, function(error, data) {
       small[grouped]= 10
       small[actions] = 15
 
-      hierarchy = [
-        {
-          action: 'addToCart',
-          level: 0
+      hierarchy =
+      { level: -1,
+        children: [
+          {
+            action: 'appStart',
+            level: 0
 
-        },
-        {
-          action: 'purchase',
-          level:0
-        },
-        {
-          action: 'removeFromCart',
-          level:0
-        },
-        {
-          action: 'search',
-          level:0
-        },
-        {
-          action: 'pageview',
-          level:0,
-          children: [
-            {
-              action: 'account_group',
-              level: 1,
-              children: [
-                {
-                  action: 'pv_account',
-                  level:2
-                },
-                {
-                  action: 'pv_eliterewards',
-                  level:2
-                },
-                {
-                  action: 'pv_login',
-                  level:2
-                }
-              ]
-            },
-            {
-              action: 'browse_group',
-              level:1,
-              children: [
-                {
-                  action: 'pv_category',
-                  level:2
-                },
-                {
-                  action: 'pv_explore',
-                  level: 2 
-                },
-                {
-                  action: 'pv_home',
-                  level:2
-                },
-                {
-                  action: 'pv_product',
-                  level: 2
-                },
-                {
-                  action: 'pv_specialoffers',
-                  level: 2
-                }
-              ]
-            },
-            {
-              action: 'cart_group',
-              level: 1,
-              children: [
-                {
-                  action: 'pv_cart',
-                  level:2
-                }
-              ]
-            },
-            {
-              action: 'checkout_group',
-              level: 1,
-              children: [
-                {
-                  action: 'pv_checkout',
-                  level:2
-                },
-                {
-                  action: 'pv_confirmation',
-                  level: 2
-                }
-              ]
-            },
-            {
-              action: 'info_group',
-              level: 1,
-              children: [
-                {
-                  action: 'pv_help',
-                  level: 2
-                },
-                {
-                  action: 'pv_storelocator',
-                  level: 2
-                }
-              ]
-            },{
-              action: 'other_group',
-              level: 1,
-              children: [
-                {
-                  action: 'pv_error',
-                  level: 2
-                },
-                {
-                  action: 'pv_other',
-                  level: 2
-                }
-              ]
-            }
-          ]
-        }
+          },
+          {
+            action: 'appDisplayError',
+            level:0
+          },
+          {
+            action: 'offlineModeUsed',
+            level:0
+          },
+          {
+            action: 'addToCart',
+            level: 0
 
-      ]
+          },
+          {
+            action: 'purchase',
+            level:0
+          },
+          {
+            action: 'removeFromCart',
+            level:0
+          },
+          {
+            action: 'search',
+            level:0
+          },
+          {
+            action: 'pageview',
+            level:0,
+            children: [
+              {
+                action: 'account_group',
+                level: 1,
+                children: [
+                  {
+                    action: 'pv_account',
+                    level:2
+                  },
+                  {
+                    action: 'pv_eliterewards',
+                    level:2
+                  },
+                  // {
+                  //   action: 'pv_login',
+                  //   level:2
+                  // }
+                  {
+                    action: 'pv_signin',
+                    level:2
+                  },
+                  {
+                    action: 'pv_register',
+                    level:2
+                  }
+                ]
+              },
+              {
+                action: 'browse_group',
+                level:1,
+                children: [
+                  {
+                    action: 'pv_plp',
+                    level:2
+                  },
+                  {
+                    action: 'pv_explore',
+                    level: 2 
+                  },
+                  {
+                    action: 'pv_home',
+                    level:2
+                  },
+                  {
+                    action: 'pv_pdp',
+                    level: 2
+                  },
+                  {
+                    action: 'pv_specialoffers',
+                    level: 2
+                  },
+                  {
+                    action: 'pv_search',
+                    level:2
+                  }
+                ]
+              },
+              {
+                action: 'cart_group',
+                level: 1,
+                children: [
+                  {
+                    action: 'pv_cart',
+                    level:2
+                  }
+                ]
+              },
+              {
+                action: 'checkout_group',
+                level: 1,
+                children: [
+                  {
+                    action: 'pv_checkout',
+                    level:2
+                  },
+                  {
+                    action: 'pv_confirmation',
+                    level: 2
+                  }
+                ]
+              },
+              {
+                action: 'info_group',
+                level: 1,
+                children: [
+                  // {
+                  //   action: 'pv_help',
+                  //   level: 2
+                  // },
+                  {
+                    action: 'pv_policy',
+                    level:2
+                  },
+                  {
+                    action: 'pv_storeLocator',
+                    level: 2
+                  },
+                  {
+                    action: 'pv_other_info',
+                    level:2
+                  }
+                ]
+              }
+              ,{
+                action: 'other_group',
+                level: 1,
+                children: [
+                  {
+                    action: 'pv_other',
+                    level: 2
+                  }
+                ]
+              }
+            ]
+          }
+
+        ]
+      }
 
       function iterate(current, depth, max_level, array, array2) {
 
@@ -877,6 +916,7 @@ d3.csv(csv_file, function(error, data) {
 
         }
       }
+
       var levels = [general, grouped, actions]
       function get_action_up_to_level(action_level, with_headers){
         var level = levels.indexOf(action_level)
@@ -884,14 +924,31 @@ d3.csv(csv_file, function(error, data) {
         var actions_array = [],
             array_group_names = []
         
-        iterate({children:hierarchy}, -1, level, actions_array, array_group_names);
+        // iterate({children:hierarchy}, -1, level, actions_array, array_group_names);
+        iterate(hierarchy, -1, level, actions_array, array_group_names);
 
         var array = with_headers? array_group_names: actions_array
 
         return array
       }
 
+      parents = {};
+      var create_parent_array = function(o){
+           if(o.children != undefined){
+                for(n in o.children){
+                    var child = o.children[n]
+                    if (child.action && o.action){
+                      child.parent = o.action;
+                      parents[child.action]= o.action
+                    }
+                    
+                    create_parent_array(o.children[n]);
+                }
+           }
+      }
 
+      create_parent_array(hierarchy)
+      console.log(parents)
       
       action_hierarchy[general] = get_action_up_to_level(general)
       action_hierarchy[grouped] = get_action_up_to_level(grouped)
@@ -943,24 +1000,7 @@ d3.csv(csv_file, function(error, data) {
 
 
 
-
-      //randomly assigned by cat20
-      // var colors = {
-
-      //   "addToCart": "#79EA85",
-      //   "removeFromCart": "#EA0000",
-      //   "purchase": "#00AC22",
-      //   "search": "#FF7100",
-      //   "pageview": "#0073B9",
-      //   "start": "#999",
-      //   "exit": "#999",
-      //   "extra": 'black'
-
-
-      // }
-
-
-      // //using different shades of blue
+      // //using different shades of blue #2 from colorgorical . angle 180-270, name diff and percept diff 100
       //       var colors = {
 
       //   "addToCart": "#79EA85",
@@ -980,30 +1020,32 @@ d3.csv(csv_file, function(error, data) {
       //   'pv_account': '#7b4419',
       //   'pv_eliterewards': '#b88665',
       //   'pv_login': '#b94403',
-      //   'pv_category': '#333a9e',
-      //   'pv_explore':'#4328e7',
-      //   'pv_home':'#0274b9',
-      //   'pv_product': '#23dbe1',
-      //   'pv_specialoffers':'#87cefe',  
+      //   'pv_plp': '#4795e0',
+      //   'pv_explore':'#10eddc',
+      //   'pv_home':'#10558a',
+      //   'pv_pdp': '#99def9',
+      //   'pv_specialoffers':'#399283',  
       //   'pv_cart': '#E377C2',
       //   'pv_checkout': '#9467BD',
       //   'pv_confirmation': '#C5B0D5',
       //   'pv_help': '#FF7F0E',
-      //   'pv_storelocator': '#FFBB78',       
+      //   'pv_storeLocator': '#FFBB78',       
       //   'pv_error': '#7F7F7F',
       //   'pv_other': '#C7C7C7'
 
       // }
 
-
-      //using different shades of blue #2 from colorgorical . angle 180-270, name diff and percept diff 100
-            var colors = {
+      //With New actions
+      var colors = {
 
         "addToCart": "#79EA85",
         "removeFromCart": "#EA0000",
         "purchase": "#00AC22",
         "search": "#f4d403",
         "pageview": "#0073B9",
+        'offlineModeUsed': '#999',
+        'appStart': '#C7C7C7',
+        "appDisplayError": "#000",
         "start": "#999",
         "exit": "#999",
         "extra": 'black',
@@ -1015,93 +1057,26 @@ d3.csv(csv_file, function(error, data) {
         'other_group': '#7F7F7F',
         'pv_account': '#7b4419',
         'pv_eliterewards': '#b88665',
-        'pv_login': '#b94403',
-        'pv_category': '#4795e0',
+        'pv_signin': '#b94403',
+        'pv_register': ' #230d01',
+        'pv_plp': '#4795e0',
+        'pv_search': ' #0199CB',
         'pv_explore':'#10eddc',
         'pv_home':'#10558a',
-        'pv_product': '#99def9',
+        'pv_pdp': '#99def9',
         'pv_specialoffers':'#399283',  
         'pv_cart': '#E377C2',
         'pv_checkout': '#9467BD',
         'pv_confirmation': '#C5B0D5',
-        'pv_help': '#FF7F0E',
-        'pv_storelocator': '#FFBB78',       
-        'pv_error': '#7F7F7F',
-        'pv_other': '#C7C7C7'
+        'pv_policy': '#FF7F0E',
+        'pv_storeLocator': '#FFBB78',
+        'pv_other_info': ' #FE6E4B',
+        'pv_other': '#C7C7C7'       
+        
 
       }
 
-      // //Sequential blues 
 
-      //             var colors = {
-
-      //   "addToCart": "#79EA85",
-      //   "removeFromCart": "#EA0000",
-      //   "purchase": "#00AC22",
-      //   "search": "#f4d403",
-      //   "pageview": "#0073B9",
-      //   "start": "#999",
-      //   "exit": "#999",
-      //   "extra": 'black',
-      //   'account_group': '#8C564B',
-      //   'browse_group': '#1F77B4',
-      //   'cart_group': '#E377C2',
-      //   'checkout_group': '#9467BD',
-      //   'info_group': '#FF7F0E',
-      //   'other_group': '#7F7F7F',
-      //   'pv_account': '#7b4419',
-      //   'pv_eliterewards': '#b88665',
-      //   'pv_login': '#b94403',
-      //   'pv_category': '#002f54',
-      //   'pv_explore':'#3182BD',
-      //   'pv_home':'#6BAED6',
-      //   'pv_product': '#9ECAE1',
-      //   'pv_specialoffers':'#C6DBEF',  
-      //   'pv_cart': '#E377C2',
-      //   'pv_checkout': '#9467BD',
-      //   'pv_confirmation': '#C5B0D5',
-      //   'pv_help': '#FF7F0E',
-      //   'pv_storelocator': '#FFBB78',       
-      //   'pv_error': '#7F7F7F',
-      //   'pv_other': '#C7C7C7'
-
-      // }
-
-      //Sequential blues from color brewer
-
-      //             var colors = {
-
-      //   "addToCart": "#79EA85",
-      //   "removeFromCart": "#EA0000",
-      //   "purchase": "#00AC22",
-      //   "search": "#f4d403",
-      //   "pageview": "#0073B9",
-      //   "start": "#999",
-      //   "exit": "#999",
-      //   "extra": 'black',
-      //   'account_group': '#8C564B',
-      //   'browse_group': '#1F77B4',
-      //   'cart_group': '#E377C2',
-      //   'checkout_group': '#9467BD',
-      //   'info_group': '#FF7F0E',
-      //   'other_group': '#7F7F7F',
-      //   'pv_account': '#7b4419',
-      //   'pv_eliterewards': '#b88665',
-      //   'pv_login': '#b94403',
-      //   'pv_category': '#3680af',
-      //   'pv_explore':'#074b91',
-      //   'pv_home':'#021e47',
-      //   'pv_product': '#8eb9d1',
-      //   'pv_specialoffers':'#d5e3ef',  
-      //   'pv_cart': '#E377C2',
-      //   'pv_checkout': '#9467BD',
-      //   'pv_confirmation': '#C5B0D5',
-      //   'pv_help': '#FF7F0E',
-      //   'pv_storelocator': '#FFBB78',       
-      //   'pv_error': '#7F7F7F',
-      //   'pv_other': '#C7C7C7'
-
-      // }
 
       var color_id=0;
       //var scheme = d3.scaleOrdinal(d3.schemeCategory20);
@@ -1132,10 +1107,16 @@ d3.csv(csv_file, function(error, data) {
       }
       function get_foreground_color(color){
         var rgb = hexToRgb(color)
-        var o = Math.round(((parseInt(rgb[0]) * 299) +
-                      (parseInt(rgb[1]) * 587) +
-                      (parseInt(rgb[2]) * 114)) / 1000);
-        return (o > 140) ? 'black' : 'white';
+        if (rgb){
+
+          var o = Math.round(((parseInt(rgb[0]) * 299) +
+                        (parseInt(rgb[1]) * 587) +
+                        (parseInt(rgb[2]) * 114)) / 1000);
+          return (o > 140) ? 'black' : 'white';
+        }else{
+          console.log('null rgb for color:', hex)
+        }
+
       }
 
       function color(action){
@@ -1159,31 +1140,31 @@ d3.csv(csv_file, function(error, data) {
         'days': 60*60*24
       }
 
-      var parents ={
+      // var parents ={
 
-        "pv_account": "account_group",
-        "pv_login": "account_group",
-        "pv_eliterewards": "account_group",
-        "pv_category": "browse_group",
-        "pv_product": "browse_group",
-        "pv_home": "browse_group",
-        "pv_search": "browse_group",
-        "pv_explore": "browse_group",
-        "pv_specialoffers":"browse_group",
-        "pv_checkout": "checkout_group",
-        "pv_cart": "cart_group",
-        "pv_confirmation": "checkout_group",
-        "pv_other": "other_group",
-        "pv_error": "other_group",
-        "pv_storelocator": "info_group",
-        "pv_help": "info_group",
-        "account_group":"pageview",
-        "browse_group":"pageview",
-        "cart_group":"pageview",
-        "checkout_group":"pageview",
-        "info_group":"pageview",
-        "other_group":"pageview"  
-      }
+      //   "pv_account": "account_group",
+      //   "pv_login": "account_group",
+      //   "pv_eliterewards": "account_group",
+      //   "pv_plp": "browse_group",
+      //   "pv_pdp": "browse_group",
+      //   "pv_home": "browse_group",
+      //   "pv_search": "browse_group",
+      //   "pv_explore": "browse_group",
+      //   "pv_specialoffers":"browse_group",
+      //   "pv_checkout": "checkout_group",
+      //   "pv_cart": "cart_group",
+      //   "pv_confirmation": "checkout_group",
+      //   "pv_other": "other_group",
+      //   "pv_error": "other_group",
+      //   "pv_storeLocator": "info_group",
+      //   "pv_help": "info_group",
+      //   "account_group":"pageview",
+      //   "browse_group":"pageview",
+      //   "cart_group":"pageview",
+      //   "checkout_group":"pageview",
+      //   "info_group":"pageview",
+      //   "other_group":"pageview"  
+      // }
 
       function get_parent(action){
 
@@ -1596,12 +1577,67 @@ d3.csv(csv_file, function(error, data) {
 
        var positions = {};
 
+      // positions[general] = {
+      //     'start': {x:145, y:90},
+      //     'removeFromCart': {x:196, y:121},
+      //     'addToCart': {x:248,y:152},
+      //     'purchase':{x:274,y:196},
+      //     'search':{x:96, y:167},
+      //     'pageview': {x:170,y:208},
+      //     'exit': {x:160, y:281}
+
+      //   }
+
+      // positions[grouped] = {
+      //     'start': {x:145, y:58},
+      //     'removeFromCart': {x:201, y:91},
+      //     'addToCart': {x:254,y:109},
+      //     'purchase':{x:302,y:125},
+      //     'search':{x:78, y:108},
+      //     'exit': {x:168, y:339},
+      //     'browse_group': {x:141, y:179},
+      //     'cart_group': {x:222, y:182},
+      //     'checkout_group': {x:297, y:236},
+      //     'info_group': {x:73, y:218},
+      //     'other_group': {x:93, y:293},
+      //     'account_group': {x:272, y:293}
+      //   }
+
+      // positions[actions] = {
+      //     'start': {x:203, y:-290},
+      //     'removeFromCart': {x:260, y:-257},
+      //     'addToCart': {x:312,y:-238},
+      //     'purchase':{x:369,y:-219},
+      //     'search':{x:48, y:-238},
+      //     'exit': {x:198, y:200},
+      //     'pv_home': {x:8,y:-158},
+      //     'pv_explore': {x:47,y:-128},
+      //     'pv_specialoffers': {x:87,y:-96},
+      //     'pv_search': {x:14,y:-79},
+      //     'pv_plp': {x:164,y:-121},
+      //     'pv_pdp': {x:249,y:-121},
+      //     'pv_cart': {x:352,y:-117},
+      //     'pv_checkout': {x:390,y:-51},
+      //     'pv_confirmation': {x:394,y:2},
+      //     'pv_login': {x:319,y:133},
+      //     'pv_account': {x:368,y:133},
+      //     'pv_eliterewards': {x:390,y:74},
+      //     'pv_storeLocator': {x:9,y:-1},
+      //     'pv_help': {x:66,y:18},
+      //     'pv_other': {x:61,y:94},
+      //     'pv_error': {x:29,y:127}
+
+      //   }
+
       positions[general] = {
           'start': {x:145, y:90},
+          'appStart': {x:95, y:121},
+          'appDisplayError': {x:45,y:152},
+          'offlineModeUsed':{x:10,y:196},
           'removeFromCart': {x:196, y:121},
           'addToCart': {x:248,y:152},
           'purchase':{x:274,y:196},
-          'search':{x:96, y:167},
+          'search':{x:120, y:175},
           'pageview': {x:170,y:208},
           'exit': {x:160, y:281}
 
@@ -1609,10 +1645,13 @@ d3.csv(csv_file, function(error, data) {
 
       positions[grouped] = {
           'start': {x:145, y:58},
+          'appStart': {x:95, y:91},
+          'appDisplayError': {x:35,y:109},
+          'offlineModeUsed':{x:0,y:125},
           'removeFromCart': {x:201, y:91},
           'addToCart': {x:254,y:109},
           'purchase':{x:302,y:125},
-          'search':{x:78, y:108},
+          'search':{x:150, y:125},
           'exit': {x:168, y:339},
           'browse_group': {x:141, y:179},
           'cart_group': {x:222, y:182},
@@ -1624,32 +1663,36 @@ d3.csv(csv_file, function(error, data) {
 
       positions[actions] = {
           'start': {x:203, y:-290},
+          'appStart': {x:150, y:-257},
+          'appDisplayError': {x:90,y:-238},
+          'offlineModeUsed':{x:30,y:-219},
           'removeFromCart': {x:260, y:-257},
           'addToCart': {x:312,y:-238},
           'purchase':{x:369,y:-219},
-          'search':{x:48, y:-238},
+          'search':{x:140, y:-219},
           'exit': {x:198, y:200},
           'pv_home': {x:8,y:-158},
           'pv_explore': {x:47,y:-128},
           'pv_specialoffers': {x:87,y:-96},
           'pv_search': {x:14,y:-79},
-          'pv_category': {x:164,y:-121},
-          'pv_product': {x:249,y:-121},
+          'pv_plp': {x:164,y:-121},
+          'pv_pdp': {x:249,y:-121},
           'pv_cart': {x:352,y:-117},
           'pv_checkout': {x:390,y:-51},
           'pv_confirmation': {x:394,y:2},
-          'pv_login': {x:319,y:133},
+          'pv_signin': {x:319,y:133},
           'pv_account': {x:368,y:133},
+          'pv_register': {x:400,y:100},
           'pv_eliterewards': {x:390,y:74},
-          'pv_storelocator': {x:9,y:-1},
-          'pv_help': {x:66,y:18},
-          'pv_other': {x:61,y:94},
-          'pv_error': {x:29,y:127}
-
-
+          'pv_storeLocator': {x:9,y:-1},
+          'pv_policy': {x:66,y:18},
+          'pv_other_info': {x:15,y:60},
+          'pv_other': {x:29,y:127}
 
 
         }
+
+
       var link_type = 'outgoing';
       var hover_selection;
       var hover_color= '#5e6063'
