@@ -541,7 +541,7 @@ input {
 .splitter {
   flex: 0 0 auto;
   width: 10px;  
-  background: url(https://raw.githubusercontent.com/RickStrahl/jquery-resizable/master/assets/vsizegrip.png) center center no-repeat lightgrey;
+  /*background: url(https://raw.githubusercontent.com/RickStrahl/jquery-resizable/master/assets/vsizegrip.png) center center no-repeat lightgrey;*/
   min-height: 200px;
   cursor: col-resize;  
 }

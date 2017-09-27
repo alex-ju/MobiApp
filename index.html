@@ -603,8 +603,6 @@ function visibleHeight(){
 }
 
 $(document).ready(function(){
-  console.log('visible width', visibleWidth())
-  console.log('visible height', visibleHeight())
   $('#load').hide()
 
 
@@ -622,9 +620,17 @@ $(document).ready(function(){
   
 
   //-----------with NEW DATASTE
-  var alpha_file = "alphabet_09_17.csv";
+  //var alpha_file = "alphabet_09_17.csv";
+  var alpha_file = "alphabet_17-09-26.csv"; //without 'n'
+
+  //with session ids
+  //var csv_file = "sample_100000_session_table_17-09-26.csv"; //100K new alpha
+  var csv_file = "sample_1000000_session_table_17-09-26.csv"; //1M new alpha
+  //var csv_file = "sample_1545395_session_table_17-09-26.csv"; //full dataset
+
   //session
-  var csv_file = "sample_100000_session_table_09_2017.csv"; //100K new alpha
+  //var csv_file = "sample_100000_session_table_09_2017.csv"; //100K new alpha
+  //var csv_file = "sample_1000000_session_table_09_2017.csv"; //1M new alpha
 
   //  //with new alphabet (pageview all small letters)
   // var alpha_file = "alphabet-1709.csv";
@@ -730,7 +736,7 @@ d3.csv(csv_file, function(error, data) {
 
       var small = {}
 
-      small[general] =0
+      small[general] =5
       small[grouped]= 10
       small[actions] = 15
 
@@ -1043,8 +1049,8 @@ d3.csv(csv_file, function(error, data) {
         "purchase": "#00AC22",
         "search": "#f4d403",
         "pageview": "#0073B9",
-        'offlineModeUsed': '#999',
-        'appStart': '#C7C7C7',
+        'offlineModeUsed': '#7F7F7F',
+        'appStart': '#e0e0e0',
         "appDisplayError": "#000",
         "start": "#999",
         "exit": "#999",
@@ -1058,9 +1064,9 @@ d3.csv(csv_file, function(error, data) {
         'pv_account': '#7b4419',
         'pv_eliterewards': '#b88665',
         'pv_signin': '#b94403',
-        'pv_register': ' #230d01',
+        'pv_register': '#491a00',
         'pv_plp': '#4795e0',
-        'pv_search': ' #0199CB',
+        'pv_search': '#0199CB',
         'pv_explore':'#10eddc',
         'pv_home':'#10558a',
         'pv_pdp': '#99def9',
@@ -1070,7 +1076,7 @@ d3.csv(csv_file, function(error, data) {
         'pv_confirmation': '#C5B0D5',
         'pv_policy': '#FF7F0E',
         'pv_storeLocator': '#FFBB78',
-        'pv_other_info': ' #FE6E4B',
+        'pv_other_info': '#FE6E4B',
         'pv_other': '#C7C7C7'       
         
 
@@ -1114,7 +1120,8 @@ d3.csv(csv_file, function(error, data) {
                         (parseInt(rgb[2]) * 114)) / 1000);
           return (o > 140) ? 'black' : 'white';
         }else{
-          console.log('null rgb for color:', hex)
+          console.log('null rgb for color:', color)
+          return 'white'
         }
 
       }
@@ -1495,7 +1502,7 @@ d3.csv(csv_file, function(error, data) {
             .group(starts)
             .round(d3.timeDay.round)
           .x(d3.scaleTime()
-            .domain([new Date(2017, 0, 24), new Date(2017, 3, 3)])
+            //.domain([new Date(2017, 0, 24), new Date(2017, 3, 3)])
              .rangeRound([0, 225])),
 
           barChart()
@@ -1629,69 +1636,132 @@ d3.csv(csv_file, function(error, data) {
 
       //   }
 
-      positions[general] = {
-          'start': {x:145, y:90},
-          'appStart': {x:95, y:121},
-          'appDisplayError': {x:45,y:152},
-          'offlineModeUsed':{x:10,y:196},
-          'removeFromCart': {x:196, y:121},
-          'addToCart': {x:248,y:152},
-          'purchase':{x:274,y:196},
-          'search':{x:120, y:175},
-          'pageview': {x:170,y:208},
-          'exit': {x:160, y:281}
+      // positions[general] = {
+      //     'start': {x:145, y:90},
+      //     'appStart': {x:145, y:121},
+      //     'appDisplayError': {x:145,y:152},
+      //     'offlineModeUsed':{x:145,y:196},
+      //     'removeFromCart': {x:196, y:121},
+      //     'addToCart': {x:248,y:152},
+      //     'purchase':{x:274,y:196},
+      //     'search':{x:120, y:175},
+      //     'pageview': {x:170,y:208},
+      //     'exit': {x:160, y:281}
+
+      //   }
+
+      // positions[grouped] = {
+      //     'start': {x:145, y:58},
+      //     'appStart': {x:95, y:91},
+      //     'appDisplayError': {x:35,y:109},
+      //     'offlineModeUsed':{x:0,y:125},
+      //     'removeFromCart': {x:201, y:91},
+      //     'addToCart': {x:254,y:109},
+      //     'purchase':{x:302,y:125},
+      //     'search':{x:150, y:125},
+      //     'exit': {x:168, y:339},
+      //     'browse_group': {x:141, y:179},
+      //     'cart_group': {x:222, y:182},
+      //     'checkout_group': {x:297, y:236},
+      //     'info_group': {x:73, y:218},
+      //     'other_group': {x:93, y:293},
+      //     'account_group': {x:272, y:293}
+      //   }
+
+      // positions[actions] = {
+      //     'start': {x:203, y:-290},
+      //     'appStart': {x:150, y:-257},
+      //     'appDisplayError': {x:90,y:-238},
+      //     'offlineModeUsed':{x:30,y:-219},
+      //     'removeFromCart': {x:260, y:-257},
+      //     'addToCart': {x:312,y:-238},
+      //     'purchase':{x:369,y:-219},
+      //     'search':{x:140, y:-219},
+      //     'exit': {x:198, y:200},
+      //     'pv_home': {x:8,y:-158},
+      //     'pv_explore': {x:47,y:-128},
+      //     'pv_specialoffers': {x:87,y:-96},
+      //     'pv_search': {x:14,y:-79},
+      //     'pv_plp': {x:164,y:-121},
+      //     'pv_pdp': {x:249,y:-121},
+      //     'pv_cart': {x:352,y:-117},
+      //     'pv_checkout': {x:390,y:-51},
+      //     'pv_confirmation': {x:394,y:2},
+      //     'pv_signin': {x:319,y:133},
+      //     'pv_account': {x:368,y:133},
+      //     'pv_register': {x:400,y:100},
+      //     'pv_eliterewards': {x:390,y:74},
+      //     'pv_storeLocator': {x:9,y:-1},
+      //     'pv_policy': {x:66,y:18},
+      //     'pv_other_info': {x:15,y:60},
+      //     'pv_other': {x:29,y:127}
+
+
+      //   }
+
+      //----> actions at the bottom
+       positions[general] = {
+          'start': {x:197, y:90},
+          'appStart': {x:197, y:124},
+          'appDisplayError': {x:261,y:153},
+          'offlineModeUsed':{x:135,y:153},
+          'removeFromCart': {x:244, y:260},
+          'addToCart': {x:139,y:260},
+          'purchase':{x:276,y:220},
+          'search':{x:108, y:220},
+          'pageview': {x:193,y:192},
+          'exit': {x:191, y:286}
 
         }
 
       positions[grouped] = {
-          'start': {x:145, y:58},
-          'appStart': {x:95, y:91},
-          'appDisplayError': {x:35,y:109},
-          'offlineModeUsed':{x:0,y:125},
-          'removeFromCart': {x:201, y:91},
-          'addToCart': {x:254,y:109},
-          'purchase':{x:302,y:125},
-          'search':{x:150, y:125},
-          'exit': {x:168, y:339},
-          'browse_group': {x:141, y:179},
-          'cart_group': {x:222, y:182},
-          'checkout_group': {x:297, y:236},
-          'info_group': {x:73, y:218},
-          'other_group': {x:93, y:293},
-          'account_group': {x:272, y:293}
+          'start': {x:141, y:47},
+          'appStart': {x:140, y:94},
+          'appDisplayError': {x:256,y:112},
+          'offlineModeUsed':{x:51,y:114},
+          'removeFromCart': {x:211, y:350},
+          'addToCart': {x:71,y:345},
+          'purchase':{x:270,y:308},
+          'search':{x:29, y:315},
+          'exit': {x:130, y:368},
+          'browse_group': {x:115, y:173},
+          'cart_group': {x:213, y:260},
+          'checkout_group': {x:269, y:198},
+          'info_group': {x:36, y:256},
+          'other_group': {x:33, y:194},
+          'account_group': {x:198, y:175}
         }
 
       positions[actions] = {
-          'start': {x:203, y:-290},
-          'appStart': {x:150, y:-257},
-          'appDisplayError': {x:90,y:-238},
-          'offlineModeUsed':{x:30,y:-219},
-          'removeFromCart': {x:260, y:-257},
-          'addToCart': {x:312,y:-238},
-          'purchase':{x:369,y:-219},
-          'search':{x:140, y:-219},
-          'exit': {x:198, y:200},
-          'pv_home': {x:8,y:-158},
-          'pv_explore': {x:47,y:-128},
-          'pv_specialoffers': {x:87,y:-96},
-          'pv_search': {x:14,y:-79},
-          'pv_plp': {x:164,y:-121},
-          'pv_pdp': {x:249,y:-121},
-          'pv_cart': {x:352,y:-117},
-          'pv_checkout': {x:390,y:-51},
-          'pv_confirmation': {x:394,y:2},
-          'pv_signin': {x:319,y:133},
-          'pv_account': {x:368,y:133},
-          'pv_register': {x:400,y:100},
-          'pv_eliterewards': {x:390,y:74},
-          'pv_storeLocator': {x:9,y:-1},
-          'pv_policy': {x:66,y:18},
-          'pv_other_info': {x:15,y:60},
-          'pv_other': {x:29,y:127}
+          'start': {x:195, y:-290},
+          'appStart': {x:184, y:-240},
+          'appDisplayError': {x:321,y:-238},
+          'offlineModeUsed':{x:58,y:-233},
+          'removeFromCart': {x:317, y:176},
+          'addToCart': {x:61,y:165},
+          'purchase':{x:380,y:141},
+          'search':{x:-1, y:138},
+          'exit': {x:192, y:199},
+          'pv_home': {x:101,y:-156},
+          'pv_explore': {x:220,y:-96},
+          'pv_specialoffers': {x:230,y:-155},
+          'pv_search': {x:7,y:-141},
+          'pv_plp': {x:172,y:-101},
+          'pv_pdp': {x:54,y:-95},
+          'pv_cart': {x:224,y:59},
+          'pv_checkout': {x:376,y:20},
+          'pv_confirmation': {x:388,y:60},
+          'pv_signin': {x:412,y:-159},
+          'pv_account': {x:341,y:-151},
+          'pv_register': {x:404,y:-95},
+          'pv_eliterewards': {x:347,y:-63},
+          'pv_storeLocator': {x:59,y:39},
+          'pv_policy': {x:106,y:77},
+          'pv_other_info': {x:21,y:76},
+          'pv_other': {x:-3,y:-26}
 
 
         }
-
 
       var link_type = 'outgoing';
       var hover_selection;
@@ -2081,13 +2151,13 @@ d3.csv(csv_file, function(error, data) {
         nl_graph.fit(nl_graph.nodes())
         nl_graph.zoomingEnabled(false);
 
-        // nl_graph.nodes().on('drag', (function(e){
+        nl_graph.nodes().on('drag', (function(e){
 
-        //   var node = e.target;
-        //   console.log('Dragging', node.data().action);
-        //   console.log('position', node.position())
-        //   console.log('rendered position', node.renderedPosition())
-        // }))
+          var node = e.target;
+          console.log('Dragging', node.data().action);
+          console.log('position', node.position())
+          console.log('rendered position', node.renderedPosition())
+        }))
 
         
         nl_graph.nodes().on('mouseover', function(e){
@@ -2176,65 +2246,65 @@ d3.csv(csv_file, function(error, data) {
         
 
           
-        function relocate_orphans(){
+        // function relocate_orphans(){
 
-          var x = 9999999;
-          var minX = 9999999;
-          var maxX = 0;
-          var minY = 9999999;
-          var maxY = 0;
+        //   var x = 9999999;
+        //   var minX = 9999999;
+        //   var maxX = 0;
+        //   var minY = 9999999;
+        //   var maxY = 0;
 
-          nl_graph.nodes('.hasEdges').forEach(function(n){
-            var px = n.renderedPosition().x
-            var py = n.renderedPosition().y
-            x = (px<x)? px :x;
-            maxX = (px>maxX)?px: maxX;
-            minY = (py<minY)? py :minY;
-            maxY = (py>maxY)?py: maxY;
-          })
-          //x = x -20;
-          var y = nl_graph.nodes('#exit').renderedPosition().y -5;
-          var y2 = nl_graph.nodes('#exit').renderedPosition().y + 25;
-          minX = x
+        //   nl_graph.nodes('.hasEdges').forEach(function(n){
+        //     var px = n.renderedPosition().x
+        //     var py = n.renderedPosition().y
+        //     x = (px<x)? px :x;
+        //     maxX = (px>maxX)?px: maxX;
+        //     minY = (py<minY)? py :minY;
+        //     maxY = (py>maxY)?py: maxY;
+        //   })
+        //   //x = x -20;
+        //   var y = nl_graph.nodes('#exit').renderedPosition().y -5;
+        //   var y2 = nl_graph.nodes('#exit').renderedPosition().y + 25;
+        //   minX = x
 
-          var t=0
-          nl_graph.nodes('.orphan').forEach(function(d,i){
+        //   var t=0
+        //   nl_graph.nodes('.orphan').forEach(function(d,i){
 
-            //OPTION 1/ verical line on left
-            // d.renderedPosition({x:x, y:y});
-            // y = y - 25;
+        //     //OPTION 1/ verical line on left
+        //     // d.renderedPosition({x:x, y:y});
+        //     // y = y - 25;
             
-            //OPTION 2 - just bring back into view
-            // var pos = d.renderedPosition()
-            //  if (pos.x<minX){
-            //    d.renderedPosition({x:minX, y:pos.y})
-            //  }
-            //  if (pos.x> maxX){
-            //    d.renderedPosition({x:maxX, y:pos.y})
-            //  }
-            //  if (pos.y<minY){
-            //    d.renderedPosition({x:pos.x, y:minY})
-            //  }
-            //  if (pos.y>maxY){
-            //    d.renderedPosition({x:pos.x, y:maxY})
-            //  }
+        //     //OPTION 2 - just bring back into view
+        //     // var pos = d.renderedPosition()
+        //     //  if (pos.x<minX){
+        //     //    d.renderedPosition({x:minX, y:pos.y})
+        //     //  }
+        //     //  if (pos.x> maxX){
+        //     //    d.renderedPosition({x:maxX, y:pos.y})
+        //     //  }
+        //     //  if (pos.y<minY){
+        //     //    d.renderedPosition({x:pos.x, y:minY})
+        //     //  }
+        //     //  if (pos.y>maxY){
+        //     //    d.renderedPosition({x:pos.x, y:maxY})
+        //     //  }
 
-            //OPTION 3 in rows bedlow exit
-            if ((i!=0) && (i%5 == 0)){
-              y2 += 30;
-              x= minX;
-            }
-            //t =(t==0)? 7:0;
-            d.renderedPosition({x:x, y:y2+t});
-            x+= 60
+        //     //OPTION 3 in rows bedlow exit
+        //     if ((i!=0) && (i%5 == 0)){
+        //       y2 += 30;
+        //       x= minX;
+        //     }
+        //     //t =(t==0)? 7:0;
+        //     d.renderedPosition({x:x, y:y2+t});
+        //     x+= 60
        
 
-          })
-          nl_graph.zoomingEnabled(true);
-          nl_graph.fit(nl_graph.nodes())
-          nl_graph.zoomingEnabled(false);
+        //   })
+        //   nl_graph.zoomingEnabled(true);
+        //   nl_graph.fit(nl_graph.nodes())
+        //   nl_graph.zoomingEnabled(false);
 
-        }
+        // }
 
 
         function resize(){
@@ -2416,6 +2486,9 @@ d3.csv(csv_file, function(error, data) {
                       count = counts[c];
                       value = count*100/total_matches;
 
+                  if(!target){
+                    console.log('target is null for character:', c)
+                  }
                   
                   if (reverse){
                     var link = link_exists(links, target, source);
@@ -5818,12 +5891,15 @@ d3.csv(csv_file, function(error, data) {
               console.log(div_id)
               y.domain([0, group.top(1)[0].value]);
 
-              x_domain_max = get_x_limit(group.all(), y, x);
+              
               x_max = group.all()[group.all().length-1].key;
               x_min = group.all()[0].key;
               range = add_one([x_min,x_max]);
+
+              //x.domain(range)
               
               
+              x_domain_max = get_x_limit(group.all(), y, x);
                 //x.domain(range)
               if (x_domain_max){
                 x.domain([x.domain()[0], x_domain_max]);
@@ -6173,8 +6249,17 @@ d3.csv(csv_file, function(error, data) {
 
         chart.x = function(_) {
           fixedDomain = (!((_.domain()[0] == 0) && (_.domain()[1]== 1)))
+
           if (!arguments.length) return x;
           x = _;
+          //if (!fixedDomain){
+          x_max = group.all()[group.all().length-1].key;
+          x_min = group.all()[0].key;
+          range = add_one([x_min,x_max]);
+
+          x.domain(range)
+              
+          //}
           axis.scale(x);
           axisY.scale(y).ticks(6);
           return chart;
