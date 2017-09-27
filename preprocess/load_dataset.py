@@ -131,9 +131,10 @@ actions = 'general_actions'
 pages_grouped = 'pages_grouped'
 
 # action_table_csv = 'action_table_lancome_1709.csv'  # original action table
+path = 'action_table/'
 action_table_csv = 'action_table_09_2017.csv'  # with action_type column
 
-action_table = pd.read_csv(action_table_csv)
+action_table = pd.read_csv(path + action_table_csv)
 action_table = action_table.drop('Unnamed: 0', 1)
 action_table['time'] = pd.to_datetime(action_table['time'])
 action_table.action = action_table.action.str.strip()

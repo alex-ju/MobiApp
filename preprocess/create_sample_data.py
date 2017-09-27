@@ -3,10 +3,12 @@ import pandas as pd
 pages = 'action_strings'
 actions = 'general_actions'
 
+path = 'sequence_table/'
+
 session_table_csv = 'session_table_17-09-26.csv'
 client_table_csv = 'client_table.csv'
 table_csv = session_table_csv
-session_table = pd.read_csv(table_csv)
+session_table = pd.read_csv(path + table_csv)
 
 session_table = session_table.rename(columns={'Unnamed: 0': 'index'})
 session_table = session_table.set_index('index')
@@ -18,7 +20,7 @@ session_table['end'] = pd.to_datetime(session_table['end'])
 session_table['len'] = session_table[pages].apply(len)
 
 # n = 1650000
-n = 1000000
+n = 500000
 
 size = len(session_table.index)
 print(size)
@@ -30,4 +32,4 @@ sample = session_table.iloc[n:]
 new_table = session_table.iloc[:n]
 # new_table = session_table;
 
-new_table.to_csv('sample_' + str(n) + '_' + table_csv, encoding='utf-8')
+new_table.to_csv('sample_table/sample_' + str(n) + '_' + table_csv, encoding='utf-8')

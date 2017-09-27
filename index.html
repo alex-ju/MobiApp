@@ -7103,9 +7103,10 @@ d3.csv(csv_file, function(error, data) {
       function reset_dimensions(reset_list){
         reset_list.forEach(function(f){
           if (f.type == 'contains'){
-             Object.values(action_filter_dimensions[f.div]).forEach(function(d){
-                d.filterAll();
-             })
+             // Object.values(action_filter_dimensions[f.div]).forEach(function(d){
+             //    d.filterAll();
+             // })
+             action_filter_dimensions[f.div][f.filterDim].filterAll()
           }else if(f.type == 'range'){
             var current_chart = f.chart.data()[0];
             current_chart.filter_dimension().filterAll();
@@ -7117,32 +7118,157 @@ d3.csv(csv_file, function(error, data) {
 
       var prev_selected;
 
-      function apply_filters(selected, is_descendant){
+      // function apply_filters(selected){
+
+      //   var reset_list = [],
+      //       filter_list = [];
+
+      //   // var in_size = all.reduceCount().value()
+      //   // console.log('initial size', in_size)
+        
+      //   if( prev_selected){
+      //     var old_filters = prev_selected.data.filters;
+      //     var new_filters = selected.data.filters;
+
+      //     old_filters.forEach(function(o){
+      //       var found = false;
+      //       for (var i =0; i< new_filters.length;i++){
+      //         var n = new_filters[i]
+      //         if (isSameFilter(o,n)){
+      //           found = true;
+      //           break;
+      //         }
+      //       }
+      //       if (!found)
+      //         reset_list.push(o)
+      //     })
+
+      //     new_filters.forEach(function(n){
+      //       var found = false;
+      //       for (var i =0; i< old_filters.length;i++){
+      //         var o = old_filters[i]
+      //         if (isSameFilter(o,n)){
+      //           found = true;
+      //           break;
+      //         }
+      //       }
+      //       if (!found)
+      //         filter_list.push(n)
+      //     })
+
+      //     console.log('reset_list', reset_list)
+      //     console.log('filter_list', filter_list)
+      //     reset_dimensions(reset_list)
+      //     selected_filters = filter_list
+
+
+      //   }
+
+
+      //   else{
+      //     reset_filters();
+      //     selected_filters = selected.data.filters;
+      //   }
+
+      //   if(selected_filters) {
+
+      //     console.log('SELECTED FILTERS', selected_filters);
+
+      //     selected_filters.forEach(function(f){
+      //       type = f.type;
+
+      //       if (type == 'range') {
+            
+      //         var div = f.div;
+      //         var extents = f.extents;
+
+      //         current_chart = f.chart.data()[0];
+      //         dim = current_chart.filter_dimension();
+      //         reset(current_chart.id());
+
+      //         if (extents){
+      //           console.log('extents to filter', extents)
+
+      //           dim.filterFunction(function(d){
+      //             var inRange = true;
+      //             if (extents.pos)
+      //               inRange= inRange && (d >= extents.pos[0]) && (d < extents.pos[1]);
+
+      //             extents.neg.forEach(function(ext){
+      //               inRange = inRange && !((d>=ext[0]) && (d< ext[1]));
+
+      //             })
+
+      //             return inRange;
+      //           })
+      //         }
+      //         else
+      //           dim.filterExact(null);
+
+      //       } else if (type == 'contains'){
+
+      //         dim = action_filter_dimensions[f.div].action_strings
+      //         char_regex = f.regex;
+      //         console.log('CHAR REGEX', char_regex);
+      //         dim.filterFunction(function(d){
+      //             return d.match(char_regex);
+
+      //         });
+              
+      //       }
+      //       var filtered_size = all.reduceCount().value()
+      //       console.log('filtered-size', filtered_size );
+      //       // f.in_size = in_size;
+      //       // f.out_size = filtered_size;
+            
+
+      //     })
+      //     //renderAll();
+      //     rerender_charts()
+      //     prev_selected = selected
+          
+      //   }
+
+
+      // }
+
+       function apply_filters(selected){
 
         var reset_list = [],
             filter_list = [];
+        var new_filters = selected.data.filters;
         
-        if( prev_selected){
-          var old_filters = prev_selected.data.filters;
-          var new_filters = selected.data.filters;
+            
+        // var in_size = all.reduceCount().value()
+        // console.log('initial size', in_size)
+        
+        if( prev_selected && prev_selected.data.filters){
+          var old_filters = prev_selected.data.filters,
+              all_old_filters = old_filters.range.concat(old_filters.contains)
+            
 
-          old_filters.forEach(function(o){
-            var found = false;
-            for (var i =0; i< new_filters.length;i++){
-              var n = new_filters[i]
-              if (isSameFilter(o,n)){
-                found = true;
-                break;
+          all_old_filters.forEach(function(o){
+
+              var found = false;
+              filter_group = (o.type == 'contains')? new_filters.contains: new_filters.range;
+              for (var i =0; i< filter_group.length;i++){
+                var n = filter_group[i]
+                if (isSameFilter(o,n)){
+                  found = true;
+                  break;
+                }
               }
-            }
-            if (!found)
-              reset_list.push(o)
+              if (!found)
+                reset_list.push(o)
           })
 
-          new_filters.forEach(function(n){
+          all_new_filters = new_filters.range.concat(new_filters.contains);
+
+          all_new_filters.forEach(function(n){
             var found = false;
-            for (var i =0; i< old_filters.length;i++){
-              var o = old_filters[i]
+            filter_group = (n.type == 'contains')? old_filters.contains: old_filters.range;
+            for (var i =0; i< filter_group.length;i++){
+              var o = filter_group[i]
               if (isSameFilter(o,n)){
                 found = true;
                 break;
@@ -7163,7 +7289,8 @@ d3.csv(csv_file, function(error, data) {
 
         else{
           reset_filters();
-          selected_filters = selected.data.filters;
+
+          selected_filters = new_filters? new_filters.range.concat(new_filters.contains): [];
         }
 
         if(selected_filters) {
@@ -7203,7 +7330,8 @@ d3.csv(csv_file, function(error, data) {
 
             } else if (type == 'contains'){
 
-              dim = action_filter_dimensions[f.div].action_strings
+              //dim = action_filter_dimensions[f.div].action_strings
+              dim = action_filter_dimensions[f.div][f.filterDim]
               char_regex = f.regex;
               console.log('CHAR REGEX', char_regex);
               dim.filterFunction(function(d){
@@ -7214,6 +7342,8 @@ d3.csv(csv_file, function(error, data) {
             }
             var filtered_size = all.reduceCount().value()
             console.log('filtered-size', filtered_size );
+            // f.in_size = in_size;
+            // f.out_size = filtered_size;
             
 
           })
@@ -7226,17 +7356,15 @@ d3.csv(csv_file, function(error, data) {
 
       }
 
-      function is_grandchild(prev_selected, selected){
-        if (prev_selected)
-          return (selected.parent.parent == prev_selected)? true: false;
-        else return false;
-      }
+      // function is_grandchild(prev_selected, selected){
+      //   if (prev_selected)
+      //     return (selected.parent.parent == prev_selected)? true: false;
+      //   else return false;
+      // }
       
       function select_node(d){
 
         if (d != selected){
-
-          var is_descendant= is_grandchild(selected_segment, d)
 
            if(!selected){
                selected = d;
@@ -7275,7 +7403,7 @@ d3.csv(csv_file, function(error, data) {
               update_info_view("info_view");
               new_selection = true;
             
-              apply_filters(selected, is_descendant)
+              apply_filters(selected)
 
               new_selection = false;
               console.log('The current selection has ' + selected.data.size + ' sequences!' );
@@ -7997,87 +8125,218 @@ d3.csv(csv_file, function(error, data) {
         var old_filter,
             foundFilter=false,
             chart_div = new_filter.div,
-            filters = old_set? old_set.slice(): [];
+            //filters = old_set? old_set.slice(): [];
+            filters =  {'contains': [], 'range': []}
 
-        var remove_index;
-          for( var i = 0; i < filters.length; i++){
-            var f = filters[i];
-            if (f.div == chart_div){
+        var filter = {};
+        
+        filter.div = chart_div;
+        filter.type = new_filter.type
+        filter.not = new_filter.not? true: false;
+        filter.chart = new_filter.chart;
+        filter.in_size = new_filter.results.in_size
+        filter.out_size = new_filter.results.out_size
+
+
+        if (old_set){
+          filters.contains = old_set.contains.slice()
+          filters.range = old_set.range.slice()
+        }
+
+        if (filter.type == 'contains'){
+
+          //determine which action filter dimension to use
+          var containsFilters = filters.contains
+          if (containsFilters.length == 0){
+            filter.filterDim = 'action_strings'
+            foundFilter = false;
+          }else if (containsFilters.length == 2){
+            foundFilter = true;
+            old_filter= containsFilters[1]
+            containsFilters.splice(1,1)
+          }else{
+            var f1 = containsFilters[0]
+            if ((f1.in_size - f1.out_size) > original_size/2){
+              foundFilter = false
+              filter.filterDim = 'action_filter'
+            }else{
+              foundFilter = true
+              old_filter = containsFilters[0]
+              containsFilters.splice(0,1)
+            }
+          }
+
+
+          filter.regexes ={};
+          filter.regexes.pos =[],
+          filter.regexes.neg =[],
+          filter.chars ={
+            pos: [],
+            neg: []
+          };
+
+          if (foundFilter){
+            filter.in_size = old_filter.in_size;
+            filter.filterDim = old_filter.filterDim;
+            filter.regexes.pos = old_filter.regexes.pos.slice();
+            filter.regexes.neg = old_filter.regexes.neg.slice();
+            filter.chars.pos = old_filter.chars.pos.slice();
+            filter.chars.neg = old_filter.chars.neg.slice();
+              
+          }
+
+          if (new_filter.not){
+            filter.chars.neg.push(new_filter.char);
+            filter.regexes.neg.push(new_filter.regex);
+          }else{
+            filter.chars.pos.push(new_filter.char);
+            filter.regexes.pos.push(new_filter.regex);
+          }
+          filter.regex = create_action_regex(filter.regexes);
+          filter.char = new_filter.char;
+
+          console.log('REGEXES', filter.regexes);
+
+          containsFilters.push(filter)
+
+        } else if (filter.type == 'range'){
+          var rangeFilters = filters.range;
+          var remove_index;
+          for( var i = 0; i < rangeFilters.length; i++){
+            var f = rangeFilters[i];
+            if ((f.div == chart_div)){
               old_filter = f;
               foundFilter = true;
               remove_index = i;
               break;
             }
           }
+          if (remove_index){
+            rangeFilters.splice(remove_index, 1);
+            filter.in_size = old_filter.in_size
+          }
 
           if (foundFilter){
-            filters.splice(remove_index, 1);
+
+            filter.extents = update_extents(old_filter.extents, new_filter.extents, new_filter.not);
           }
+          else {
+            filter.extents ={},
+            filter.extents.neg =[],
+            filter.extents.pos = null;
 
-          var filter = {};
-          
-          filter.div = chart_div;
-          filter.not = new_filter.not? true: false;
-          filter.chart = new_filter.chart;
-          filters.push(filter);
-          
-
-          if (new_filter.type == 'range') {
-
+            if(new_filter.not){
+              filter.extents.neg.push(new_filter.extents);
+            } else{
+              filter.extents.pos = new_filter.extents;
+            }
             
-            filter.type = 'range';
-
-            if (foundFilter){
-
-              filter.extents = update_extents(old_filter.extents, new_filter.extents, new_filter.not);
-            }
-            else {
-              filter.extents ={},
-              filter.extents.neg =[],
-              filter.extents.pos = null;
-
-              if(new_filter.not){
-                filter.extents.neg.push(new_filter.extents);
-              } else{
-                filter.extents.pos = new_filter.extents;
-              }
-              
-            }
-
-            
-            
-          } else if(new_filter.type == 'contains') {
-            filter.regexes ={};
-            filter.regexes.pos =[],
-            filter.regexes.neg =[],
-            filter.chars ={
-              pos: [],
-              neg: []
-            };
-
-            if (foundFilter){
-                filter.regexes.pos = old_filter.regexes.pos.slice();
-                filter.regexes.neg = old_filter.regexes.neg.slice();
-                filter.chars.pos = old_filter.chars.pos.slice();
-                filter.chars.neg = old_filter.chars.neg.slice();
-                
-            }
-            if (new_filter.not){
-              filter.chars.neg.push(new_filter.char);
-              filter.regexes.neg.push(new_filter.regex);
-            }else{
-              filter.chars.pos.push(new_filter.char);
-              filter.regexes.pos.push(new_filter.regex);
-            }
-            filter.regex = create_action_regex(filter.regexes);
-            filter.char = new_filter.char;
-            filter.type = 'contains';
-            console.log('REGEXES', filter.regexes);
           }
+          rangeFilters.push(filter)
+        }
 
-
-          return filters
+        console.log('--------->AGGREGATED FILTER SET ', filters)
+        
+        return filters
       }
+
+
+      // function create_agg_filter_set(old_set, new_filter) {
+      
+      //   var old_filter,
+      //       foundFilter=false,
+      //       chart_div = new_filter.div,
+      //       filters = old_set? old_set.slice(): [];
+
+      //   var filter = {};
+        
+      //   filter.div = chart_div;
+      //   filter.type = new_filter.type
+      //   filter.not = new_filter.not? true: false;
+      //   filter.chart = new_filter.chart;
+      //   filter.in_size = new_filter.results.in_size
+      //   filter.out_size = new_filter.results.out_size
+
+        
+      //   var remove_index;
+      //   for( var i = 0; i < filters.length; i++){
+      //     var f = filters[i];
+      //     if ((f.div == chart_div)){
+      //       old_filter = f;
+      //       foundFilter = true;
+      //       remove_index = i;
+      //       break;
+      //     }
+      //   }
+
+      //   if (foundFilter){
+
+      //     filters.splice(remove_index, 1);
+      //     filter.in_size = old_filter.in_size
+      //   }
+
+        
+      //   filters.push(filter);
+        
+
+      //   if (new_filter.type == 'range') {
+
+          
+      //     filter.type = 'range';
+
+      //     if (foundFilter){
+
+      //       filter.extents = update_extents(old_filter.extents, new_filter.extents, new_filter.not);
+      //     }
+      //     else {
+      //       filter.extents ={},
+      //       filter.extents.neg =[],
+      //       filter.extents.pos = null;
+
+      //       if(new_filter.not){
+      //         filter.extents.neg.push(new_filter.extents);
+      //       } else{
+      //         filter.extents.pos = new_filter.extents;
+      //       }
+            
+      //     }
+
+          
+          
+      //   } else if(new_filter.type == 'contains') {
+      //     filter.regexes ={};
+      //     filter.regexes.pos =[],
+      //     filter.regexes.neg =[],
+      //     filter.chars ={
+      //       pos: [],
+      //       neg: []
+      //     };
+
+      //     if (foundFilter){
+      //       filter.regexes.pos = old_filter.regexes.pos.slice();
+      //       filter.regexes.neg = old_filter.regexes.neg.slice();
+      //       filter.chars.pos = old_filter.chars.pos.slice();
+      //       filter.chars.neg = old_filter.chars.neg.slice();
+              
+      //     }else{
+      //       f.filterDim = 'action_strings'
+      //     }
+      //     if (new_filter.not){
+      //       filter.chars.neg.push(new_filter.char);
+      //       filter.regexes.neg.push(new_filter.regex);
+      //     }else{
+      //       filter.chars.pos.push(new_filter.char);
+      //       filter.regexes.pos.push(new_filter.regex);
+      //     }
+      //     filter.regex = create_action_regex(filter.regexes);
+      //     filter.char = new_filter.char;
+      //     filter.type = 'contains';
+      //     console.log('REGEXES', filter.regexes);
+      //   }
+
+
+      //   return filters
+      // }
 
 
       function add_filter_to_set(old_set, new_filter_copy){
@@ -8121,6 +8380,8 @@ d3.csv(csv_file, function(error, data) {
         if(new_filter.div && new_filter.div.includes('duration')){
           filter_copy2.extents = filter_copy2.extents.map(function(e){return e*time_constants[interval];})
         }
+
+        filter_copy2.results = { in_size: d.size, out_size: filter_copy.size}
 
         var    agg_filters = create_agg_filter_set(d.filters, filter_copy2)
 
