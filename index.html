@@ -1227,36 +1227,43 @@ d3.csv(csv_file, function(error, data) {
             // trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[level])});
 
             general_strings = seqs.dimension(function(d) {return d[general]});
+            general_filter = seqs.dimension(function(d) {return d[general]});
             general_strings2 = seqs.dimension(function(d) {return d[general]});
             
             general_trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[general])});
             
 
             grouped_strings = seqs.dimension(function(d) {return d[grouped]});
+            grouped_filter = seqs.dimension(function(d) {return d[grouped]});
             grouped_strings2 = seqs.dimension(function(d) {return d[grouped]});
             grouped_trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[grouped])});
 
             pages_strings = seqs.dimension(function(d) {return d[actions]});
+            pages_filter = seqs.dimension(function(d) {return d[actions]});
             pages_strings2 = seqs.dimension(function(d) {return d[actions]});
             pages_trans_strings = seqs.dimension(function(d) {return remove_duplicates(d[actions])});
 
             action_strings = general_strings;
+            action_filter = general_filter
             action_strings2 = general_strings2;
             trans_strings = general_trans_strings;
 
             action_filter_dimensions = {}
             action_filter_dimensions[general] = {
                 action_strings: general_strings, 
+                action_filter: general_filter,
                 action_strings2: general_strings2, 
                 trans_strings: general_trans_strings
               }
             action_filter_dimensions[grouped]={
-                action_strings: grouped_strings, 
+                action_strings: grouped_strings,
+                action_filter: grouped_filter, 
                 action_strings2: grouped_strings2, 
                 trans_strings: grouped_trans_strings
               }
             action_filter_dimensions[actions] = {
-                action_strings: pages_strings, 
+                action_strings: pages_strings,
+                action_filter: pages_filter, 
                 action_strings2: pages_strings2, 
                 trans_strings: pages_trans_strings
               }
