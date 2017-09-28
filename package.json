@@ -1,0 +1,30 @@
+{
+  "name": "myapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "cola.js",
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "cola": "^0.1.7",
+    "cytoscape": "^3.1.4",
+    "cytoscape-cola": "^1.6.0",
+    "cytoscape-dagre": "^1.6.0",
+    "kim": "^1.0.2",
+    "rangebar": "^0.0.4",
+    "webcola": "^3.3.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kdextras/MobiApp.git"
+  },
+  "author": "Kimberly Dextras-Romagnino",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kdextras/MobiApp/issues"
+  },
+  "homepage": "https://github.com/kdextras/MobiApp#readme"
+}

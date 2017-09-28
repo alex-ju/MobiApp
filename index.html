@@ -1272,7 +1272,7 @@ d3.csv(csv_file, function(error, data) {
             trans_grouped = trans_strings.group()
       //console.log(lens.top(Number.POSITIVE_INFINITY).length);
       
-      var dimensions = [len, l, hour, h, start, start_filter, duration, dur_filter, general_strings, general_strings2, general_trans_strings, grouped_strings, grouped_strings2, grouped_trans_strings, pages_strings, pages_strings2, pages_trans_strings ]
+      var dimensions = [len, l, hour, h, start, start_filter, duration, dur_filter, general_strings, general_filter, general_strings2, general_trans_strings, grouped_strings, grouped_filter, grouped_strings2, grouped_trans_strings, pages_strings, pages_filter, pages_strings2, pages_trans_strings ]
 
       var OG_dimensions = dimensions.length;
 
@@ -7106,6 +7106,7 @@ d3.csv(csv_file, function(error, data) {
              // Object.values(action_filter_dimensions[f.div]).forEach(function(d){
              //    d.filterAll();
              // })
+             //action_filter_dimensions[f.div].action_strings.filterAll()
              action_filter_dimensions[f.div][f.filterDim].filterAll()
           }else if(f.type == 'range'){
             var current_chart = f.chart.data()[0];
@@ -7126,7 +7127,7 @@ d3.csv(csv_file, function(error, data) {
       //   // var in_size = all.reduceCount().value()
       //   // console.log('initial size', in_size)
         
-      //   if( prev_selected){
+      //   if( prev_selected && new_filters){
       //     var old_filters = prev_selected.data.filters;
       //     var new_filters = selected.data.filters;
 
@@ -7234,6 +7235,8 @@ d3.csv(csv_file, function(error, data) {
 
        function apply_filters(selected){
 
+        console.log('APP;LYING FILTERS WITH 2 ACTION DIMENSIONS')
+
         var reset_list = [],
             filter_list = [];
         var new_filters = selected.data.filters;
@@ -7242,7 +7245,7 @@ d3.csv(csv_file, function(error, data) {
         // var in_size = all.reduceCount().value()
         // console.log('initial size', in_size)
         
-        if( prev_selected && prev_selected.data.filters){
+        if( prev_selected && prev_selected.data.filters && new_filters){
           var old_filters = prev_selected.data.filters,
               all_old_filters = old_filters.range.concat(old_filters.contains)
             
@@ -8121,6 +8124,8 @@ d3.csv(csv_file, function(error, data) {
 
 
       function create_agg_filter_set(old_set, new_filter) {
+
+        console.log('aggregate set with contains and range arrays')
       
         var old_filter,
             foundFilter=false,
@@ -8157,6 +8162,7 @@ d3.csv(csv_file, function(error, data) {
           }else{
             var f1 = containsFilters[0]
             if ((f1.in_size - f1.out_size) > original_size/2){
+              console.log('adding second dimension!')
               foundFilter = false
               filter.filterDim = 'action_filter'
             }else{
@@ -8318,9 +8324,8 @@ d3.csv(csv_file, function(error, data) {
       //       filter.chars.pos = old_filter.chars.pos.slice();
       //       filter.chars.neg = old_filter.chars.neg.slice();
               
-      //     }else{
-      //       f.filterDim = 'action_strings'
       //     }
+
       //     if (new_filter.not){
       //       filter.chars.neg.push(new_filter.char);
       //       filter.regexes.neg.push(new_filter.regex);
