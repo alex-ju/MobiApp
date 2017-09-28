@@ -20,7 +20,7 @@ session_table['end'] = pd.to_datetime(session_table['end'])
 session_table['len'] = session_table[pages].apply(len)
 
 # n = 1650000
-n = 500000
+n = 100000
 
 size = len(session_table.index)
 print(size)
