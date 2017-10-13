@@ -644,17 +644,51 @@ d3.csv(csv_file, function(error, data) {
       // d3.select("#close_detailed_view")
       //   .on("click", close_detailed_view);
 
-      d3.select("#demo_button")
-        .on("click", function(d) {
-          console.log(dimensions[0])
-          console.log(dimensions[0].top(Infinity))
-          // document.getElementById('whereToPrint').innerHTML = JSON.stringify(lineChartData, null, 2);
+      // function convertToCSV(objArray) {
+      //       var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+      //       var str = '';
 
+      //       for (var i = 0; i < array.length; i++) {
+      //           var line = '';
+      //           for (var index in array[i]) {
+      //               if (line != '') line += ','
+
+      //               line += array[i][index];
+      //           }
+
+      //           str += line + '\r\n';
+      //       }
+
+      //       return str;
+      //   }
+
+      function convertToCSV(objArray){
+        const items = objArray
+        const replacer = (key, value) => value === null ? '' : value // specify how you want to handle null values here
+        const header = Object.keys(items[0])
+        let csv = items.map(row => header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(','))
+        csv.unshift(header.join(','))
+        csv = csv.join('\r\n')
+
+        return csv
+      }
+
+
+      function download_segment_csv(data){
+        csvContent = convertToCSV(data)
+        download(csvContent, "segment.csv")
+       
+
+      }
+
+      d3.select("#download_segment")
+        .on("click", function(d) {
+          console.log(dimensions[0].top(Infinity))
+          //Going to be sorted by length (longest -> shortest))
+          download_segment_csv(dimensions[0].top(Infinity))
         });
 
-
       var charts = [
-
 
             barChart()
             .dimension(duration)
