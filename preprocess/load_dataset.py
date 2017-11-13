@@ -3,21 +3,42 @@ import preprocess_data as prep
 import time
 import numpy as np
 
+#Lancome
+# template_groups = {
+#     'pv_account': ['account', 'profile', 'orderhistory', 'orderdetails', 'favorites', 'addressbook', 'wallet'],
+#     'pv_eliterewards': ['rewards-catalog', 'rewardsHistory', 'rewards-my-account', 'uploadReceipt', 'abouteliteRewards', 'howToEarnPoints', 'rewardsFaq', 'baRegistration', 'loyalty-terms'],
+#     'pv_signin': ['signin'],
+#     'pv_register': ['register'],
+#     'pv_home': ['home'],
+#     'pv_pdp': ['productDetailsPage'],
+#     'pv_plp': ['productListPage'],
+#     'pv_explore': ['explore', 'giftWithPurchase', 'totalGiftWithPurchase', 'customFoudnation', 'skinCareRoutineFinder', 'skinCareRoutineFinderResults', 'mascaraFinder'],
+#     'pv_search': ['searchResultPage'],
+#     'pv_specialoffers': ['specialOffers', 'specialPromo', 'specialOfferPage'],
+#     'pv_cart': ['cart', 'cartEditPage'],
+#     'pv_checkout': ['checkout'],
+#     'pv_confirmation': ['checkout-confirmation'],
+#     'pv_policy':['termsConditions', 'returnPolicy', 'privacyPolicy', 'customerService'],
+#     'pv_other_info': ['careers', 'socialGallery', 'customEngraving'],
+#     'pv_storeLocator': ['storeLocator'],
+#     'pv_other': ['gigyalogin', 'onlineOnly']
+
+# }
 template_groups = {
-    'pv_account': ['account', 'profile', 'orderhistory', 'orderdetails', 'favorites', 'addressbook', 'wallet'],
+    'pv_account': ['account', 'profile', 'orderhistory', 'orderdetails', 'favorites', 'addressbook', 'wallet', 'PasswordForgetEmailPage', 'forgetPasswordEmailPage', 'PasswordChangedPage'],
     'pv_eliterewards': ['rewards-catalog', 'rewardsHistory', 'rewards-my-account', 'uploadReceipt', 'abouteliteRewards', 'howToEarnPoints', 'rewardsFaq', 'baRegistration', 'loyalty-terms'],
     'pv_signin': ['signin'],
     'pv_register': ['register'],
     'pv_home': ['home'],
     'pv_pdp': ['productDetailsPage'],
     'pv_plp': ['productListPage'],
-    'pv_explore': ['explore', 'giftWithPurchase', 'totalGiftWithPurchase', 'customFoudnation', 'skinCareRoutineFinder', 'skinCareRoutineFinderResults', 'mascaraFinder'],
-    'pv_search': ['searchResultPage'],
-    'pv_specialoffers': ['specialOffers', 'specialPromo', 'specialOfferPage'],
+    'pv_explore': ['explore', 'magArticle', 'BeautyMagPage', 'BlogAboutPage', 'giftWithPurchase', 'giftLanding', 'giftcertpurchase', 'giftCertificates', 'totalGiftWithPurchase', 'customFoudnation', 'skinCareRoutineFinder', 'skinCareFinder', 'skinCareRoutineFinderResults', 'mascaraFinder', 'VideoDetails', 'video-library', 'VideoGallerySearch'],
+    'pv_search': ['searchResultPage', 'notFound'],
+    'pv_specialoffers': ['specialOffers', 'specialPromo', 'specialOfferPage', 'stJude', 'singleTC'],
     'pv_cart': ['cart', 'cartEditPage'],
     'pv_checkout': ['checkout'],
     'pv_confirmation': ['checkout-confirmation'],
-    'pv_policy':['termsConditions', 'returnPolicy', 'privacyPolicy', 'customerService'],
+    'pv_policy':['termsConditions', 'returnPolicy', 'privacyPolicy', 'customerService', 'contact', 'HolidayShipping'],
     'pv_other_info': ['careers', 'socialGallery', 'customEngraving'],
     'pv_storeLocator': ['storeLocator'],
     'pv_other': ['gigyalogin', 'onlineOnly']
@@ -120,7 +141,6 @@ def create_action_type(row):
         for k, v in template_groups.items():
             if template in v:
                 return k
-
     return None
 
 
@@ -132,10 +152,15 @@ pages_grouped = 'pages_grouped'
 
 # action_table_csv = 'action_table_lancome_1709.csv'  # original action table
 path = 'action_table/'
-action_table_csv = 'action_table_09_2017.csv'  # with action_type column
+#action_table_csv = 'action_table_09_2017.csv'  # with action_type column
+action_table_csv = 'action_table_lancome_2017-09-01_2017-11-08.csv'
+
+print('Creating sequence table for: ' + action_table_csv)
 
 action_table = pd.read_csv(path + action_table_csv)
-action_table = action_table.drop('Unnamed: 0', 1)
+
+if 'Unnamed: 0' in action_table:
+    action_table = action_table.drop('Unnamed: 0', 1)
 action_table['time'] = pd.to_datetime(action_table['time'])
 action_table.action = action_table.action.str.strip()
 action_table.template = action_table.template.str.strip()
@@ -144,9 +169,15 @@ if 'index' not in action_table:
     print('Adding index column')
     action_table.reset_index(level=0, inplace=True)
 
+print('number of unique templates')
+templates = action_table.template.unique()
+print(len(templates))
+# print(templates)
 
-# action_table['action_type'] = action_table.apply(lambda row: create_action_type(row), axis=1)
-# action_table.to_csv('action_table_09_2017.csv', encoding='utf-8')
+action_table['action_type'] = action_table.apply(lambda row: create_action_type(row), axis=1)
+action_table.to_csv('action_table_'+action_table_csv, encoding='utf-8')
+
+print('done adding action_type column')
 
 nulls = action_table.loc[action_table.action_type.isnull()]
 
@@ -154,10 +185,13 @@ if (len(nulls) == 0):
 
     alphabet = create_alphabet(action_table)
     print(alphabet)
-    alphabet.to_csv('alphabet.csv', encoding='utf-8')
+    #alphabet.to_csv('alphabet.csv', encoding='utf-8')
 
     session_table = create_sequence_table(action_table, ['client_id', 'session_id'])
-    session_table.to_csv('session_table.csv', encoding='utf-8')
+    session_table.to_csv('session_table_' + action_table_csv , encoding='utf-8')
 
-    # client_table = create_sequence_table(action_table, 'client_id')
-    # client_table.to_csv('client_table.csv', encoding='utf-8')
+    #client_table = create_sequence_table(action_table, 'client_id')
+    #client_table.to_csv('client_table.csv', encoding='utf-8')
+else:
+    print('null templates')
+    print(nulls.template.unique())

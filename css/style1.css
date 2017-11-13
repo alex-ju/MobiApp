@@ -195,11 +195,11 @@ body{
 
 .hidden{display:none;}
 
-.noAxis path, .noAxis line {
+/*.noAxis path, .noAxis line {
   fill: none;
   stroke:none;
   shape-rendering: crispEdges;
-}
+}*/
 
 
 .links line {
@@ -417,7 +417,7 @@ input {
 }
 
 .standard-text{
-  font-size:10px;
+  font-size:12px;
   fill:black;
   text-anchor: middle;
 }

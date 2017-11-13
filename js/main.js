@@ -8,11 +8,23 @@ function visibleHeight(){
 $(document).ready(function(){
   $('#load').hide()
 
+
+var csv_path = "preprocess/sample_table/"
 //Files for alphabet and sequence data
 var alpha_file = "alphabet_17-09-26.csv"; //without 'n'
 
+
+
+//all lancome data
+//var csv_file = 'sample_1000000_session_table_lancome_2017-09-01_2017-11-08.csv'
+//var csv_file = 'sample_500000_session_table_lancome_2017-09-01_2017-11-08.csv'
+var csv_file = 'sample_100000_session_table_lancome_2017-09-01_2017-11-08.csv'
+
+
+//with client ids
+//var csv_file = "sample_500000_client_table_17-10-13.csv"
 //with session ids
-var csv_file = "sample_100000_session_table_170926.csv"; //100K
+//var csv_file = "sample_100000_session_table_170926.csv"; //100K
 //var csv_file = "sample_1000000_session_table_17-09-26.csv"; //1M
 //var csv_file = "sample_1545395_session_table_17-09-26.csv"; //full dataset
 
@@ -366,7 +378,7 @@ var time_constants={
 var interval = 'hours'
   
 //------->Loading in alphabet and sequence files
-d3.csv(csv_file, function(error, data) {
+d3.csv(csv_path+csv_file, function(error, data) {
   if (error) throw error;
   seq_data = data;
 
@@ -663,7 +675,10 @@ d3.csv(csv_file, function(error, data) {
       //   }
 
       function convertToCSV(objArray){
-        const items = objArray
+        const items = objArray.sort(function(a,b) {
+          return a.index - b.index
+
+        });
         const replacer = (key, value) => value === null ? '' : value // specify how you want to handle null values here
         const header = Object.keys(items[0])
         let csv = items.map(row => header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(','))
@@ -684,7 +699,7 @@ d3.csv(csv_file, function(error, data) {
       d3.select("#download_segment")
         .on("click", function(d) {
           console.log(dimensions[0].top(Infinity))
-          //Going to be sorted by length (longest -> shortest))
+          //Going to be sorted by length (longest -> shortest)
           download_segment_csv(dimensions[0].top(Infinity))
         });
 
@@ -3581,7 +3596,7 @@ d3.csv(csv_file, function(error, data) {
                     var text_height = textData.text.length
                     if(text_height < 3) text_height = 3;
 
-                    tt += (text_height+1)*oWidth;
+                    tt += (text_height+1)*textHeight;
             
                   }
                 })
@@ -3600,7 +3615,6 @@ d3.csv(csv_file, function(error, data) {
         operationEnter.append('rect')
                       .attr('transform', 'translate(' + (-oWidth - 7) +',' + -4 + ')')
                       .attr('width', 
-                        //infoLength+ oWidth + 8
                         nv_svg.style("width")
                         )
                       .attr('height', function(d,i){ 
@@ -3608,7 +3622,7 @@ d3.csv(csv_file, function(error, data) {
                         var text_height = d.text_data[1].text.length
                         if(text_height < 3) text_height = 3;
 
-                        var h = d.text_data[1].show? ((2 + text_height)*oWidth) : 0;
+                        var h = d.text_data[1].show? ((2 + text_height)*textHeight) : 0;
 
                         return h;
                       })
@@ -3749,7 +3763,7 @@ d3.csv(csv_file, function(error, data) {
                     var text_height = textData.text.length
                     if(text_height < 3) text_height = 3;
 
-                    tt += (text_height+1)*oWidth;
+                    tt += (text_height+1)*textHeight;
                   }
                 })
               return "translate(" + 0 + "," + (i*(oWidth+sep)+x +tt)  + ")"; 
@@ -3824,7 +3838,7 @@ d3.csv(csv_file, function(error, data) {
         text.enter()
           .append('text')
           .attr("dy", function(d,i){ return i+3 +"em";})
-          .style("font-size", "9px")
+          .style("font-size", (textHeight-1)+"px")
           .style("text-anchor", "left")
           .style('fill', 'black')
           .text(function(d) {return d;})
@@ -5973,6 +5987,9 @@ d3.csv(csv_file, function(error, data) {
               filter_list.push(n)
           })
 
+          console.log('old filter list', all_old_filters)
+          console.log('new filter list', all_new_filters)
+
           console.log('reset_list', reset_list)
           console.log('filter_list', filter_list)
           reset_dimensions(reset_list)
@@ -6623,6 +6640,7 @@ d3.csv(csv_file, function(error, data) {
 
       var oLength = 50,
           oWidth = 10,
+          textHeight = 13,
           oRange = [0,oLength],
           oScale,
           oRadius = 3.5;
@@ -6883,7 +6901,7 @@ d3.csv(csv_file, function(error, data) {
               break;
             }
           }
-          if (remove_index){
+          if (remove_index !=null){
             rangeFilters.splice(remove_index, 1);
             filter.in_size = old_filter.in_size
           }
