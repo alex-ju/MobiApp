@@ -4136,7 +4136,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
       function update_filter_view(_){
 
-        if ((selected_chart && selected_chart.data()[0].range()) || partitions.length>0){
+        if ((selected_chart && selected_chart.data()[0].range()) && extents_data.extents !=null || partitions.length>0){
           $('#select_chart_warning').hide()
         
           if(!arguments.length){
