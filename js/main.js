@@ -13,12 +13,15 @@ var csv_path = "preprocess/sample_table/"
 //Files for alphabet and sequence data
 var alpha_file = "alphabet_17-09-26.csv"; //without 'n'
 
-
-
+//debenhams data
+//var csv_file = 'session_table_debenhams-progressive_2017-10-19_2017-11-20_sampling_1_over_80-1.csv'
+//var csv_file = 'sample_1000000_session_table_debenhams-progressive_2017-10-19_2017-11-20.csv'
+//var csv_file = 'sample_500000_session_table_debenhams-progressive_2017-10-19_2017-11-20.csv'
+var csv_file = 'sample_200000_session_table_debenhams-progressive_2017-10-19_2017-11-20.csv'
 //all lancome data
 //var csv_file = 'sample_1000000_session_table_lancome_2017-09-01_2017-11-08.csv'
 //var csv_file = 'sample_500000_session_table_lancome_2017-09-01_2017-11-08.csv'
-var csv_file = 'sample_100000_session_table_lancome_2017-09-01_2017-11-08.csv'
+//var csv_file = 'sample_100000_session_table_lancome_2017-09-01_2017-11-08.csv'
 
 
 //with client ids
@@ -389,8 +392,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
         d.len = +d.len;
         d.index = +d.index;
-        d.start_index = +d.start_index;
-        d.end_index = +d.end_index;
+        // d.start_index = +d.start_index;
+        // d.end_index = +d.end_index;
         d.start = parseDate(d.start);
         d.end = parseDate(d.end);
         d.duration = d.end -d.start;
@@ -2000,7 +2003,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
               .style("top", yPosition + "px")
 
           if (d.translate==0){
-            var xPosition = -$("#tooltip").width()
+            var xPosition = (-$("#tooltip").width()+ margin_ac.left)
              d3.select("#tooltip")
               .style("left", xPosition + "px")
           }

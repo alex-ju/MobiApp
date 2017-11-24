@@ -3,6 +3,55 @@ import preprocess_data as prep
 import time
 import numpy as np
 
+
+#debenhams
+template_groups = {
+    'pv_account': ['account', 'accountLocked', 'changePassword', 'forgetpassword', 'emailReminder', 'myBeautyClub', 'mySavedItems'],
+    'pv_eliterewards': [],
+    'pv_signin': ['login'],
+    'pv_register': ['register', 'registerSuccess'],
+    'pv_home': ['home'],
+    'pv_pdp': ['pdp'],
+    'pv_plp': ['plp'],
+    'pv_explore': ['brandsAZ', 'category', 'chanelPage', 'contentPage'],
+    'pv_search': [],
+    'pv_specialoffers': [],
+    'pv_cart': ['cart'],
+    'pv_checkout': ['checkoutPayment', 'checkoutPaymentProgress','checkoutShipping', 'checkoutSecurePayment'],
+    'pv_confirmation': ['checkoutConfirmation'],
+    'pv_policy':[],
+    'pv_other_info': [],
+    'pv_storeLocator': ['find-a-store'],
+    'pv_other': []
+
+}
+
+template_groups = {
+    'pv_account': ['account', 'profile', 'orderhistory', 'orderdetails', 'favorites', 'addressbook', 'wallet', 'PasswordForgetEmailPage', 'forgetPasswordEmailPage', 'PasswordChangedPage'],
+    'pv_eliterewards': ['rewards-catalog', 'rewardsHistory', 'rewards-my-account', 'uploadReceipt', 'abouteliteRewards', 'howToEarnPoints', 'rewardsFaq', 'baRegistration', 'loyalty-terms'],
+    'pv_signin': ['signin'],
+    'pv_register': ['register'],
+    'pv_home': ['home'],
+    'pv_pdp': ['productDetailsPage'],
+    'pv_plp': ['productListPage'],
+    'pv_explore': ['explore', 'magArticle', 'BeautyMagPage', 'BlogAboutPage', 'giftWithPurchase', 'giftLanding', 'giftcertpurchase', 'giftCertificates', 'totalGiftWithPurchase', 'customFoudnation', 'skinCareRoutineFinder', 'skinCareFinder', 'skinCareRoutineFinderResults', 'mascaraFinder', 'VideoDetails', 'video-library', 'VideoGallerySearch'],
+    'pv_search': ['searchResultPage', 'notFound'],
+    'pv_specialoffers': ['specialOffers', 'specialPromo', 'specialOfferPage', 'stJude', 'singleTC'],
+    'pv_cart': ['cart', 'cartEditPage'],
+    'pv_checkout': ['checkout'],
+    'pv_confirmation': ['checkout-confirmation'],
+    'pv_policy':['termsConditions', 'returnPolicy', 'privacyPolicy', 'customerService', 'contact', 'HolidayShipping'],
+    'pv_other_info': ['careers', 'socialGallery', 'customEngraving'],
+    'pv_storeLocator': ['storeLocator'],
+    'pv_other': ['gigyalogin', 'onlineOnly']
+
+}
+
+
+
+
+
+
 #Lancome
 # template_groups = {
 #     'pv_account': ['account', 'profile', 'orderhistory', 'orderdetails', 'favorites', 'addressbook', 'wallet'],
@@ -24,26 +73,7 @@ import numpy as np
 #     'pv_other': ['gigyalogin', 'onlineOnly']
 
 # }
-template_groups = {
-    'pv_account': ['account', 'profile', 'orderhistory', 'orderdetails', 'favorites', 'addressbook', 'wallet', 'PasswordForgetEmailPage', 'forgetPasswordEmailPage', 'PasswordChangedPage'],
-    'pv_eliterewards': ['rewards-catalog', 'rewardsHistory', 'rewards-my-account', 'uploadReceipt', 'abouteliteRewards', 'howToEarnPoints', 'rewardsFaq', 'baRegistration', 'loyalty-terms'],
-    'pv_signin': ['signin'],
-    'pv_register': ['register'],
-    'pv_home': ['home'],
-    'pv_pdp': ['productDetailsPage'],
-    'pv_plp': ['productListPage'],
-    'pv_explore': ['explore', 'magArticle', 'BeautyMagPage', 'BlogAboutPage', 'giftWithPurchase', 'giftLanding', 'giftcertpurchase', 'giftCertificates', 'totalGiftWithPurchase', 'customFoudnation', 'skinCareRoutineFinder', 'skinCareFinder', 'skinCareRoutineFinderResults', 'mascaraFinder', 'VideoDetails', 'video-library', 'VideoGallerySearch'],
-    'pv_search': ['searchResultPage', 'notFound'],
-    'pv_specialoffers': ['specialOffers', 'specialPromo', 'specialOfferPage', 'stJude', 'singleTC'],
-    'pv_cart': ['cart', 'cartEditPage'],
-    'pv_checkout': ['checkout'],
-    'pv_confirmation': ['checkout-confirmation'],
-    'pv_policy':['termsConditions', 'returnPolicy', 'privacyPolicy', 'customerService', 'contact', 'HolidayShipping'],
-    'pv_other_info': ['careers', 'socialGallery', 'customEngraving'],
-    'pv_storeLocator': ['storeLocator'],
-    'pv_other': ['gigyalogin', 'onlineOnly']
 
-}
 
 
 def create_alphabet(action_table):

@@ -16,7 +16,7 @@ def create_alphabet():
 def unify_pageviews(seq_strings, alphabet):
     pageview_chars = []
 
-    for name, c in alphabet.iteritems():
+    for name, c in alphabet.items():
         if 'pv_' in name:
             pageview_chars.append(c)
 
@@ -65,12 +65,14 @@ def group_pageviews(s, pv_dict):
 
 
 def create_preprocess_cols(all_seqs, alphabet):
-    all_seqs['duration'] = all_seqs.apply(lambda s: s.end - s.start, axis=1) 
+    # all_seqs['duration'] = all_seqs.apply(lambda s: s.end - s.start, axis=1) 
     # all_seqs[pages] = all_seqs[pages].apply(lambda s: replace_char(s, alphabet['pv_search'], alphabet['pv_category']))
     all_seqs[actions] = unify_pageviews(all_seqs[pages], alphabet)
 
     pv_dict = create_pv_dict(alphabet)
     all_seqs[pages_grouped] = all_seqs[pages].apply(lambda s: group_pageviews(s, pv_dict))
+    print('adding LENGTH COLUMN')
+    all_seqs['len'] = all_seqs[pages].apply(len)
 
 
 pages = 'action_strings'
