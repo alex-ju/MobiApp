@@ -9,15 +9,24 @@ $(document).ready(function(){
   $('#load').hide()
 
 
+
 var csv_path = "preprocess/sample_table/"
 //Files for alphabet and sequence data
 var alpha_file = "alphabet_17-09-26.csv"; //without 'n'
+
+
+//var csv_file = 'sample_70_failedcheckout_session_table_debenhams-progressive_2017-10-19_2017-11-22.csv'
+//debenhams data with myBeautyClub in eliterewards
+//var csv_file = 'sample_200000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
+var csv_file = 'sample_1000000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
 
 //debenhams data
 //var csv_file = 'session_table_debenhams-progressive_2017-10-19_2017-11-20_sampling_1_over_80-1.csv'
 //var csv_file = 'sample_1000000_session_table_debenhams-progressive_2017-10-19_2017-11-20.csv'
 //var csv_file = 'sample_500000_session_table_debenhams-progressive_2017-10-19_2017-11-20.csv'
-var csv_file = 'sample_200000_session_table_debenhams-progressive_2017-10-19_2017-11-20.csv'
+//var csv_file = 'sample_200000_session_table_debenhams-progressive_2017-10-19_2017-11-20.csv'
+
+
 //all lancome data
 //var csv_file = 'sample_1000000_session_table_lancome_2017-09-01_2017-11-08.csv'
 //var csv_file = 'sample_500000_session_table_lancome_2017-09-01_2017-11-08.csv'
@@ -430,6 +439,10 @@ d3.csv(csv_path+csv_file, function(error, data) {
           hour = seqs.dimension(function(d) {return d.start.getHours() + d.start.getMinutes()/60;}),
           h = seqs.dimension(function(d) {return d.start.getHours() + d.start.getMinutes()/60;}),
           hours = hour.group(Math.floor),
+
+          weekday = seqs.dimension(function(d) {return d.start.getDay();}),
+          weekday_filter = seqs.dimension(function(d) {return d.start.getDay();}),
+          weekdays = weekday.group(Math.floor),
           
           start = seqs.dimension(function(d) {return d.start}),
           start_filter = seqs.dimension(function(d) {return d.start}),
@@ -484,7 +497,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
           trans_strings: pages_trans_strings
         }
    
-      var dimensions = [len, l, hour, h, start, start_filter, duration, dur_filter, general_strings, general_filter, general_strings2, general_trans_strings, grouped_strings, grouped_filter, grouped_strings2, grouped_trans_strings, pages_strings, pages_filter, pages_strings2, pages_trans_strings ]
+      var dimensions = [len, l, hour, h, weekday, weekday_filter, start, start_filter, duration, dur_filter, general_strings, general_filter, general_strings2, general_trans_strings, grouped_strings, grouped_filter, grouped_strings2, grouped_trans_strings, pages_strings, pages_filter, pages_strings2, pages_trans_strings ]
       var OG_dimensions = dimensions.length;
 
       
@@ -727,6 +740,16 @@ d3.csv(csv_path+csv_file, function(error, data) {
           .x(d3.scaleLinear()
             .domain([0, 24])
             .rangeRound([0, 240])),
+
+          barChart()
+            .dimension(weekday)
+            .filter_dimension(weekday_filter)
+            .dim_name('Weekday (Sunday:0)')
+            .category('time')
+            .group(weekdays)
+          .x(d3.scaleLinear()
+            .domain([0, 6])
+            .rangeRound([0, 70])),
 
           barChart()
             .dimension(start)
