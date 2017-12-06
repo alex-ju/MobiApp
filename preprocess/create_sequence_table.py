@@ -120,7 +120,8 @@ pages_grouped = 'pages_grouped'
 path = 'debenhams/'
 
 # sequence_table_csv = 'debenhams-progressive_2017-10-19_2017-11-20_sampling_1_over_1.csv'
-sequence_table_csv = 'debenhams-progressive_2017-10-19_2017-11-22_sampling1_1_over_1.csv' #with myBeautyClub as eliterewards
+#sequence_table_csv = 'debenhams-progressive_2017-10-19_2017-11-22_sampling1_1_over_1.csv' #with myBeautyClub as eliterewards
+sequence_table_csv = 'debenhams-progressive_2017-10-19_2017-11-22_clientsampling1_1_over_1.csv' #with myBeautyClub as eliterewards
 
 print('Creating sequence table for: ' + sequence_table_csv)
 

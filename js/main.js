@@ -14,6 +14,9 @@ var csv_path = "preprocess/sample_table/"
 //Files for alphabet and sequence data
 var alpha_file = "alphabet_17-09-26.csv"; //without 'n'
 
+//client table
+//var csv_file = 'sample_200000_client_table_debenhams-progressive_2017-10-19_2017-11-22.csv'
+//var csv_file = 'sample_1000000_client_table_debenhams-progressive_2017-10-19_2017-11-22.csv'
 
 //var csv_file = 'sample_70_failedcheckout_session_table_debenhams-progressive_2017-10-19_2017-11-22.csv'
 //debenhams data with myBeautyClub in eliterewards
@@ -727,6 +730,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
             .dim_name('Duration (hours)')
             .category('time')
             .group(durations)
+            .round(Math.round)
             .x(d3.scaleLinear()
             //.domain([0, 30 ])
             .rangeRound([0, 10])),
@@ -737,6 +741,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
             .dim_name('Hour of the day')
             .category('time')
             .group(hours)
+            .round(Math.round)
           .x(d3.scaleLinear()
             .domain([0, 24])
             .rangeRound([0, 240])),
@@ -747,6 +752,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
             .dim_name('Weekday (Sunday:0)')
             .category('time')
             .group(weekdays)
+            .round(Math.round)
           .x(d3.scaleLinear()
             .domain([0, 6])
             .rangeRound([0, 70])),
@@ -768,6 +774,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
             .dim_name('# of actions')
             .category('count')
             .group(lens)
+            .round(Math.round)
             .x(d3.scaleLinear()
             //.domain([0, 30])
             .rangeRound([0, 140]))
@@ -1243,7 +1250,6 @@ d3.csv(csv_path+csv_file, function(error, data) {
             d.addClass('hasEdges')
             d.removeClass('orphan')
             }else{
-              console.log('orphan', data)
               d.removeClass('hasEdges')
               d.addClass('orphan')
             }
@@ -3993,15 +3999,32 @@ d3.csv(csv_path+csv_file, function(error, data) {
               size_extents = extents
             }
             console.log(' Creating range filter with following extents: ' + extents)
-            var dimension = selected_chart.data()[0].dimension()
-            dimension.filterAll()
-            dimension.filterRange(size_extents);
+            
+            var groups = selected_chart.data()[0].group().all()
+            var count = 0;
 
-            var size = all.reduceCount().value()
+            groups.forEach(function(g){
+              if (g.key>=extents[0] && g.key<extents[1]){
+                count += g.value;
+              }
+            })
+
+            // var dimension = selected_chart.data()[0].dimension()
+            // dimension.filterAll()
+            // dimension.filterRange(size_extents);
+
+            // var size = all.reduceCount().value()
+            // if (size != count){
+            //   alert('COUNTING DIDNT WORK! count: ' + count + ' size: ' + size)
+            // }
+            var size = count;
+
+
             var prev_size = selected_segment.data.size;
 
+            
+
             size = not? (prev_size - size): size
-            //matches = all.reduce(reduceAdd, reduceRemove, reduceInitial).value()
             
             selectedFilter.size = size;
             selectedFilter.extents = extents;
@@ -4023,6 +4046,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
           }
           $('#load').hide();
         }, 500);
+
 
       }
 
@@ -6115,8 +6139,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
             show_node_view(selected);
           
-            var patterns = find_all_patterns();
-            console.log('Patterns', patterns)
+            // var patterns = find_all_patterns();
+            // console.log('Patterns', patterns)
 
             if (selected.data.value == 1) {
 
@@ -7420,6 +7444,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
               .dim_name('# of '+ action_counted)
               .category('count')
               .group(a_counts)
+              .round(Math.round)
               .x(d3.scaleLinear()
               .rangeRound([0, 140]))
 
@@ -7513,32 +7538,57 @@ d3.csv(csv_path+csv_file, function(error, data) {
                 .attr('transform', function(d,i){return 'translate(' + (action_radius*2) +','+ (action_radius*3)*i  +')'})
 
         var action = entry.append('g')
-                    .attr('transform', 'translate(' + 30  +','+ 0  +')')
+                    //.attr('transform', 'translate(' + 30  +','+ 0  +')')
+                    .attr('transform', 'translate(' + action_radius*3  +','+ 0  +')')
         
         var action_text = action.append('g')
-                    .attr('transform', function(d,i){return 'translate(' + (action_radius*2)  +','+  0 +')'})
+                    //.attr('transform', function(d,i){return 'translate(' + (action_radius*2)  +','+  0 +')'})
 
                 
             action_text.append('text')
                 .style('font-size', '11px')
-                .text(function(d){return d;})
+                .text(function(d){return ' =  ' + d;})
 
         var node = action.append('g')
                     .attr('transform', function(d,i){return 'translate(' + 0 +','+ -action_radius/2  +')'})
                 
 
-            node.append('circle')
-                .attr('r', action_radius)
-                .attr('fill', function(d) {
-                  return color(d);
-                })
+            // node.append('circle')
+            //     .attr('r', action_radius)
+            //     .attr('fill', function(d) {
+            //       return color(d);
+            //     })
+
+            
 
         var char_text = entry.append('g')
                     .attr('transform',  'translate(' + 0 +','+ 0  +')')
 
-            char_text.append('text')
-                .style('font-size', '11px')
-                .text(function(d){return alphabet[d] + " = " ;})    
+            // char_text.append('text')
+            //     .style('font-size', '11px')
+            //     .text(function(d){return alphabet[d] + " = " ;})    
+
+          char_text.append("rect")
+                .attr('y', -((action_radius*2)-1))
+                .attr("width", action_radius*2)
+                .attr("height", action_radius*2)
+                .attr("fill", function(d) {
+                  return color(d);
+                })
+                .attr("fill-opacity", '1')
+
+          char_text.append('text')
+                .attr('x', action_radius)
+                .attr('class', 'seq_text')
+                .style('text-anchor', 'middle')
+                .text(function(d){
+                  return alphabet[d];
+                  //return ''
+                }) 
+                .attr('fill', function(d){ 
+                  return get_foreground_color(color(d))
+                })
+
 
       }
 
