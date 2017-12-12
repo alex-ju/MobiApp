@@ -3378,7 +3378,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
         } else if (o.type == 'contains'){
           operation_data = create_contains_filter_data(o, infoLength)
 
-          label_text = o.not? ['Does not Contain: ']: ['Contains: ']
+          label_text = o.not? ['Not Contains: ']: ['Contains: ']
           value_text = format_contains_text(o.char)
           
 
