@@ -21,7 +21,7 @@ var alpha_file = "alphabet_17-09-26.csv"; //without 'n'
 //var csv_file = 'sample_70_failedcheckout_session_table_debenhams-progressive_2017-10-19_2017-11-22.csv'
 //debenhams data with myBeautyClub in eliterewards
 //var csv_file = 'sample_200000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
-var csv_file = 'sample_1000000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
+//var csv_file = 'sample_1000000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
 
 //debenhams data
 //var csv_file = 'session_table_debenhams-progressive_2017-10-19_2017-11-20_sampling_1_over_80-1.csv'
@@ -31,7 +31,7 @@ var csv_file = 'sample_1000000_session_table_debenhams-progressive_2017-10-19_20
 
 
 //all lancome data
-//var csv_file = 'sample_1000000_session_table_lancome_2017-09-01_2017-11-08.csv'
+var csv_file = 'sample_1000000_session_table_lancome_2017-09-01_2017-11-08.csv'
 //var csv_file = 'sample_500000_session_table_lancome_2017-09-01_2017-11-08.csv'
 //var csv_file = 'sample_100000_session_table_lancome_2017-09-01_2017-11-08.csv'
 
@@ -49,6 +49,7 @@ var selectedFilter ={},
     seq_data;
 
 var dataset_name = csv_file.substring(0, csv_file.indexOf('.'))
+dataset_name = 'D1_sample_1M'
 $('#dataset_name').text('for ' + dataset_name)
 
 //--------Setting up Action Hierarchy------>
@@ -4758,7 +4759,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
     function barChart() {
         if (!barChart.id) barChart.id = 0;
 
-        var margin = {top: 10, right: 13, bottom: 35, left: 55},
+        var margin = {top: 10, right: 13, bottom: 35, left: 60},
             x,
             y = d3.scaleLinear().range([100, 0]),
             id = barChart.id++,
@@ -5282,8 +5283,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
         width = 400 - margin.right - margin.left,
         height = 750 - margin.top - margin.bottom;
 
-    var RECT_W_max = 100,
-        RECT_W_min = 1,
+    var RECT_W_max = 105,
+        RECT_W_min = 5,
         RECT_H = 20,
         DEPTH = 35;
 
