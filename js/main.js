@@ -20,7 +20,7 @@ var alpha_file = "alphabet_17-09-26.csv"; //without 'n'
 
 //var csv_file = 'sample_70_failedcheckout_session_table_debenhams-progressive_2017-10-19_2017-11-22.csv'
 //debenhams data with myBeautyClub in eliterewards
-//var csv_file = 'sample_200000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
+var csv_file = 'sample_200000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
 //var csv_file = 'sample_1000000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
 
 //debenhams data
@@ -31,7 +31,7 @@ var alpha_file = "alphabet_17-09-26.csv"; //without 'n'
 
 
 //all lancome data
-var csv_file = 'sample_1000000_session_table_lancome_2017-09-01_2017-11-08.csv'
+//var csv_file = 'sample_1000000_session_table_lancome_2017-09-01_2017-11-08.csv'
 //var csv_file = 'sample_500000_session_table_lancome_2017-09-01_2017-11-08.csv'
 //var csv_file = 'sample_100000_session_table_lancome_2017-09-01_2017-11-08.csv'
 
@@ -49,7 +49,7 @@ var selectedFilter ={},
     seq_data;
 
 var dataset_name = csv_file.substring(0, csv_file.indexOf('.'))
-dataset_name = 'D1_sample_1M'
+dataset_name = 'D2_sample_200K'
 $('#dataset_name').text('for ' + dataset_name)
 
 //--------Setting up Action Hierarchy------>
@@ -7414,7 +7414,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
           var title_div = chart_div.append('div').style('margin-top','14px').attr('class', 'action-icon')
           title_div.append('span')
-                  .style('font-size', '11px')
+                  // .style('font-size', '11px')
+                  .attr('class', 'title')
                   .text('# of ' +action_counted)
 
           title_div.append('svg')

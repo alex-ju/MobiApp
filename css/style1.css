@@ -39,6 +39,7 @@
    margin-top:2px !important;
 }
 
+
 .node text {
   font: 12px sans-serif;
 }
@@ -170,7 +171,7 @@ html, body {
 }
 
 body{
-  font-size: 12px !important;
+  font-size: 11px !important;
 }
 
 
@@ -420,6 +421,14 @@ input {
   font-size:12px;
   fill:black;
   text-anchor: middle;
+  font-weight: 400;
+}
+
+label.standard-text {
+  font-size:11px;
+  fill:black;
+  text-anchor: middle;
+  font-weight: 400;
 }
 
 .warning-text{
@@ -435,6 +444,8 @@ input {
 .title{
   /*margin-top:18px;*/
   font-size: 12px;
+  font-weight: 500;
+
 }
 
 .close{
@@ -649,6 +660,19 @@ input {
 .time-dropdown button{
   font-size:10px;
   width:100%;
+}
+
+span#min_percent-value::after {
+    content: "%";
+}
+
+#min_percent-box {
+    display: inline-block;     
+    background: #e6e6e6;
+    padding: 1px 4px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 10px;
 }
 
 /*----------*/

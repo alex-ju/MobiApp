@@ -228,16 +228,16 @@
                     
                     <button type="button" id='level_label' 
                       class="btn btn-select"
-                      data-toggle="dropdown">General</button>
+                      data-toggle="dropdown">Roll-up</button>
                     <ul class="dropdown-menu dropdown-menu-select">
                       <li>
-                          <button type="button" id="general" class="btn btn-primary level_button" disabled>General</button>
+                          <button type="button" id="general" class="btn btn-primary level_button" disabled>Roll-up</button>
                       </li>
                       <li>
-                           <button type="button" id="grouped" class="btn btn-primary level_button">Grouped</button>
+                           <button type="button" id="grouped" class="btn btn-primary level_button">Mid-level</button>
                       </li>
                       <li>
-                           <button type="button" id="pages" class="btn btn-primary level_button">Pages</button>
+                           <button type="button" id="pages" class="btn btn-primary level_button">Detailed</button>
                       </li>
                     </ul>
                   </div>
@@ -330,22 +330,34 @@
                       <div class="panel-body">
                         <div class="charts">
                           <div class= "chart" id="contains_action_chart">
-                            <div class="title"> Number of Sequences that Contain Action </div>
+                            <div class="title" style="text-align: center;"> Number of Sequences that Contain Action </div>
                           </div>
                           <div style="display:block">
-                            <div>
-                              <label for="min_percent" class="standard-text"
+                            <div class="title" style="text-align: center;"> Action Transition Network</div>
+                            <div style= "display: block;  margin: 5px 0;" >
+                              <!-- <label for="min_percent" class="standard-text"
                                      style="display: inline-block; width: 250px; text-align: center">
                                      min visible link % = <span id="min_percent-value">0</span>
-                              </label>
-                              <input type="range" min="0" max="100" id="min_percent">
+                              </label> -->
+                              <!-- <div for="min_percent"
+                                     style="text-align: right; display: inline-block; width:50%">
+                                     min visible link % = <span id="min_percent-value">0</span>
+                              </div> -->
+                              <div for="min_percent"
+                                     style="text-align: right; display: inline-block; line-height:20px; margin-right:5px">
+                                     min visible link:
+                              </div>
+                              <div  style="text-align: center; display: inline-block; width:50%; vertical-align: middle; margin-top: -2px;">
+                                <input type="range" min="0" max="100" id="min_percent" style="">
+                              </div>
+                              <div id = min_percent-box> <span id="min_percent-value">0</span> </div>
                             </div>
                             <div class="text-center">
                               <div class="radio-inline">
-                                <label class="link_percent_radio standard-text"><input checked type="radio" id= "outgoing_links" name="link_percent_radio">width by outgoing %</label>
+                                <label class="standard-text"><input checked type="radio" id= "outgoing_links" name="link_percent_radio">width by outgoing %</label>
                               </div>
                               <div class="radio-inline">
-                                <label class="link_percent_radio standard-text"><input type="radio" id="incoming_links" name="link_percent_radio">width by incoming %</label>
+                                <label class="standard-text"><input type="radio" id="incoming_links" name="link_percent_radio">width by incoming %</label>
                               </div>
                             </div>
                             <div class ="chart" id="node_link">
@@ -354,6 +366,7 @@
                             </div>
                           </div>
                           <div class="chart" id="adjacency_chart">
+                            <div class="title" style="text-align: center;"> Action Adjacency View </div>
                             <div id="tooltip" class="hidden">
                               <p><span id="value">100</span></p>
                             </div>
