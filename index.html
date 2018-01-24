@@ -222,9 +222,20 @@
             <div class="panel panel-info">
               <div class="panel-heading" style="font-size:13px">       
                 <a data-toggle="collapse" href="#collapse_segment"> Segment Inspector</a>
-                <div class="inline align-center" style="position: absolute; right: 2px; top:2px;">
+                <div class="inline align-center" style="position: absolute; right: 5px; top:10px;">
                   <div>Action Level:</div>
-                  <div class="dropdown level" style="margin-left:5px;">
+                  <div style="margin-left: 10px;">
+                    <div class="radio-inline">
+                      <label class="level_radio level-text"><input checked type="radio" id= "general" name="levelradio">Roll-up</label>
+                    </div>
+                    <div class="radio-inline">
+                      <label class="level_radio level-text"><input type="radio" id="grouped" name="levelradio">Mid-level</label>
+                    </div>
+                    <div class="radio-inline">
+                      <label class="level_radio level-text"><input type="radio" id="pages" name="levelradio">Detailed</label>
+                    </div>
+                  </div>
+                  <!-- <div class="dropdown level" style="margin-left:5px;">
                     
                     <button type="button" id='level_label' 
                       class="btn btn-select"
@@ -240,7 +251,7 @@
                            <button type="button" id="pages" class="btn btn-primary level_button">Detailed</button>
                       </li>
                     </ul>
-                  </div>
+                  </div> -->
                 </div>              
               </div>
               <div id="collapse_segment" class="panel-body collapse in">
@@ -335,14 +346,6 @@
                           <div style="display:block">
                             <div class="title" style="text-align: center;"> Action Transition Network</div>
                             <div style= "display: block;  margin: 5px 0;" >
-                              <!-- <label for="min_percent" class="standard-text"
-                                     style="display: inline-block; width: 250px; text-align: center">
-                                     min visible link % = <span id="min_percent-value">0</span>
-                              </label> -->
-                              <!-- <div for="min_percent"
-                                     style="text-align: right; display: inline-block; width:50%">
-                                     min visible link % = <span id="min_percent-value">0</span>
-                              </div> -->
                               <div for="min_percent"
                                      style="text-align: right; display: inline-block; line-height:20px; margin-right:5px">
                                      min visible link:
@@ -353,11 +356,12 @@
                               <div id = min_percent-box> <span id="min_percent-value">0</span> </div>
                             </div>
                             <div class="text-center">
+                              <div style="display: inline-block; margin-right: 5px">link-width by: </div>
                               <div class="radio-inline">
-                                <label class="standard-text"><input checked type="radio" id= "outgoing_links" name="link_percent_radio">width by outgoing %</label>
+                                <label class="level_radio standard-text"><input checked type="radio" id= "outgoing_links" name="link_percent_radio">outgoing %</label>
                               </div>
                               <div class="radio-inline">
-                                <label class="standard-text"><input type="radio" id="incoming_links" name="link_percent_radio">width by incoming %</label>
+                                <label class="level_radio standard-text"><input type="radio" id="incoming_links" name="link_percent_radio">incoming %</label>
                               </div>
                             </div>
                             <div class ="chart" id="node_link">

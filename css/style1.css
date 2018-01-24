@@ -328,7 +328,7 @@ top: 1em;
 
 
 
-.range_radio {
+label.range_radio {
 
   font-size: 12px;
   font-family: sans-serif;
@@ -673,6 +673,21 @@ span#min_percent-value::after {
     border-radius: 4px;
     text-align: center;
     font-size: 10px;
+}
+
+label.level-text {
+  font-size: 12px;
+  font-family: sans-serif;
+  font-weight: normal;
+}
+
+label.level_radio{
+  margin-bottom: 0;
+  
+}
+
+label.level_radio input{
+  margin: 0px 0 0;
 }
 
 /*----------*/
