@@ -559,7 +559,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
       $('#general').click(function() {
           $('#load').show();
          
-          change_level_button('#general')
+          // change_level_button('#general')
           setTimeout(function() {
               change_level(general)
               $('#load').hide();
@@ -568,7 +568,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
       });
       $('#grouped').click(function() {
           $('#load').show();
-          change_level_button('#grouped')
+          // change_level_button('#grouped')
           setTimeout(function() {
               change_level(grouped)
               $('#load').hide();
@@ -576,7 +576,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
       });
       $('#pages').click(function() {
           $('#load').show();
-          change_level_button('#pages')
+          // change_level_button('#pages')
           setTimeout(function() {
               change_level(actions)
               $('#load').hide();
@@ -853,14 +853,14 @@ d3.csv(csv_path+csv_file, function(error, data) {
         print_sequences()
       }
       
-      function change_level_button(id){
-        $('.level_button').prop('disabled', false);
+      // function change_level_button(id){
+      //   $('.level_button').prop('disabled', false);
 
-        $(id).prop('disabled', true);
-        //update the text
-        var checkedtext = $(id).text();
-        $('#level_label').text( checkedtext );
-      }
+      //   $(id).prop('disabled', true);
+      //   //update the text
+      //   var checkedtext = $(id).text();
+      //   $('#level_label').text( checkedtext );
+      // }
 
       function change_time_interval(t){
         new_selection = true
@@ -3044,10 +3044,16 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
         width = (width < $('#sequences_text').width())? $('#sequences_text').width(): width;
 
+
+
         seq_svg.attr('width', width)
               .attr('height', height)
 
-        $('#sequences_text').css('height', height)
+        //**SETTING FIXED HEIGHT OF SEQUENCE DETAILS VIEW
+        var view_height =  700;
+
+        // $('#sequences_text').css('height', height)
+        $('#sequences_text').css('height', view_height)
 
 
       }
