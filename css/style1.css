@@ -143,8 +143,12 @@
   shape-rendering: crispEdges;
 }
 
+.range_bar text{
+  font: 11px sans-serif;
+}
+
 .axis text {
-  font: 10px sans-serif;
+  font: 12px sans-serif;
 }
 
 .noAxis path, .noAxis line {
@@ -171,7 +175,7 @@ html, body {
 }
 
 body{
-  font-size: 11px !important;
+  font-size: 13px !important;
 }
 
 
@@ -418,7 +422,7 @@ input {
 }
 
 .standard-text{
-  font-size:12px;
+  font-size:13px;
   fill:black;
   text-anchor: middle;
   font-weight: 400;

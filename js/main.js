@@ -20,7 +20,7 @@ var alpha_file = "alphabet_17-09-26.csv"; //without 'n'
 
 //var csv_file = 'sample_70_failedcheckout_session_table_debenhams-progressive_2017-10-19_2017-11-22.csv'
 //debenhams data with myBeautyClub in eliterewards
-var csv_file = 'sample_200000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
+//var csv_file = 'sample_200000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
 //var csv_file = 'sample_1000000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
 
 //debenhams data
@@ -33,7 +33,7 @@ var csv_file = 'sample_200000_session_table_debenhams-progressive_2017-10-19_201
 //all lancome data
 //var csv_file = 'sample_1000000_session_table_lancome_2017-09-01_2017-11-08.csv'
 //var csv_file = 'sample_500000_session_table_lancome_2017-09-01_2017-11-08.csv'
-//var csv_file = 'sample_100000_session_table_lancome_2017-09-01_2017-11-08.csv'
+var csv_file = 'sample_100000_session_table_lancome_2017-09-01_2017-11-08.csv'
 
 
 //with client ids
@@ -49,7 +49,8 @@ var selectedFilter ={},
     seq_data;
 
 var dataset_name = csv_file.substring(0, csv_file.indexOf('.'))
-dataset_name = 'D2_sample_200K'
+dataset_name = 'D1_sample_1M'
+ //dataset_name = 'D2_sample_200K'
 $('#dataset_name').text('for ' + dataset_name)
 
 //--------Setting up Action Hierarchy------>
@@ -301,10 +302,13 @@ var colors = {
   "search": "#f4d403",
   "pageview": "#0073B9",
   'offlineModeUsed': '#7F7F7F',
-  'appStart': '#e0e0e0',
+  // 'appStart': '#e0e0e0',
+  'appStart': '#d8d6d6',
   "appDisplayError": "#000",
-  "start": "#999",
-  "exit": "#999",
+  // "start": "#999",
+  // "exit": "#999",
+  "start": "#636363",
+  "exit": "#636363",
   "extra": 'black',
   'account_group': '#8C564B',
   'browse_group': '#1F77B4',
@@ -393,6 +397,8 @@ var time_constants={
 
 var interval = 'hours'
   
+// ====================== LOAD CSV FILE ============================ //
+
 //------->Loading in alphabet and sequence files
 d3.csv(csv_path+csv_file, function(error, data) {
   if (error) throw error;
@@ -411,6 +417,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
         d.end = parseDate(d.end);
         d.duration = d.end -d.start;
       });
+
 
       alphabet = {},
       alphabet_rev = {};
@@ -431,6 +438,9 @@ d3.csv(csv_path+csv_file, function(error, data) {
       data = seq_data;
       //data = client_data;
       console.log('NUMBER OF DATA POINTS', data.length)
+
+
+
 
       //------> create crossfilter instance and dimensions
       var seqs = crossfilter(data),
@@ -478,6 +488,11 @@ d3.csv(csv_path+csv_file, function(error, data) {
           trans_strings = general_trans_strings,
           strings_grouped = action_strings2.group(),
           trans_grouped = trans_strings.group();
+
+      totalActions = all.reduceSum(function(d){return d.len})
+      totalseqs = all.reduceCount()
+      console.log('total # of actions: ', totalActions.value())
+      console.log('total # of seuences: ', totalseqs.value())
 
       //store dimensions for each level of hierachy
       var action_filter_dimensions = {};
@@ -2405,7 +2420,12 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
 
       var contains_not_color = '#94989e'
-      var contains_not_bg_color = '#c5c8cc'
+      // var contains_not_bg_color = '#c5c8cc'
+      var contains_not_bg_color = "#b5b8bc"
+      // "#bec2c6"
+      // "#a1a4a8"
+       // "#9fa3a8"
+      // #a6a9ad
 
       // var pb_svg = d3.select('#pb_svg').append('svg')
       //               .attr('height', 400)
@@ -2429,8 +2449,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
               .css({
                 'curve-style': 'bezier',
                 'target-arrow-shape': 'triangle',
-                'target-arrow-color': 'darkgray',
-                'line-color': 'darkgray',
+                'target-arrow-color': '#626468',
+                'line-color': '#626468',
                 'font-size': 12,
                 'width': 1
                 //'label': 'data(value)'
@@ -3532,6 +3552,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
       }
 
+      // var operation_info_bkgrd = '#f2f6ff';
+      var operation_info_bkgrd = '#ffffff';
 
       function update_node_info_view(data){
 
@@ -3659,7 +3681,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
                         return h;
                       })
-                      .attr('fill', '#f2f6ff')
+                      .attr('fill', operation_info_bkgrd)
 
         var operation_nodes = operationEnter.append('g')
                             .attr("class", function(d) { return d.type; })                  
@@ -3871,7 +3893,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
         text.enter()
           .append('text')
           .attr("dy", function(d,i){ return i+3 +"em";})
-          .style("font-size", (textHeight-1)+"px")
+          // .style("font-size", (textHeight-1)+"px")
+          .style("font-size", "10px")
           .style("text-anchor", "left")
           .style('fill', 'black')
           .text(function(d) {return d;})
@@ -4377,7 +4400,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
               return 0;
             }
           })
-          .style("font-size", "10px")
+          .style("font-size", "13px")
           .style("fill", "black")
           //.style("text-anchor", "middle")
           .style("text-anchor", function(d){
@@ -4835,10 +4858,14 @@ d3.csv(csv_path+csv_file, function(error, data) {
               
               axis.scale(x);
 
+              console.log('x axis range', x.domain())
+
               
               
               //remove if change date chart range back to 300
               if (typeof(x_min) != 'number'){
+                width = x.range()[1];
+                brush.extent([[0,0], [width, height]]);
                 axis.ticks(4)
                 axis.scale(x)
 
@@ -5041,6 +5068,10 @@ d3.csv(csv_path+csv_file, function(error, data) {
             //   bar_width = 8;
             //   //n_groups = n;
             // ;
+
+            if (typeof x.domain()[1] != "number"){
+              bar_width = Math.floor(width/n) + 1
+            }
             
             while (++i < n) {
               d = groups[i];

@@ -4,12 +4,16 @@ pages = 'action_strings'
 actions = 'general_actions'
 
 path = 'sequence_table/'
+# path = 'sample_table/'
+
+# session_table_csv = 'sample_1000000_session_table_lancome_2017-09-01_2017-11-08.csv'
+
 # session_table_csv = 'session_table_debenhams-progressive_2017-10-19_2017-11-20_sampling_1_over_1.csv'
-session_table_csv = 'session_table_debenhams-progressive_2017-10-19_2017-11-22_sampling1_1_over_1.csv'
+# session_table_csv = 'session_table_debenhams-progressive_2017-10-19_2017-11-22_sampling1_1_over_1.csv'
 #session_table_csv = 'failedcheckout_session_table_debenhams-progressive_2017-10-19_2017-11-22.csv'
-#session_table_csv = 'session_table_debenhams-progressive_2017-10-19_2017-11-22_clientsampling1_1_over_1.csv'
+session_table_csv = 'session_table_debenhams-progressive_2017-10-19_2017-11-22_clientsampling1_1_over_1.csv'
 # session_table_csv = 'session_table_17-09-26.csv'
-#session_table_csv = 'session_table_lancome_2017-09-01_2017-11-08.csv'
+# session_table_csv = 'session_table_lancome_2017-09-01_2017-11-08.csv'
 client_table_csv = 'client_table_17-10-13.csv'
 table_csv = session_table_csv
 session_table = pd.read_csv(path + table_csv)
@@ -28,14 +32,22 @@ n = 1000000
 #n =len(session_table)
 
 size = len(session_table.index)
-print(size)
-print(n)
+print(table_csv)
 
-print('Total actions:')
+print('Total rows:')
+print(size)
+print('Total actions in all rows:')
 print(session_table.len.sum())
 
 
-sample = session_table.iloc[n:]
+print('sample n chosen:')
+print(n)
+
+sample = session_table.iloc[:n]
+print('Total sample rows:')
+print(len(sample.index))
+print('Total actions in sample rows:')
+print(sample.len.sum())
 
 
 new_table = session_table.iloc[:n]
