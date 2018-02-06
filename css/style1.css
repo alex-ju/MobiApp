@@ -17,7 +17,32 @@
 }
 
 .action {
-    cursor: pointer;
+  cursor: pointer;
+}
+
+.action text{
+  font-size: 12px;
+  fill:black;
+}
+
+.segment text, .center_node text{
+  font-size: 12px;
+  fill:black;
+  text-anchor: middle;
+
+}
+
+.axis-label{
+  font-size: 11px;
+  fill:black;
+  text-anchor: middle;
+}
+
+
+
+.noAxis text{
+  font-size: 12px;
+  fill:black;
 }
 
 .partition{
@@ -175,7 +200,7 @@ html, body {
 }
 
 body{
-  font-size: 13px !important;
+  font-size: 12px !important;
 }
 
 
@@ -680,7 +705,7 @@ span#min_percent-value::after {
 }
 
 label.level-text {
-  font-size: 12px;
+  font-size: 14px;
   font-family: sans-serif;
   font-weight: normal;
 }
@@ -691,7 +716,11 @@ label.level_radio{
 }
 
 label.level_radio input{
-  margin: 0px 0 0;
+  margin: 4px 0 0;
+}
+
+label.ATN_radio input{
+  margin: 2px 0 0;
 }
 
 /*----------*/

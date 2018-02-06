@@ -210,7 +210,7 @@
             <button type="button" id="toggle_oManager" class="btn btn-default right-buffer"><span class="glyphicon glyphicon-cog"></span>
             </button>
           </div>
-          <h4 class="text-center"> 
+          <h4 class="text-center panel-title"> 
           Analysis Paths 
           </h4>
           <h5 class="text-center" id='dataset_name'> 
@@ -223,9 +223,9 @@
           <div class="panel-group" id="segment_info">
             <div class="panel panel-info">
               <div class="panel-heading" style="font-size:13px">       
-                <a data-toggle="collapse" href="#collapse_segment"> Segment Inspector</a>
-                <div class="inline align-center" style="position: absolute; right: 5px; top:10px;">
-                  <div>Action Level:</div>
+                <a class="panel-title" data-toggle="collapse" href="#collapse_segment"> Segment Inspector</a>
+                <div class="inline align-center" style="position: absolute; right: 10px; top:10px;">
+                  <div style= "font-size: 14px">Action Level:</div>
                   <div style="margin-left: 10px;">
                     <div class="radio-inline">
                       <label class="level_radio level-text"><input checked type="radio" id= "general" name="levelradio">Roll-up</label>
@@ -291,13 +291,13 @@
                                   </div>
 
 
-                                  <div class="title"> Duration chart (L)</div>
+                                  <div class="title"> Duration (L)</div>
                                 </div>
                                 <div class="chart range_chart" id="hour_chart"> 
-                                    <div class="title"> Start hour chart (H) </div>
+                                    <div class="title"> Start Hour (H) </div>
                                 </div>
                                 <div class="chart range_chart" id="weekday_chart"> 
-                                    <div class="title"> Weekday chart (W) </div>
+                                    <div class="title"> Weekday (W) </div>
                                 </div>
                                 <div class="chart range_chart" id="date_chart"> 
                                     <div class="title"> Start Date (D) </div>
@@ -319,7 +319,7 @@
                               </div>
                               <div id="count_charts" class="charts">
                                 <div class="chart range_chart" id="len_chart"> 
-                                  <div class="title"> Number of Actions 
+                                  <div class="title"> # of Total Actions 
                                   </div>
                                 </div>
                                 
@@ -343,7 +343,7 @@
                       <div class="panel-body">
                         <div class="charts">
                           <div class= "chart" id="contains_action_chart">
-                            <div class="title" style="text-align: center;"> Number of Sequences that Contain Action </div>
+                            <div class="title" style="text-align: center;"> Number of Sequences That Contain Action </div>
                           </div>
                           <div style="display:block">
                             <div class="title" style="text-align: center;"> Action Transition Network</div>
@@ -360,10 +360,10 @@
                             <div class="text-center">
                               <div style="display: inline-block; margin-right: 5px">link-width by: </div>
                               <div class="radio-inline">
-                                <label class="level_radio standard-text"><input checked type="radio" id= "outgoing_links" name="link_percent_radio">outgoing %</label>
+                                <label class="ATN_radio standard-text"><input checked type="radio" id= "outgoing_links" name="link_percent_radio">outgoing %</label>
                               </div>
                               <div class="radio-inline">
-                                <label class="level_radio standard-text"><input type="radio" id="incoming_links" name="link_percent_radio">incoming %</label>
+                                <label class="ATN_radio standard-text"><input type="radio" id="incoming_links" name="link_percent_radio">incoming %</label>
                               </div>
                             </div>
                             <div class ="chart" id="node_link">
@@ -391,7 +391,7 @@
                     <div id="collapse_details" class="panel-collapse collapse in">
                       <div class="panel-body">
                         <div id="sequences">
-                          <label class="checkbox-inline"><input id="group_sequences" type="checkbox" checked="checked" value="">Group Sequences</label>
+                          <!-- <label class="checkbox-inline"><input id="group_sequences" type="checkbox" checked="checked" value="">Group Sequences</label> -->
                           <label class="checkbox-inline"><input id="transitionize_sequences" type="checkbox" value="">Collapse Consecutive</label>
                           <!-- <label class="checkbox-inline"><input id="visify_sequences" type="checkbox" checked="checked" value="">Include Action Color</label>
                           <label class="checkbox-inline"><input id="include_character" type="checkbox" checked="checked" value="">Include Character</label> -->

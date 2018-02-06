@@ -438,7 +438,14 @@ d3.csv(csv_path+csv_file, function(error, data) {
       data = seq_data;
       //data = client_data;
       console.log('NUMBER OF DATA POINTS', data.length)
-
+      var weekday_name = new Array(7);
+          weekday_name[0] =  "S";
+          weekday_name[1] = "M";
+          weekday_name[2] = "T";
+          weekday_name[3] = "W";
+          weekday_name[4] = "T";
+          weekday_name[5] = "F";
+          weekday_name[6] = "S";
 
 
 
@@ -765,7 +772,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
           barChart()
             .dimension(weekday)
             .filter_dimension(weekday_filter)
-            .dim_name('Weekday (Sunday:0)')
+            .dim_name('Weekday')
             .category('time')
             .group(weekdays)
             .round(Math.round)
@@ -1628,7 +1635,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
       var margin_ac = {top: 15, right: 15, bottom: 15, left: 15},
         adj_svg_height = 200,
-        adj_svg_width = 240,
+        // adj_svg_width = 240,
+        adj_svg_width = 300,
         width_ac = adj_svg_width - margin_ac.left - margin_ac.right,
         height_ac = adj_svg_height - margin_ac.top - margin_ac.bottom,
         adj_svg = d3.select("#adjacency_chart").append('svg')
@@ -1791,7 +1799,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
             total += d.count;
 
             //node coordinates
-            d.x = (bar_data.type == 'before')? width_ac/7: width_ac*(6/7);
+            // d.x = (bar_data.type == 'before')? width_ac/7: width_ac*(6/7);
+            d.x = (bar_data.type == 'before')? width_ac/6: width_ac*(5/6);
             d.y = ((height_ac - (data.length-1)*node_spacing)/2) + (node_spacing*i);
 
             if (bar_data.type == 'before'){
@@ -1950,9 +1959,9 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
             adj_node.append('text')
                 .attr('dy', -(node_radius+1))
-                .style("font-size", "10px")
-                .style("text-anchor", "middle")
-                .style('fill', 'black')
+                // .style("font-size", "10px")
+                // .style("text-anchor", "middle")
+                // .style('fill', 'black')
                 .text(selected_action_node.action)
 
 
@@ -1996,9 +2005,9 @@ d3.csv(csv_path+csv_file, function(error, data) {
                   else
                     return -(node_radius+1)
                 })
-                .style("font-size", "10px")
+                //.style("font-size", "10px")
                 .style("text-anchor", "middle")
-                .style('fill', 'black')
+                //.style('fill', 'black')
                 .text(function(d){return d.action})
 
           var node_update = node_enter.merge(node);
@@ -2604,7 +2613,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
 
       var al_actions = al_svg.append('g')
-                        .attr("transform", "translate(" + (node_radius*2) + "," + ((node_radius*2)+2) + ")")
+                        .attr("transform", "translate(" + (node_radius*2) + "," + ((node_radius*2)+5) + ")")
       
       update_action_list_data()
 
@@ -2666,7 +2675,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
         action_enter.append('text')
             .style('fill', 'black')
-            .style("font-size", "10px")
+            //.style("font-size", "10px")
+            //.style("font-size", "12px")
             //.style("text-anchor", "middle")
             .style("text-anchor", "left")
             .attr('dx', -(node_radius+2))
@@ -3425,7 +3435,10 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
 
           operations.forEach(function(o,i){
-            if ((i == (n-1)) && !show_all_text)
+
+            // COMMENTED OUT TO SHOW ALL OPERATION DATA
+            // if ((i == (n-1)) && !show_all_text)
+
               show_all_text = true;
 
             var o_data = get_operation_data(o, show_all_text)
@@ -3524,7 +3537,13 @@ d3.csv(csv_path+csv_file, function(error, data) {
         info_data.partition_data = []
         info_data = update_node_info_data(operations, show_all_text )
         var n_ops = info_data.operation_data.length
-        shown_idx = (n_ops>0)?[n_ops -1]: []
+        // shown_idx = (n_ops>0)?[n_ops -1]: []
+        
+        // ADDED THIS TO MAKE ALL OPERATIONS SHOW
+        shown_idx = []
+        for(var i=0; i < n_ops;i++){
+          shown_idx.push(i)
+        }
         update_node_info_view(info_data)
 
 
@@ -3893,8 +3912,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
         text.enter()
           .append('text')
           .attr("dy", function(d,i){ return i+3 +"em";})
-          // .style("font-size", (textHeight-1)+"px")
-          .style("font-size", "10px")
+          .style("font-size", (textHeight-1)+"px")
+          //.style("font-size", "10px")
           .style("text-anchor", "left")
           .style('fill', 'black')
           .text(function(d) {return d;})
@@ -4866,9 +4885,16 @@ d3.csv(csv_path+csv_file, function(error, data) {
               if (typeof(x_min) != 'number'){
                 width = x.range()[1];
                 brush.extent([[0,0], [width, height]]);
-                axis.ticks(4)
-                axis.scale(x)
+                axis.ticks(4);
+                axis.scale(x);
 
+              }
+
+
+            
+              if (dim_name == "Weekday"){
+                axis.tickFormat(function(d){ return weekday_name[d]? weekday_name[d] : ""; })
+                axis.scale(x);
               }
 
 
@@ -4937,10 +4963,14 @@ d3.csv(csv_path+csv_file, function(error, data) {
               g.selectAll(".foreground.bar")
                   .attr("clip-path", "url(#clip-" + id + ")");
 
-              g.append("g")
+              var chart_axis = g.append("g")
                   .attr("class", "axis")
                   .attr("transform", "translate(0," + height + ")")
                   .call(axis);
+
+              if (dim_name == "Weekday"){
+                chart_axis.selectAll('text').attr('x', 5)
+              }
 
 
               g.append("g")
@@ -4948,23 +4978,25 @@ d3.csv(csv_path+csv_file, function(error, data) {
                   .call(axisY);
               //set up y axis title
               g.append("text")
+                .attr('class', 'axis-label')
                 .attr("transform", "rotate(-90)")
                 .attr("y", 0 - margin.left)
                 .attr("x",0 - (height / 2))
                 .attr("dy", "1em")
-                .style("text-anchor", "middle")
-                .style("font-size", "10px")
-                .style("fill","black")
+                // .style("text-anchor", "middle")
+                // .style("font-size", "10px")
+                // .style("fill","black")
                 .text("# of Sequences"); 
 
               //set up x axis title
-              g.append("text")             
+              g.append("text")
+                .attr('class', 'axis-label')             
                 .attr("transform",
                       "translate(" + (width/2) + " ," + 
                                      (height + margin.top + 20) + ")")
-                .style("font-size", "10px")
-                .style("text-anchor", "middle")
-                .style("fill","black")
+                // .style("font-size", "10px")
+                // .style("text-anchor", "middle")
+                // .style("fill","black")
                 .text(dim_name);
 
 
@@ -5544,8 +5576,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
         segment_nodes.append("text")
           .attr("dy", ".15em")
           .attr("y", function(d) { return d.children ? -0 : 0; })
-          .style("font-size", "10px")
-          .style("text-anchor", "middle")
+          // .style("font-size", "10px")
+          // .style("text-anchor", "middle")
           .text(function(d) { return d.data.size? d3.format(",")(d.data.size): ''; });
         
 
@@ -6255,7 +6287,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
           axis_translate = node_radius*2;
       var n_actions = current_level.length -2
       //var hc_svg_height = (n_actions>10)? (n_actions*15 +margin_hc.top +margin_hc.bottom):200;
-      var margin_hc = {top: 20, right: 0, bottom: 20, left: 110},
+      var margin_hc = {top: 20, right: 0, bottom: 20, left: 115},
         hc_svg_height = (n_actions>10)? (n_actions*16 +margin_hc.top +margin_hc.bottom):200,
         hc_svg_width =  250,
         width_hc = hc_svg_width - margin_hc.left - margin_hc.right,
