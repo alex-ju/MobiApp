@@ -659,14 +659,14 @@ label.standard-text {
 .seq{
   cursor: pointer;
 }
-.seq text{
-  font-size: 10px;
+/*.seq text{
+  font-size: 12px;
   /*fill:black;*/
-}
-.count{
+}*/
+/*.count{
   font-size: 11px;
   fill:black;
-}
+}*/
 
 .top-bottom{
   stroke:black;

@@ -2907,10 +2907,13 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
       function update_sequences(){
 
-         var w = transitionized ? 15: 11,
-            h = 9,
-              max_i=0,
-              vsep =h+5;
+        // var w = transitionized ? 15: 11,
+        //     h = 9,
+        var seqText_size = 12;
+        var w = transitionized ? seqText_size+5: seqText_size+1,
+            h = seqText_size -1,
+            max_i=0,
+            vsep =h+5;
         
         var seq = seqs_details.selectAll('.seq')
                           .remove()
@@ -2963,6 +2966,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
                 .attr('x', w/2)
                 .attr('class', 'seq_text')
                 .style('text-anchor', 'middle')
+                .style('font-size', seqText_size + 'px')
                 .text(function(d){
                   return include_character? (transitionized? d + '+':d) : '';
                   //return ''
@@ -2971,14 +2975,15 @@ d3.csv(csv_path+csv_file, function(error, data) {
                   var action = alphabet_rev[d];
                   return get_foreground_color(color(action))
                 })
-        } else{
+        } 
+        // else{
 
-          var seq_text = seq_enter.append('text')
-                            .attr('class', 'seq_text')
-                            .style('font-size', '12px')
-                            .text(function(d){return d.seq;})   
+        //   var seq_text = seq_enter.append('text')
+        //                     .attr('class', 'seq_text')
+        //                     .style('font-size', '12px')
+        //                     .text(function(d){return d.seq;})   
 
-        }
+        // }
 
         var seq_update = seq_enter.merge(seq)
 
@@ -2999,7 +3004,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
                   .data(d => d.count.data)
          
         var bar_enter = bar.enter().append('g')
-                          .attr('transform', function(d,i){return 'translate(0,' + (-8) +')'})
+                          .attr('transform', function(d,i){return 'translate(0,' + (-h+1) +')'})
 
         
 
@@ -3017,7 +3022,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
         
         var count_text = count_enter.append('text')
-                            .attr('class', 'count_text')
+                            .style('font-size', seqText_size+1 + 'px')
                             .text(function(d){return d.count.value;})
 
         var width =0,
@@ -3028,13 +3033,14 @@ d3.csv(csv_path+csv_file, function(error, data) {
         if (visify){
           width= max_i*(w+1) +count_width + 50;
 
-        }else{
-          seq_svg.selectAll('.seq_text')
-                  .each(function(){
-                    var w = this.getComputedTextLength();
-                    width = (w>width)? w: width;
-                  })
         }
+        // else{
+        //   seq_svg.selectAll('.seq_text')
+        //           .each(function(){
+        //             var w = this.getComputedTextLength();
+        //             width = (w>width)? w: width;
+        //           })
+        // }
 
         width = (width < $('#sequences_text').width())? $('#sequences_text').width(): width;
 
