@@ -1,9 +1,9 @@
-function visibleWidth(){
-   return window.innerWidth||document.documentElement.clientWidth||document.body.clientWidth||0;
-}
-function visibleHeight(){
-   return window.innerHeight||document.documentElement.clientHeight||document.body.clientHeight||0;
-}
+// function visibleWidth(){
+//    return window.innerWidth||document.documentElement.clientWidth||document.body.clientWidth||0;
+// }
+// function visibleHeight(){
+//    return window.innerHeight||document.documentElement.clientHeight||document.body.clientHeight||0;
+// }
 
 $(document).ready(function(){
   $('#load').hide()
@@ -2025,15 +2025,18 @@ d3.csv(csv_path+csv_file, function(error, data) {
         if (d.selected){
           var bar_position = d.translate
           //var xPosition = (d.translate == 0)? -65 :d.translate + bar_width;
-          var xPosition = (d.translate == 0)? 0 :d.translate + bar_width;
+          
+          var xPosition,
+              yPosition;
           // var yPosition = bar_len(d.x0 +((d.x1-d.x0)/2)) 
-
-
-          xPosition += margin_ac.left
+          
 
           var data =[d]
 
-          if (d.action == 'extra') data =data.concat(d.actions)
+          if (d.action == 'extra') data =data.concat(d.actions);
+
+
+          
           
           var text = ''
 
@@ -2045,22 +2048,24 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
           
           d3.select("#tooltip")
-              .style("left", xPosition + "px")
+              .classed("hidden", false)
               //.style("top", yPosition + "px")
               .select("#value")
               .html(text);
 
-
-          d3.select("#tooltip").classed("hidden", false);
-          var yPosition = bar_len(d.x1) - $("#tooltip").height()
-          d3.select("#tooltip")
-              .style("top", yPosition + "px")
-
-          if (d.translate==0){
-            var xPosition = (-$("#tooltip").width()+ margin_ac.left)
-             d3.select("#tooltip")
-              .style("left", xPosition + "px")
+          if (d.action == 'extra'){
+            xPosition = (d.translate == 0)? 0 : d.translate - $("#tooltip").width();
+            yPosition = bar_length + margin_ac.top + 20;
+          } else{
+            xPosition = (d.translate == 0)? -$("#tooltip").width() :d.translate + bar_width;
+            yPosition = bar_len(d.x1) - $("#tooltip").height()
           }
+          xPosition += margin_ac.left
+
+          
+          d3.select("#tooltip")
+              .style("left", xPosition + "px")
+              .style("top", yPosition + "px")
 
         }
         
@@ -3026,8 +3031,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
                             .text(function(d){return d.count.value;})
 
         var width =0,
-            h = (details_data.length+1)*15,
-            height = (h <200)? 200: h;
+            svg_h = (details_data.length+1)*(vsep),
+            height = (svg_h <200)? 200: svg_h;
             //width= max_i*(w+1) +count_width + 50;
             
         if (visify){
@@ -3054,6 +3059,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
         // $('#sequences_text').css('height', height)
         $('#sequences_text').css('height', view_height)
+        $('#sequences').css('height', view_height +100)
 
 
       }
@@ -3688,7 +3694,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
                 })
                 max_vTranslate = tt;
 
-                return "translate(" + 0 + "," + (i*(oWidth + sep)+x+tt) + ")";
+                return "translate(" + 5 + "," + (i*(oWidth + sep)+x+tt) + ")";
                 })
             .on("dblclick", function(d,i) {
               //select_operation_node(d);
@@ -4119,7 +4125,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
       var partition_width = 5,
             partition_height = 25;
 
-      var b_margin = {top: 20, right:25, bottom: 10, left: 25},
+      var b_margin = {top: 20, right:28, bottom: 10, left: 28},
         b_width = 400 - b_margin.right - b_margin.left,
         b_height = 130 - b_margin.top - b_margin.bottom,
         b_range= [0, b_width],
@@ -5429,11 +5435,13 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
     function resize_sequence_details(){
       var width = d3.select('#sequences').node().clientWidth - 200;
+      
       $("#sequences_text").width(width)
     }
 
     function resize_builder(){
-        var width = builderDiv.node().clientWidth
+        var width = builderDiv.node().clientWidth;
+        var other_width = $('#action_list_container').width() + $('#builder_buttons').width();
 
         b_width = width - b_margin.right - b_margin.left
 
@@ -5441,7 +5449,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
         update_builder_range()
 
-         p_width = (width< 235)? width: width-230
+
+         p_width = (width< (other_width+5))? width: width-other_width
         //p_width = (0.25*width <100)? width-110: 0.75*width
 
         fb_svg
@@ -5586,7 +5595,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
         //          .each(format_nodes)
 
         segment_nodes.append("text")
-          .attr("dy", ".15em")
+          .attr("dy", ".30em")
           .attr("y", function(d) { return d.children ? -0 : 0; })
           // .style("font-size", "10px")
           // .style("text-anchor", "middle")
@@ -5707,8 +5716,9 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
 
         nodeUpdate.selectAll('path')
-              .style("stroke", function(d) { return d.selected ? "black" : 'lightgray';})
+              .style("stroke", function(d) { return d.selected ? "black" : '#5c616b';})
         nodeUpdate.selectAll('.segment').selectAll('path')
+              .style("stroke", function(d) { return d.selected ? "black" : 'lightgray';})
               .style("fill", function(d){return d.selected_segment? "lightblue": "lightgray"})
 
         nodeUpdate.selectAll('rect')
@@ -6765,11 +6775,13 @@ d3.csv(csv_path+csv_file, function(error, data) {
       }
 
       var oLength = 50,
-          oWidth = 10,
+          //oWidth = 10,
+          oWidth = 12,
           textHeight = 13,
           oRange = [0,oLength],
           oScale,
-          oRadius = 3.5;
+          // oRadius = 3.5;
+          oRadius = (oWidth-3)/2;
 
       function update_oScale(range){
 
@@ -7592,11 +7604,12 @@ d3.csv(csv_path+csv_file, function(error, data) {
                             .attr('transform',  'translate(' + 0 +','+ action_radius*2  +')')
 
       var legend = legend_text.append('g')
+                          .attr('class', 'legend')
                             .attr('transform',  'translate(' + 0 +','+ 15  +')')                   
       legend_text.append('text')
           .attr('x', legend_width/2)
           .style("text-anchor", "middle")
-          .style('font-size', '11px')
+          // .style('font-size', '12px')
           .text('Legend')
 
 
@@ -7623,7 +7636,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
                 
             action_text.append('text')
-                .style('font-size', '11px')
+                // .style('font-size', '11px')
                 .text(function(d){return ' =  ' + d;})
 
         var node = action.append('g')
@@ -7644,11 +7657,11 @@ d3.csv(csv_path+csv_file, function(error, data) {
             // char_text.append('text')
             //     .style('font-size', '11px')
             //     .text(function(d){return alphabet[d] + " = " ;})    
-
+          var leg_text = 12;
           char_text.append("rect")
-                .attr('y', -((action_radius*2)-1))
-                .attr("width", action_radius*2)
-                .attr("height", action_radius*2)
+                .attr('y', -(leg_text-2))
+                .attr("width", leg_text+1)
+                .attr("height", leg_text-1)
                 .attr("fill", function(d) {
                   return color(d);
                 })

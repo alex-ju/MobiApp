@@ -146,12 +146,12 @@
                             <div class= "border">
                               <div  class="graph" id="pb_graph"></div>
                             </div>
-                            <div style="width:100px">
+                            <div id= "action_list_container" style="width:110px">
                               <div style ="top:0; width:100%; background-color: lightgray; text-align:center;">Actions</div>
                                     <!-- Actions: -->
-                              <div class="graph scroll border" style=" width: 100px;" id ="action_list"> </div>
+                              <div class="graph scroll border" style=" width: 110px;" id ="action_list"> </div>
                             </div>
-                            <div style="width:130px;" >
+                            <div id = "builder_buttons" style="width:130px;" >
                               <div class="text-center">
                                 <button type="button" id="clear_pb_button" class="btn btn-sm btn-default btn-block">Clear All</button>
                               </div>
@@ -228,7 +228,7 @@
                   <div style= "font-size: 14px">Action Level:</div>
                   <div style="margin-left: 10px;">
                     <div class="radio-inline">
-                      <label class="level_radio level-text"><input checked type="radio" id= "general" name="levelradio">Roll-up</label>
+                      <label class="level_radio level-text"><input checked type="radio" id= "general" name="levelradio" >Roll-up</label>
                     </div>
                     <div class="radio-inline">
                       <label class="level_radio level-text"><input type="radio" id="grouped" name="levelradio">Mid-level</label>
@@ -374,10 +374,12 @@
                     <div id="collapse_details" class="panel-collapse collapse in">
                       <div class="panel-body">
                         <div id="sequences">
-                          <!-- <label class="checkbox-inline"><input id="group_sequences" type="checkbox" checked="checked" value="">Group Sequences</label> -->
-                          <label class="checkbox-inline"><input id="transitionize_sequences" type="checkbox" value="">Collapse Consecutive</label>
-                          <!-- <label class="checkbox-inline"><input id="visify_sequences" type="checkbox" checked="checked" value="">Include Action Color</label>
-                          <label class="checkbox-inline"><input id="include_character" type="checkbox" checked="checked" value="">Include Character</label> -->
+                          <div style='margin-left:10px'>
+                            <!-- <label class="checkbox-inline"><input id="group_sequences" type="checkbox" checked="checked" value="">Group Sequences</label> -->
+                            <label class="checkbox-inline"><input style='margin-top:2px; cursor: pointer;' id="transitionize_sequences" type="checkbox" value="">Collapse Consecutive</label>
+                            <!-- <label class="checkbox-inline"><input id="visify_sequences" type="checkbox" checked="checked" value="">Include Action Color</label>
+                            <label class="checkbox-inline"><input id="include_character" type="checkbox" checked="checked" value="">Include Character</label> -->
+                          </div>
                           <div class="inline align-top">
                             <div id="sequences_text" class="border scroll" style=" height: 200px; width: 500px; padding:10px; margin-left: 20px; margin-top: 20px;"> 
                             </div>
