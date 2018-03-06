@@ -31,9 +31,9 @@ var alpha_file = "alphabet_17-09-26.csv"; //without 'n'
 
 
 //all lancome data
-//var csv_file = 'sample_1000000_session_table_lancome_2017-09-01_2017-11-08.csv'
+var csv_file = 'sample_1000000_session_table_lancome_2017-09-01_2017-11-08.csv'
 //var csv_file = 'sample_500000_session_table_lancome_2017-09-01_2017-11-08.csv'
-var csv_file = 'sample_100000_session_table_lancome_2017-09-01_2017-11-08.csv'
+//var csv_file = 'sample_100000_session_table_lancome_2017-09-01_2017-11-08.csv'
 
 
 //with client ids
@@ -50,7 +50,8 @@ var selectedFilter ={},
 
 var dataset_name = csv_file.substring(0, csv_file.indexOf('.'))
 dataset_name = 'D1_sample_1M'
- //dataset_name = 'D2_sample_200K'
+//dataset_name = 'D2_sample_200K'
+//dataset_name = 'D2_sample_client_200K'
 $('#dataset_name').text('for ' + dataset_name)
 
 //--------Setting up Action Hierarchy------>
@@ -733,7 +734,12 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
       function download_segment_csv(data){
         csvContent = convertToCSV(data)
-        download(csvContent, "segment.csv")
+        var segment_name = prompt("Please enter file name:", "segmentA");
+        if (segment_name == null || segment_name == "") {
+            segment_name = "segmentA";
+        } 
+
+        download(csvContent, segment_name + ".csv")
        
 
       }
@@ -896,6 +902,11 @@ d3.csv(csv_path+csv_file, function(error, data) {
           small[general] =5
           small[grouped]= 10
           small[actions] = 15
+
+      var fontsize = {}
+          fontsize[general] = 12
+          fontsize[grouped]= 14
+          fontsize[actions] = 18
       
       var link_type = 'outgoing',
           hover_selection,
@@ -927,12 +938,15 @@ d3.csv(csv_path+csv_file, function(error, data) {
           'purchase':{x:270,y:308},
           'search':{x:29, y:315},
           'exit': {x:130, y:368},
-          'browse_group': {x:115, y:173},
+          // 'browse_group': {x:115, y:173},
+          'browse_group': {x:105, y:173},
           'cart_group': {x:213, y:260},
-          'checkout_group': {x:269, y:198},
+          // 'checkout_group': {x:269, y:198},
+          'checkout_group': {x:275, y:198},
           'info_group': {x:36, y:256},
           'other_group': {x:33, y:194},
-          'account_group': {x:198, y:175}
+          // 'account_group': {x:198, y:175}
+          'account_group': {x:210, y:175}
         }
 
       positions[actions] = {
@@ -945,21 +959,27 @@ d3.csv(csv_path+csv_file, function(error, data) {
           'purchase':{x:380,y:141},
           'search':{x:-1, y:138},
           'exit': {x:192, y:199},
-          'pv_home': {x:101,y:-156},
+          // 'pv_home': {x:101,y:-156},
+          'pv_home': {x:90,y:-156},
           'pv_explore': {x:220,y:-96},
-          'pv_specialoffers': {x:230,y:-155},
+          // 'pv_specialoffers': {x:230,y:-155},
+          'pv_specialoffers': {x:200,y:-155},
           'pv_search': {x:7,y:-141},
-          'pv_plp': {x:172,y:-101},
+          // 'pv_plp': {x:172,y:-101},
+          'pv_plp': {x:145,y:-101},
           'pv_pdp': {x:54,y:-95},
           'pv_cart': {x:224,y:59},
           'pv_checkout': {x:376,y:20},
           'pv_confirmation': {x:388,y:60},
           'pv_signin': {x:412,y:-159},
-          'pv_account': {x:341,y:-151},
+          // 'pv_account': {x:341,y:-151},
+          'pv_account': {x:341,y:-140},
           'pv_register': {x:404,y:-95},
-          'pv_eliterewards': {x:347,y:-63},
+          // 'pv_eliterewards': {x:347,y:-63},
+          'pv_eliterewards': {x:355,y:-55},
           'pv_storeLocator': {x:59,y:39},
-          'pv_policy': {x:106,y:77},
+          // 'pv_policy': {x:106,y:77},
+          'pv_policy': {x:120,y:77},
           'pv_other_info': {x:21,y:76},
           'pv_other': {x:-3,y:-26}
 
@@ -1263,6 +1283,8 @@ d3.csv(csv_path+csv_file, function(error, data) {
         })
         
         nl_graph.nodes().forEach(function(d){
+          d.css('font-size', fontsize[level])
+
           var data = d.data();         
           var deg = d.connectedEdges('.visible').length;
           if(d.isParent()){
@@ -1290,43 +1312,6 @@ d3.csv(csv_path+csv_file, function(error, data) {
           }
 
         })
-
-        //Apply Layout
-
-        //--------->FORCE DIRECTED LAYOUR
-        // var layout  =nl_graph.layout({
-        //         name: 'cola',
-        //         flow: {"axis":"y", "left":"start", "right":"exit", "gap":500, "equality":"true"},
-        //         unconstrIter: 7,
-        //         userConstIter: 7,
-        //         allConstIter: 7,
-        //         avoidOverlap:true,
-        //         //edgeLength:175, 
-        //         edgeLength:150, 
-        //         fit: true
-                   
-                
-
-        //       })
-
-        // //$('#cy').hide()
-        // $('#load_chart').show()
-        // layout.run()
-
-        // layout.on('layoutstop', function(){
-        //   resize()
-        //   //relocate_orphans()
-        //   //$('#cy').show()
-        //   $('#load_chart').hide()
-
-        // })
-
-        // function resize(){
-        //   nl_graph.zoomingEnabled(true);
-        //   nl_graph.resize();
-        //   nl_graph.fit(nl_graph.nodes('.hasEdges'))
-
-        // }
 
         //------>PRESET LAYOUT
          var layout = nl_graph.layout({
@@ -1609,6 +1594,15 @@ d3.csv(csv_path+csv_file, function(error, data) {
         
       }
 
+      function select_start_node(){
+        var nodes = nl_graph_data.nodes;
+        for (var i = 0; i < nodes.length; i++){
+          if (nodes[i].action == 'start'){
+            select_action_node(nodes[i]);
+            break;
+          }
+        }
+      }
 
       function select_action_node(d){
         var links = nl_graph_data.links,
@@ -1682,11 +1676,13 @@ d3.csv(csv_path+csv_file, function(error, data) {
           node_spacing = (node_radius*2) + label_spacing + 3
 
       function clear_adjacency_chart_data(){
-        if (selected_action_node)
-          selected_action_node.selected =false;
-        selected_action_node = null;
-        adj_chart_data = {nodes:[], links:[]};
-        update_adjacency_chart(adj_chart_data);
+        // if (selected_action_node)
+        //   selected_action_node.selected =false;
+        // selected_action_node = null;
+        // adj_chart_data = {nodes:[], links:[]};
+        // update_adjacency_chart(adj_chart_data);
+        select_start_node()
+
       }
 
       function update_adjacency_chart_data(links){
