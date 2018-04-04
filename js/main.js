@@ -15,12 +15,12 @@ var csv_path = "preprocess/sample_table/"
 var alpha_file = "alphabet_17-09-26.csv"; //without 'n'
 
 //client table
-//var csv_file = 'sample_200000_client_table_debenhams-progressive_2017-10-19_2017-11-22.csv'
+var csv_file = 'sample_200000_client_table_debenhams-progressive_2017-10-19_2017-11-22.csv'
 //var csv_file = 'sample_1000000_client_table_debenhams-progressive_2017-10-19_2017-11-22.csv'
 
 //var csv_file = 'sample_70_failedcheckout_session_table_debenhams-progressive_2017-10-19_2017-11-22.csv'
 //debenhams data with myBeautyClub in eliterewards
-//var csv_file = 'sample_200000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
+// var csv_file = 'sample_200000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
 //var csv_file = 'sample_1000000_session_table_debenhams-progressive_2017-10-19_2017-11-22_1.csv'
 
 //debenhams data
@@ -31,9 +31,9 @@ var alpha_file = "alphabet_17-09-26.csv"; //without 'n'
 
 
 //all lancome data
-var csv_file = 'sample_1000000_session_table_lancome_2017-09-01_2017-11-08.csv'
+//var csv_file = 'sample_1000000_session_table_lancome_2017-09-01_2017-11-08.csv'
 //var csv_file = 'sample_500000_session_table_lancome_2017-09-01_2017-11-08.csv'
-//var csv_file = 'sample_100000_session_table_lancome_2017-09-01_2017-11-08.csv'
+// var csv_file = 'sample_100000_session_table_lancome_2017-09-01_2017-11-08.csv'
 
 
 //with client ids
@@ -49,9 +49,9 @@ var selectedFilter ={},
     seq_data;
 
 var dataset_name = csv_file.substring(0, csv_file.indexOf('.'))
-dataset_name = 'D1_sample_1M'
-//dataset_name = 'D2_sample_200K'
-//dataset_name = 'D2_sample_client_200K'
+// dataset_name = 'D1_sample_1M'
+//dataset_name = 'D2_sample_session_200K'
+dataset_name = 'D2_sample_client_200K'
 $('#dataset_name').text('for ' + dataset_name)
 
 //--------Setting up Action Hierarchy------>
@@ -3066,7 +3066,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
         count_scale.domain([0, current_size])
 
         //var print_n = Infinity;
-        var print_n = 1000;
+        var print_n = 50;
 
         if($("#sequences").is(':visible')){
 
@@ -4384,9 +4384,9 @@ d3.csv(csv_path+csv_file, function(error, data) {
           selected_partition_bar = d;
           d.selected = true;
           //partition_input.attr('value', selected_partition_bar.value);
-          partition_input.property("value", selected_partition_bar.value)
+          partition_input.property("value", format_text(selected_partition_bar.value))
           update_partition_bars(partitions);
-          partition_input.property("value", selected_partition_bar.value )
+          partition_input.property("value", format_text(selected_partition_bar.value) )
       }
 
       function update_partition_bars(data) {
@@ -4480,7 +4480,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
            
            range_start_input.property("value", range_start_bar.value)
            range_end_input.property("value", range_end_bar.value)
-           partition_input.property("value", selected_partition_bar.value);
+           partition_input.property("value", format_text(selected_partition_bar.value));
 
           if( $("#build_filter_view").is(':visible')){
             extents_data.extents = [range_start_bar.value, range_end_bar.value]
@@ -4625,7 +4625,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
 
             if (builder_range){
-              partitions_data = thresholds? thresholds: [builder_range.invert(b_width/3), builder_range.invert(b_width*2/3)]
+              partitions_data = thresholds? thresholds: [Math.floor(builder_range.invert(b_width/3)), Math.floor(builder_range.invert(b_width*2/3))]
               
               update_partition_view()
             }
@@ -4725,7 +4725,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
           var grp = groups[i];
           var pixels = yScale(0) - yScale(grp.value);
 
-          if (pixels > 1){
+          if (pixels > 2){
             var x_domain_max;
             if (i == groups.length -1){
               x_domain_max = null;
@@ -4746,7 +4746,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
         }
 
-        return (x_domain_max >30)? 30: x_domain_max;
+        return x_domain_max;
       }
       
       function reduce_leftover_count(x_max, groups){
@@ -4826,6 +4826,7 @@ d3.csv(csv_path+csv_file, function(error, data) {
             x_domain_max,
             x_max,
             x_min,
+            binned_data,
             div_id,
             brushDirty,
             leftover_count,
@@ -4858,9 +4859,12 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
             // Create the skeletal chart.
             if (g.empty()) {
+
+              binned_data = group.all()
               
               //fix leftover/axis
               //console.log(div_id)
+
               y.domain([0, group.top(1)[0].value]);
 
               
@@ -4869,40 +4873,70 @@ d3.csv(csv_path+csv_file, function(error, data) {
               range = add_one([x_min,x_max]);
 
               //x.domain(range)
-              
-              
-              x_domain_max = get_x_limit(group.all(), y, x);
-                //x.domain(range)
-              if (x_domain_max){
-                x.domain([x.domain()[0], x_domain_max]);
-                x.range([0, x_domain_max*10])
+
+              binned_data = binData(group.all(), x_max);
+              xMax = get_x_limit(binned_data,y,x);
+              if (xMax >= 30){
+                binned_data = binData(group.all(), xMax);
+                x_domain_max = xMax;
+                
+                x.domain([x.domain()[0], xMax]);
+                x.range([0, 300])
 
                 width = x.range()[1];
                 brush.extent([[0,0], [width, height]]);
                 margin.right = 30;
-                
-                if (x_domain_max < 6)
-                  axis.ticks(x_domain_max);
-                else{
-                  axis.ticks(6)
+              }else{
+                binned_data = group.all()
+                 // x_domain_max = get_x_limit(group.all(), y, x);
+                x_domain_max = get_x_limit(binned_data, y, x);
+                // x_domain_max = (x_domain_max >30)? 30: x_domain_max;
+                console.log('X MAX after ROUND 2 binning', xMax)
+                  
+                if (x_domain_max){
+                  x.domain([x.domain()[0], x_domain_max]);
+                  x.range([0, x_domain_max*10])
+
+                  width = x.range()[1];
+                  brush.extent([[0,0], [width, height]]);
+                  margin.right = 30;
+                  
+                  if (x_domain_max < 6)
+                    axis.ticks(x_domain_max);
+                  else{
+                    axis.ticks(6)
+                  }
+                                   
                 }
-                                 
+                
+                axis.scale(x);
+
+                //remove if change date chart range back to 300
+                if (typeof(x_min) != 'number'){
+                  width = x.range()[1];
+                  brush.extent([[0,0], [width, height]]);
+                  axis.ticks(4);
+                  axis.scale(x);
+
+                }
               }
+              console.log('X MAX after binning', xMax)
               
-              axis.scale(x);
+              
+
+
+              
+              // binned_data = binData(group.all(), xMax)
 
               console.log('x axis range', x.domain())
 
               
               
-              //remove if change date chart range back to 300
-              if (typeof(x_min) != 'number'){
-                width = x.range()[1];
-                brush.extent([[0,0], [width, height]]);
-                axis.ticks(4);
-                axis.scale(x);
+              
 
-              }
+              
+
+              
 
 
             
@@ -4967,12 +5001,13 @@ d3.csv(csv_path+csv_file, function(error, data) {
                   .attr("height", height);
 
               
-
+              console.log('final BINNED DATA', binned_data)
               g.selectAll(".bar")
                   .data(["background", "foreground"])
                 .enter().append("path")
                   .attr("class", function(d) {return d + " bar"; })
-                  .datum(group.all());
+                  .datum(binned_data);
+                   //.datum(group.all());
 
               g.selectAll(".foreground.bar")
                   .attr("clip-path", "url(#clip-" + id + ")");
@@ -5061,8 +5096,13 @@ d3.csv(csv_path+csv_file, function(error, data) {
 
 
             if (new_selection){
-
                 y_max = group.top(1)[0].value;
+                var max_count = 0;
+                for (var i = 0; i< binned_data.length; i++){
+                  if (binned_data[i].value> max_count) max_count = binned_data[i].value;
+                }
+                y_max = max_count;
+
                 new_y_max = leftover_count > y_max ? leftover_count : y_max;
 
                 y.domain([0, new_y_max]);
@@ -5094,11 +5134,98 @@ d3.csv(csv_path+csv_file, function(error, data) {
             
           });
 
+          function binData(data, x_max){
+
+            console.log('BINNNNING DATA')
+            console.log(dim_name)
+            console.log('old data', data)
+            max_bars = 30;
+            // x_max = data[data.length-1].key;
+            x_min = data[0].key;
+
+            if (x_max >= 30 && typeof(x_min) == 'number' && x_max > 30){
+
+              var bin_size = Math.round((x_max-x_min)/max_bars);
+              if (bin_size<1) bin_size =1;
+              var binnedData = [];
+              binValues = [];
+              var v = x_min;
+              for (var i = 0; i <=max_bars; i++){
+                
+                binValues.push(v)
+                v += bin_size;
+              }
+
+              x.domain([binValues[0], binValues[binValues.length-1]])
+              x.range([0,max_bars*10])
+              var maxCount = 0;
+              
+              binValues.forEach(function(b, i) {
+                if (i > 0){
+                  var count = 0;
+                  var prev = binValues[i-1];
+                  var matches = data.filter(function(e) { return e.key <b && e.key >= prev})
+                  for (var i=0;i<matches.length; i++){
+                    count += matches[i].value;
+                  }
+                  if (count> maxCount) maxCount = count;
+
+                  binnedData.push({key: prev , value: count, bin_size: bin_size})
+                }
+                
+              })
+              // var count = 0;
+              // var matches = data.filter(function(e) { return e.key >= x.domain()[1]})
+              // for (var i=0;i<matches.length; i++){
+              //       count += matches[i].value;
+              //     }
+              // binnedData.push({key: x.domain()[1] , value: count, bin_size: bin_size})
+
+
+              y.domain([0,maxCount])
+              x.ticks(binValues);
+              axisY.scale(y);
+              axis.scale(x);
+            }else{
+              binnedData = data
+            }
+      
+            console.log('binnedData' , binnedData)
+            return binnedData
+
+
+
+          }
+
           function leftoverPath(leftover_height){
             return "M" + (width+18) + "," + height + "V" + y(leftover_height) + "h" + 9 + "V" + height;
           }
 
           function barPath(groups) {
+            // console.log(dim_name)
+            // oldXdomain = [x.domain()[0],x.domain()[1]];
+            // oldYdomain = [y.domain()[0],y.domain()[1]];
+            // binned_data = binData(groups, x_max);
+            //   xMax = get_x_limit(binned_data,y,x);
+            //   if (xMax >= 30){
+            //     binned_data = binData(group.all(), xMax);
+                
+            //     x.domain([x.domain()[0], xMax]);
+            //     x.range([0, 300])
+
+            //     width = x.range()[1];
+            //     brush.extent([[0,0], [width, height]]);
+            //     margin.right = 30;
+            //     groups = binned_data
+            //     // axis.scale(x);
+            //   }else{
+            //     x.domain(oldXdomain)
+            //     y.domain(oldYdomain)
+            //     axisY.scale(y);
+            //   axis.scale(x);
+              // }
+
+
             var path = [],
                 i = -1,
                 n = groups.length,
@@ -5122,11 +5249,15 @@ d3.csv(csv_path+csv_file, function(error, data) {
             while (++i < n) {
               d = groups[i];
               //path.push("M", x(d.key), ",", height, "V", y(d.value), "h9V", height);
+              // var xPos = d.bin_size? x((d.key/d.bin_size)-1): x(d.key) 
+              var xPos = x(d.key) 
+              var yPos = y(d.value);
               if (x_domain_max){
                 if (d.key < x_domain_max)
-                  path.push("M", x(d.key), ",", height, "V", y(d.value), "h" + bar_width + "V", height);
+                  path.push("M", xPos, ",", height, "V", y(d.value), "h" + bar_width + "V", height);
               } else {
-                path.push("M", x(d.key), ",", height, "V", y(d.value), "h" + bar_width + "V", height);
+                // console.log('key: ' + d.key + ' Pos: ' + xPos + ' Value: ' + yPos)
+                path.push("M", xPos, ",", height, "V", y(d.value), "h" + bar_width + "V", height);
               }
             }
 
@@ -5304,6 +5435,12 @@ d3.csv(csv_path+csv_file, function(error, data) {
         chart.group = function(_) {
           if (!arguments.length) return group;
           group = _;
+          return chart;
+        };
+
+        chart.binned_data = function(_) {
+          if (!arguments.length) return binned_data;
+          binned_data = _;
           return chart;
         };
 

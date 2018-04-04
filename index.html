@@ -66,12 +66,12 @@
                     </div>
                     <div id=collapse_builder class="panel-body collapse in"> 
                       <ul class="nav nav-tabs" id="operation_types" style="margin-bottom:1px">
-                        <li class="active"><a style="background-color:#f4fff5;" id="range_button" data-toggle="tab" href="#range">Range</a></li>
-                        <li><a style="background-color:#fff7f7" data-toggle="tab" id="contains_button" href="#contains">Contains</a></li>
+                        <li class="active"><a style="background-color:#f4fff5;" id="range_button" data-toggle="tab" href="#range">Ranges</a></li>
+                        <li><a style="background-color:#fff7f7" data-toggle="tab" id="contains_button" href="#contains">Actions</a></li>
                       </ul>
                       <div class="tab-content">
                         <div id="range" class = "tab-pane fade in active">
-                          <h5>Range Operation Builder</h5>
+                          <h5>Ranges Operation Builder</h5>
                           <ul class="nav nav-pills nav-fill">
                             <li class="nav-item active">
                               <a class="nav-link standard-text" data-toggle="tab" id="filter_view" href="#r_filter" role="tab">Filter</a>
@@ -83,7 +83,7 @@
                           <div class="tab-content">
                             <div id="r_filter" class = "tab-pane fade in active panel-background" role="tabpanel">
                               <!-- <h6>Range Filter Builder</h6> -->
-                              <div class="standard-text" style= "padding: 5px 0 0 10px">Range Filter Builder</div>
+                              <div class="standard-text" style= "padding: 5px 0 0 10px">Ranges Filter Builder</div>
                               <!-- <div class="text-center">
                                 
                                 <div class="radio-inline">
@@ -94,7 +94,7 @@
                                 </div>
                               </div> -->
                               <div  class="graph" id="build_filter_view">
-                                <div class="warning-text" id="select_chart_warning" style="display: none"> Please select Range chart! </div>
+                                <div class="warning-text" id="select_chart_warning" style="display: none"> Please select Ranges chart! </div>
                               </div>
                               <div class="range_radio inline-center" id="input_filter_value">
                                 <div>
@@ -115,7 +115,7 @@
                             </div>
                             <div id="r_partition" class="tab-pane fade in panel-background" role="tabpanel">
                               <!-- <h6>Range Partition Builder</h6> -->
-                              <div class= "standard-text" style= "padding: 5px 0 0 10px">Range Partition Builder</div>
+                              <div class= "standard-text" style= "padding: 5px 0 0 10px">Ranges Partition Builder</div>
                               <div  class="graph" id="build_partition_view">
                                 <div class="warning-text" id="select_chart_warning2" style="display: none"> Please select Range chart! </div>
                               </div>
@@ -141,7 +141,7 @@
                           </div>
                         </div>                     
                         <div id="contains" class = "tab-pane fade in">
-                          <h5>Contains Operation Builder</h5>
+                          <h5>Actions Operation Builder</h5>
                           <div class="inline">
                             <div class= "border">
                               <div  class="graph" id="pb_graph"></div>
@@ -151,7 +151,7 @@
                                     <!-- Actions: -->
                               <div class="graph scroll border" style=" width: 110px;" id ="action_list"> </div>
                             </div>
-                            <div id = "builder_buttons" style="width:130px;" >
+                            <div id = "builder_buttons" style="width:142px;" >
                               <div class="text-center">
                                 <button type="button" id="clear_pb_button" class="btn btn-sm btn-default btn-block">Clear All</button>
                               </div>
@@ -245,7 +245,7 @@
                     <div class="panel-text panel-heading no-padding">
                       <a data-toggle="collapse" class="info-toggle" href="#collapse_range_charts">
                         <div class='icon icon-adjust'></div>
-                        <div class='text-toggle'>Range Attributes</div>
+                        <div class='text-toggle'>Ranges</div>
                       </a>
                     </div>
                     <div id="collapse_range_charts" class="panel-body collapse in">            
@@ -319,7 +319,7 @@
                     <div class="panel-heading no-padding">
                       <a data-toggle="collapse" class="info-toggle" href="#collapse_contains">
                         <div class='icon icon-adjust'></div>
-                        <div class='text-toggle'>Contains Attributes</div>
+                        <div class='text-toggle'>Actions</div>
                       </a>
                     </div>
                     <div id="collapse_contains" class="panel-collapse collapse in">
