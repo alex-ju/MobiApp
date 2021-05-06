@@ -1,0 +1,29 @@
+Action,Character
+addToCart,B
+formInteraction,C
+pageview: account,D
+pageview: cart,E
+pageview: category,F
+pageview: checkout,G
+pageview: confirmation,H
+pageview: eliterewards,I
+pageview: error,J
+pageview: explore,K
+pageview: help,L
+pageview: home,M
+pageview: login,N
+pageview: other,O
+pageview: product,P
+pageview: search,Q
+pageview: specialoffers,R
+pageview: storelocator,S
+purchase,T
+removeFromCart,U
+search,V
+pageview,x
+other_group,o
+account_group,d
+browse_group,p
+checkout_group,g
+info_group,s
+cart_group,e

@@ -16,7 +16,7 @@ session_table_csv = 'session_table_debenhams-progressive_2017-10-19_2017-11-22_s
 # session_table_csv = 'session_table_lancome_2017-09-01_2017-11-08.csv'
 client_table_csv = 'client_table_17-10-13.csv'
 table_csv = session_table_csv
-session_table = pd.read_csv(path + table_csv)
+session_table = 'sample_table.csv'
 
 session_table = session_table.rename(columns={'Unnamed: 0': 'index'})
 session_table = session_table.set_index('index')
